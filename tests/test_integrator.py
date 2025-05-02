@@ -46,7 +46,7 @@ def test_scipy_integrator_cr3bp_continuous():
         -1.9895001215078018E-01,
         0.0])
     period_0 = 2.3538670417546639E+00
-    sol_lpo0 = integrator.solve([0.0, period_0], x0, stm=True, get_ODESolution=True)
+    sol_lpo0 = integrator.solve([0.0, period_0], x0, stm=False, get_ODESolution=True)
 
     assert sol_lpo0.y[0:6,-1].shape == (6,)
     assert np.max(np.abs((sol_lpo0.y[0:6,-1] - x0))) < 1e-11
@@ -98,4 +98,4 @@ def test_heyoka_integrator_cr3bp_continuous():
 
 
 if __name__ == "__main__":
-    test_heyoka_integrator_cr3bp_continuous()
+    test_scipy_integrator_cr3bp_continuous()

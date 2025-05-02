@@ -11,10 +11,12 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import scocp
 
 
-def test_scp_scipy_impulsive(get_plot=False):
+def test_scp_scipy_continuous(get_plot=False):
     """Test SCP impulsive transfer"""
-    ta_dyn, ta_dyn_aug = scocp.get_heyoka_integrator_cr3bp(mu=1.215058560962404e-02, tol=1e-12)
-    integrator = scocp.HeyokaIntegrator(nx=6, nu=3, ta=ta_dyn, ta_stm=ta_dyn_aug, impulsive=True)
+    mu = 1.215058560962404e-02
+    integrator = scocp.ScipyIntegrator(nx=6, nu=3, rhs=scocp.control_rhs_cr3bp, rhs_stm=scocp.control_rhs_cr3bp_stm,
+                                       impulsive=False, args=(mu,[0.0,0.0,0.0]),
+                                       method='DOP853', reltol=1e-12, abstol=1e-12)
     
     # propagate uncontrolled and controlled dynamics
     x0 = np.array([
@@ -25,7 +27,7 @@ def test_scp_scipy_impulsive(get_plot=False):
         -1.9895001215078018E-01,
         0.0])
     period_0 = 2.3538670417546639E+00
-    sol_lpo0 = integrator.solve([0.0, period_0], x0, t_eval=np.linspace(0.0, period_0, 100))
+    sol_lpo0 = integrator.solve([0, period_0], x0, get_ODESolution=True)
 
     xf = np.array([
         1.1648780946517576,
@@ -35,26 +37,27 @@ def test_scp_scipy_impulsive(get_plot=False):
         -2.0191923237095796E-1,
         0.0])
     period_f = 3.3031221822879884
-    sol_lpo1 = integrator.solve([0.0, period_f], xf, t_eval=np.linspace(0.0, period_f, 100))
+    sol_lpo1 = integrator.solve([0, period_f], xf, get_ODESolution=True)
 
     # transfer problem discretization
-    N = 20
+    N = 40
     tf = (period_0 + period_f) / 2
     times = np.linspace(0, tf, N)
+    umax = 0.1  # max acceleration
 
     # create subproblem
-    problem = scocp.FixedTimeImpulsiveRendezvous(x0, xf, integrator, times)
+    problem = scocp.FixedTimeContinuousRendezvous(x0, xf, umax, integrator, times)
 
     # create initial guess
     print(f"Preparing initial guess...")
-    sol_initial = integrator.solve([0, times[-1]], x0, t_eval=times)
-    sol_final  = integrator.solve([0, times[-1]], xf, t_eval=times)
+    sol_initial = integrator.solve([0, times[-1]], x0, t_eval=times, get_ODESolution=True)
+    sol_final  = integrator.solve([0, times[-1]], xf, t_eval=times, get_ODESolution=True)
 
     alphas = np.linspace(1,0,N)
-    xbar = (np.multiply(sol_initial[1].T, np.tile(alphas, (6,1))) + np.multiply(sol_final[1].T, np.tile(1-alphas, (6,1)))).T
+    xbar = (np.multiply(sol_initial.y, np.tile(alphas, (6,1))) + np.multiply(sol_final.y, np.tile(1-alphas, (6,1)))).T
     xbar[0,:] = x0  # overwrite initial state
     xbar[-1,:] = xf # overwrite final state
-    ubar = np.zeros((N,3))
+    ubar = np.zeros((N-1,3))
 
     # solve subproblem
     gbar = np.sum(ubar, axis=1).reshape(-1,1)
@@ -89,15 +92,15 @@ def test_scp_scipy_impulsive(get_plot=False):
             ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], 'b-')
         ax.scatter(x0[0], x0[1], x0[2], marker='x', color='k', label='Initial state')
         ax.scatter(xf[0], xf[1], xf[2], marker='o', color='k', label='Final state')
-        ax.plot(sol_lpo0[1].T[0,:], sol_lpo0[1].T[1,:], sol_lpo0[1].T[2,:], 'k-', lw=0.3)
-        ax.plot(sol_lpo1[1].T[0,:], sol_lpo1[1].T[1,:], sol_lpo1[1].T[2,:], 'k-', lw=0.3)
-        ax.quiver(xopt[:,0], xopt[:,1], xopt[:,2], uopt[:,0], uopt[:,1], uopt[:,2], color='r', length=1.0)
+        ax.plot(sol_lpo0.y[0,:], sol_lpo0.y[1,:], sol_lpo0.y[2,:], 'k-', lw=0.3)
+        ax.plot(sol_lpo1.y[0,:], sol_lpo1.y[1,:], sol_lpo1.y[2,:], 'k-', lw=0.3)
+        #ax.quiver(xopt[:,0], xopt[:,1], xopt[:,2], uopt[:,0], uopt[:,1], uopt[:,2], color='r', length=1.0)
         ax.set_aspect('equal')
         ax.legend()
 
         ax_u = fig.add_subplot(2,2,2)
         ax_u.grid(True, alpha=0.5)
-        ax_u.stem(times, gopt, markerfmt='D', label="Gamma")
+        ax_u.step(times, np.concatenate((gopt[:,0], [0.0])), label="Gamma", where='post', color='k')
         ax_u.set(xlabel="Time", ylabel="Control")
         ax_u.legend()
 
@@ -116,11 +119,11 @@ def test_scp_scipy_impulsive(get_plot=False):
         ax_DeltaL.legend()
 
         plt.tight_layout()
-        fig.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots/scp_heyoka_impulsive_transfer.png"), dpi=300)
+        fig.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots/scp_scipy_continuous_transfer.png"), dpi=300)
         plt.show()
     return
 
 
 if __name__ == "__main__":
-    test_scp_scipy_impulsive(get_plot=True)
+    test_scp_scipy_continuous(get_plot=True)
     plt.show()

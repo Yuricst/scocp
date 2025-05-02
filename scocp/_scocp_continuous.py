@@ -1,11 +1,11 @@
-"""Sequentially convexified optimal control problem (SCOCP) for impulsive dynamics"""
+"""Sequentially convexified optimal control problem (SCOCP) for continuous dynamics"""
 
 import cvxpy as cp
 import numpy as np
 
 
-class ImpulsiveControlSCOCP:
-    """Sequentially convexified optimal control problem (SCOCP) for impulsive dynamics
+class ContinuousControlSCOCP:
+    """Sequentially convexified optimal control problem (SCOCP) for continuous dynamics
     
     Args:
         integrator (obj): integrator object
@@ -23,13 +23,12 @@ class ImpulsiveControlSCOCP:
         times,
         ng: int = 0,
         nh: int = 0,
-        B = None,
         weight: float = 1e2,
         trust_region_radius: float = 0.1,
         solver = cp.CLARABEL,
         verbose_solver: bool = False,
     ):
-        assert integrator.impulsive is True, "Impulsive control problem must be initialized with an integrator for impulsive dynamics"
+        assert integrator.impulsive is False, "Continuous control problem must be initialized with an integrator for continuous dynamics"
         self.integrator = integrator
         self.times = times
         self.N = len(times)
@@ -40,11 +39,6 @@ class ImpulsiveControlSCOCP:
         self.trust_region_radius = trust_region_radius
         self.solver = solver
         self.verbose_solver = verbose_solver
-
-        if B is None:
-            self.B = np.concatenate((np.zeros((3,3)), np.eye(3)))
-        else:
-            self.B = B
 
         # initialize storage
         self.cp_status = "not_solved"
@@ -68,15 +62,14 @@ class ImpulsiveControlSCOCP:
         raise NotImplementedError("Subproblem must be implemented by inherited class!")
     
     def build_linear_model(self, xbar, ubar):
+        i_PhiA_end = self.integrator.nx + self.integrator.nx * self.integrator.nx
         for i,ti in enumerate(self.times[:-1]):
             _tspan = (ti, self.times[i+1])
-            _x0 = xbar[i,:] + self.B @ ubar[i,:]
-            _, _ys = self.integrator.solve(_tspan, _x0, stm=True)
+            _, _ys = self.integrator.solve(_tspan, xbar[i,:], u=ubar[i,:], stm=True)
 
             xf  = _ys[-1,0:self.integrator.nx]
-            STM = _ys[-1,self.integrator.nx:self.integrator.nx+self.integrator.nx*self.integrator.nx].reshape(self.integrator.nx,self.integrator.nx)
-            self.Phi_A[i,:,:] = STM
-            self.Phi_B[i,:,:] = STM @ self.B
+            self.Phi_A[i,:,:] = _ys[-1,self.integrator.nx:i_PhiA_end].reshape(self.integrator.nx,self.integrator.nx)
+            self.Phi_B[i,:,:] = _ys[-1,i_PhiA_end:].reshape(self.integrator.nx,self.integrator.nu)
             self.Phi_c[i,:]   = xf - self.Phi_A[i,:,:] @ xbar[i,:] - self.Phi_B[i,:,:] @ ubar[i,:]
         return
         
@@ -95,17 +88,16 @@ class ImpulsiveControlSCOCP:
             ubar (np.array): control history
             stm (bool): whether to propagate STMs, defaults to False
         """
-        assert xbar.shape == (self.N,self.integrator.nx)
-        assert ubar.shape == (self.N,self.integrator.nu)
+        assert xbar.shape == (self.N,6)
+        assert ubar.shape == (self.N-1,3)
 
         sols = []
-        geq_nl = np.zeros((self.N-1,self.integrator.nx))
+        geq_nl = np.zeros((self.N-1,6))
         for i,ti in enumerate(self.times[:-1]):
             _tspan = (ti, self.times[i+1])
-            _x0 = xbar[i,:] + self.B @ ubar[i,:]
-            _ts, _ys = self.integrator.solve(_tspan, _x0, stm=stm)
+            _ts, _ys = self.integrator.solve(_tspan, xbar[i,:], u=ubar[i,:], stm=stm)
             sols.append([_ts,_ys])
-            geq_nl[i,:] = xbar[i+1,:] - _ys[-1,0:self.integrator.nx]
+            geq_nl[i,:] = xbar[i+1,:] - _ys[-1,0:6]
         return geq_nl, sols
     
     def evaluate_nonlinear_constraints(self, xs, us, gs):
@@ -117,12 +109,13 @@ class ImpulsiveControlSCOCP:
         return np.zeros(self.ng), np.zeros(self.nh)
     
 
-class FixedTimeImpulsiveRendezvous(ImpulsiveControlSCOCP):
-    """Fixed-time impulsive rendezvous subproblem"""
-    def __init__(self, x0, xf, *args, **kwargs):
+class FixedTimeContinuousRendezvous(ContinuousControlSCOCP):
+    """Fixed-time continuous rendezvous subproblem"""
+    def __init__(self, x0, xf, umax, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.x0 = x0
         self.xf = xf
+        self.umax = umax
         return
         
     def evaluate_objective(self, xs, us, gs):
@@ -135,15 +128,15 @@ class FixedTimeImpulsiveRendezvous(ImpulsiveControlSCOCP):
         Nseg = N - 1
         
         xs = cp.Variable((N, nx), name='state')
-        us = cp.Variable((N, nu), name='control')
-        gs = cp.Variable((N, 1), name='Gamma')
+        us = cp.Variable((Nseg, nu), name='control')
+        gs = cp.Variable((Nseg, 1), name='Gamma')
         xis = cp.Variable((Nseg,nx), name='xi')         # slack for dynamics
         
         penalty = self.weight/2 * cp.sum_squares(xis)
         for i in range(Nseg):
             penalty += self.lmb_dynamics[i,:] @ xis[i,:]
         objective_func = cp.sum(gs) + penalty
-        constraints_objsoc = [cp.SOC(gs[i,0], us[i,:]) for i in range(N)]
+        constraints_objsoc = [cp.SOC(gs[i,0], us[i,:]) for i in range(N-1)]
 
         constraints_dyn = [
             xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,:] @ us[i,:] + self.Phi_c[i,:] + xis[i,:]
@@ -159,10 +152,14 @@ class FixedTimeImpulsiveRendezvous(ImpulsiveControlSCOCP):
         constraints_initial = [xs[0,:] == self.x0]
         constraints_final   = [xs[-1,0:3] == self.xf[0:3], 
                                xs[-1,3:6] + us[-1,:] == self.xf[3:6]]
+        
+        constraints_control = [
+            gs[i,0] <= self.umax for i in range(Nseg)
+        ]
 
         convex_problem = cp.Problem(
             cp.Minimize(objective_func),
-            constraints_objsoc + constraints_dyn + constraints_trustregion + constraints_initial + constraints_final)
+            constraints_objsoc + constraints_dyn + constraints_trustregion + constraints_initial + constraints_final + constraints_control)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
         return xs.value, us.value, gs.value, xis.value, None, None

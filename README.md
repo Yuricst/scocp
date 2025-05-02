@@ -5,8 +5,10 @@ Sequential convexified optimal control problem (scocp) solver in python
 
 ## Examples
 
-### Impulsive Transfer Between Libration Point Orbits
+**Impulsive control rendez-vous between libration point orbits**
 
-The following example demonstrates an impulsive transfer between two libration point orbits in the circular restricted three-body problem.
+<img src="tests/plots/scp_scipy_impulsive_transfer.png" width="70%">
 
-![Impulsive Transfer](tests/plots/scp_scipy_impulsive_transfer.png)
+**Continuous control rendz-vous between libration point orbits**
+
+<img src="tests/plots/scp_scipy_continuous_transfer.png" width="70%">

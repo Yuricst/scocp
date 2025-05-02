@@ -82,8 +82,8 @@ def test_scp_scipy_impulsive(get_plot=False):
         _, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt)
     
         # plot results
-        fig = plt.figure(figsize=(12,4))
-        ax = fig.add_subplot(1,3,1,projection='3d')
+        fig = plt.figure(figsize=(7,7))
+        ax = fig.add_subplot(2,2,1,projection='3d')
         for (_ts, _ys) in sols_ig:
             ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], '--', color='grey')
         for (_ts, _ys) in sols:
@@ -96,14 +96,20 @@ def test_scp_scipy_impulsive(get_plot=False):
         ax.set_aspect('equal')
         ax.legend()
 
-        ax_DeltaJ = fig.add_subplot(1,3,2)
+        ax_u = fig.add_subplot(2,2,2)
+        ax_u.grid(True, alpha=0.5)
+        ax_u.stem(times, gopt, markerfmt='D', label="Gamma")
+        ax_u.set(xlabel="Time", ylabel="Control")
+        ax_u.legend()
+
+        ax_DeltaJ = fig.add_subplot(2,2,3)
         ax_DeltaJ.grid(True, alpha=0.5)
         ax_DeltaJ.plot(np.abs(summary_dict["DeltaJ"]), marker="o", color="k", ms=3)
         ax_DeltaJ.axhline(tol_opt, color='r', linestyle='--', label='tol_opt')
         ax_DeltaJ.set(yscale='log', ylabel='|DeltaJ|')
         ax_DeltaJ.legend()
 
-        ax_DeltaL = fig.add_subplot(1,3,3)
+        ax_DeltaL = fig.add_subplot(2,2,4)
         ax_DeltaL.grid(True, alpha=0.5)
         ax_DeltaL.plot(summary_dict["chi"], marker="o", color="k", ms=3)
         ax_DeltaL.axhline(tol_feas, color='r', linestyle='--', label='tol_feas')

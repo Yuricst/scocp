@@ -20,9 +20,15 @@ from .eoms import *
 from ._integrator_scipy import ScipyIntegrator
 from ._integrator_heyoka import HeyokaIntegrator
 
-# functions for setting up & solving SCOCPs
+# sequentially convexified optimal control problems
 from ._scocp_impulsive import (
     ImpulsiveControlSCOCP,
     FixedTimeImpulsiveRendezvous
 )
+from ._scocp_continuous import (
+    ContinuousControlSCOCP,
+    FixedTimeContinuousRendezvous
+)
+
+# SCP algorithm
 from ._scvxstar import SCvxStar
