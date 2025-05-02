@@ -5,19 +5,35 @@ import numpy as np
 
 
 class ImpulsiveControlSCOCP:
-    """Convex subproblem class"""
+    """Convex subproblem class
+    
+    Args:
+        integrator (obj): integrator object
+        times (np.array): time grid
+        ng (int): number of nonlinear equality constraints, excluding dynamics constraints
+        nh (int): number of nonlinear inequality constraints
+        weight (float): weight of the objective function
+        trust_region_radius (float): trust region radius
+        solver (str): solver to use
+        verbose_solver (bool): whether to print verbose output
+    """
     def __init__(
         self,
         integrator,
         times,
-        weight = 1e2,
-        trust_region_radius = 0.1,
+        ng: int = 0,
+        nh: int = 0,
+        weight: float = 1e2,
+        trust_region_radius: float = 0.1,
         solver = cp.CLARABEL,
-        verbose_solver = False,
+        verbose_solver: bool = False,
     ):
         self.integrator = integrator
         self.times = times
         self.N = len(times)
+        self.ng_dyn = self.integrator.nx * (self.N - 1)
+        self.ng = ng
+        self.nh = nh
         self.weight = weight
         self.trust_region_radius = trust_region_radius
         self.solver = solver
@@ -42,15 +58,13 @@ class ImpulsiveControlSCOCP:
     
     def build_linear_model(self, xbar, ubar):
         B = np.concatenate((np.zeros((3,3)), np.eye(3)))
-        sols = []
         for i,ti in enumerate(self.times[:-1]):
             _tspan = (ti, self.times[i+1])
             _x0 = xbar[i,:] + B @ ubar[i,:]
-            _sol = self.integrator.solve(_tspan, _x0, stm=True)
-            sols.append(_sol)
+            _ts, _ys = self.integrator.solve(_tspan, _x0, stm=True)
 
-            xf = _sol.y[0:6,-1]
-            STM = _sol.y[6:,-1].reshape(6,6)
+            xf  = _ys[-1,0:6]
+            STM = _ys[-1,6:].reshape(6,6)
             self.Phi_A[i,:,:] = STM
             self.Phi_B[i,:,:] = STM @ B
             self.Phi_c[i,:]   = xf - self.Phi_A[i,:,:] @ xbar[i,:] - self.Phi_B[i,:,:] @ ubar[i,:]
@@ -80,9 +94,9 @@ class ImpulsiveControlSCOCP:
         for i,ti in enumerate(self.times[:-1]):
             _tspan = (ti, self.times[i+1])
             _x0 = xbar[i,:] + B @ ubar[i,:]
-            _sol = self.integrator.solve(_tspan, _x0, stm=stm)
-            sols.append(_sol)
-            geq_nl[i,:] = xbar[i+1,:] - _sol.y[0:6,-1]
+            _ts, _ys = self.integrator.solve(_tspan, _x0, stm=stm)
+            sols.append([_ts,_ys])
+            geq_nl[i,:] = xbar[i+1,:] - _ys[-1,0:6]
         return geq_nl, sols
     
 

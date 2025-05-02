@@ -104,7 +104,7 @@ class SCvxStar:
         for k in range(maxiter):
             # build linear model
             self.problem.build_linear_model(xbar, ubar)
-            xopt, uopt, gopt, xiopt, _, _ = self.problem.solve_convex_problem(xbar, ubar, gbar)
+            xopt, uopt, gopt, xi_dyn_opt, xi_opt, zeta_opt = self.problem.solve_convex_problem(xbar, ubar, gbar)
             if self.problem.cp_status != "optimal":
                 status_AL = "CPFailed"
                 print(f"Convex problem did not converge to optimality (status = {self.problem.cp_status})!")
@@ -117,7 +117,7 @@ class SCvxStar:
             # evaluate penalized objective
             J_bar = self.problem.evaluate_objective(xbar, ubar, gbar) + self.evaluate_penalty(geq_nl_bar)
             J_opt = self.problem.evaluate_objective(xopt, uopt, gopt) + self.evaluate_penalty(geq_nl_opt)
-            L_opt = self.problem.evaluate_objective(xopt, uopt, gopt) + self.evaluate_penalty(xiopt)
+            L_opt = self.problem.evaluate_objective(xopt, uopt, gopt) + self.evaluate_penalty(xi_dyn_opt)
 
             # evaluate step acceptance criterion parameter
             DeltaJ = J_bar - J_opt
