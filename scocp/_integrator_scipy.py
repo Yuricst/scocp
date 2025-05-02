@@ -8,8 +8,10 @@ class ScipyIntegrator:
     
     Args:
         nx (int): dimension of states
+        nu (int): dimension of controls
         rhs (function): right-hand side function
         rhs_stm (function): right-hand side function for state transition matrix
+        impulsive (bool): whether the dynamics are impulsive
         method (str): integration method
         reltol (float): relative tolerance
         abstol (float): absolute tolerance
@@ -28,7 +30,7 @@ class ScipyIntegrator:
         self.args = args
         return
 
-    def solve(self, tspan, x0, stm=False, t_eval=None, args=None, get_ODESolution=False):
+    def solve(self, tspan, x0, u=None, stm=False, t_eval=None, args=None, get_ODESolution=False):
         """Solve initial value problem
 
         Args:
@@ -45,8 +47,14 @@ class ScipyIntegrator:
                 if `get_ODESolution` is True, return an `ODESolution` object
         """
         assert len(x0) == self.nx, f"x0 must be of length {self.nx}, but got {len(x0)}"
+        if u is not None:
+            assert len(u) == self.nu, f"u must be of length {self.nu}, but got {len(u)}"
+
         if args is None:
             args = self.args
+        if (u is not None) and (self.impulsive is False):
+            args[-1][0:self.nu] = u[:]
+
         if stm is False:
             sol = solve_ivp(self.rhs, tspan, x0, t_eval=t_eval, method=self.method, rtol=self.reltol, atol=self.abstol, args=args)
         else:

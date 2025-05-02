@@ -18,13 +18,18 @@ def get_heyoka_integrator_cr3bp(
     r1 = ((x[0] + mu)**2 + x[1]**2 + x[2]**2)**(1/2.)
     r2 = ((x[0] - 1 + mu)**2 + x[1]**2 + x[2]**2)**(1/2.)
 
-    # The equations of motion.
+    # The equations of motion
     f.append(x[3])
     f.append(x[4])
     f.append(x[5])
-    f.append(x[0] - (1-mu)/r1**3 * (x[0]+mu) - mu/r2**3 * (x[0]-1+mu) + 2*x[4] + hy.par[0])
-    f.append(x[1] - (1-mu)/r1**3 * x[1]      - mu/r2**3 * x[1]        - 2*x[3] + hy.par[1])
-    f.append(     - (1-mu)/r1**3 * x[2]      - mu/r2**3 * x[2]                 + hy.par[2])
+    if impulsive is True:
+        f.append(x[0] - (1-mu)/r1**3 * (x[0]+mu) - mu/r2**3 * (x[0]-1+mu) + 2*x[4])
+        f.append(x[1] - (1-mu)/r1**3 * x[1]      - mu/r2**3 * x[1]        - 2*x[3])
+        f.append(     - (1-mu)/r1**3 * x[2]      - mu/r2**3 * x[2])
+    else:
+        f.append(x[0] - (1-mu)/r1**3 * (x[0]+mu) - mu/r2**3 * (x[0]-1+mu) + 2*x[4] + hy.par[0])
+        f.append(x[1] - (1-mu)/r1**3 * x[1]      - mu/r2**3 * x[1]        - 2*x[3] + hy.par[1])
+        f.append(     - (1-mu)/r1**3 * x[2]      - mu/r2**3 * x[2]                 + hy.par[2])
 
     # construct integrator for dynamics only
     dyn = []
