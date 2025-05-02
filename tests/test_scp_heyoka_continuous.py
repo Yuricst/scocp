@@ -13,8 +13,9 @@ import scocp
 
 def test_scp_scipy_impulsive(get_plot=False):
     """Test SCP impulsive transfer"""
-    ta_dyn, ta_dyn_aug = scocp.get_heyoka_integrator_cr3bp(mu=1.215058560962404e-02, tol=1e-12)
-    integrator = scocp.HeyokaIntegrator(nx=6, nu=3, ta=ta_dyn, ta_stm=ta_dyn_aug, impulsive=True)
+    mu = 1.215058560962404e-02
+    ta_dyn, ta_dyn_aug = scocp.get_heyoka_integrator_cr3bp(mu=mu, tol=1e-12, impulsive=False)
+    integrator = scocp.HeyokaIntegrator(nx=6, nu=3, ta=ta_dyn, ta_stm=ta_dyn_aug, impulsive=False)
     
     # propagate uncontrolled and controlled dynamics
     x0 = np.array([
@@ -38,12 +39,13 @@ def test_scp_scipy_impulsive(get_plot=False):
     sol_lpo1 = integrator.solve([0.0, period_f], xf, t_eval=np.linspace(0.0, period_f, 100))
 
     # transfer problem discretization
-    N = 20
+    N = 40
     tf = (period_0 + period_f) / 2
     times = np.linspace(0, tf, N)
+    umax = 0.1  # max acceleration
 
     # create subproblem
-    problem = scocp.FixedTimeImpulsiveRendezvous(x0, xf, integrator, times)
+    problem = scocp.FixedTimeContinuousRendezvous(x0, xf, umax, integrator, times)
 
     # create initial guess
     print(f"Preparing initial guess...")
@@ -54,7 +56,7 @@ def test_scp_scipy_impulsive(get_plot=False):
     xbar = (np.multiply(sol_initial[1].T, np.tile(alphas, (6,1))) + np.multiply(sol_final[1].T, np.tile(1-alphas, (6,1)))).T
     xbar[0,:] = x0  # overwrite initial state
     xbar[-1,:] = xf # overwrite final state
-    ubar = np.zeros((N,3))
+    ubar = np.zeros((N-1,3))
 
     # solve subproblem
     gbar = np.sum(ubar, axis=1).reshape(-1,1)
@@ -76,12 +78,12 @@ def test_scp_scipy_impulsive(get_plot=False):
     assert summary_dict["chi"][-1] <= tol_feas
 
     # evaluate nonlinear violations
-    geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, steps=20)
+    geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, steps=5)
     assert np.max(np.abs(geq_nl_opt)) <= tol_feas
 
     # evaluate solution
     if (get_plot is True) and (summary_dict["status"] != "CPFailed"):
-        _, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, steps=20)
+        _, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, steps=5)
     
         # plot results
         fig = plt.figure(figsize=(7,7))
@@ -90,17 +92,21 @@ def test_scp_scipy_impulsive(get_plot=False):
             ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], '--', color='grey')
         for (_ts, _ys) in sols:
             ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], 'b-')
+
+            # interpolate control
+            _us_zoh = scocp.zoh_controls(times, uopt, _ts)
+            ax.quiver(_ys[:,0], _ys[:,1], _ys[:,2], _us_zoh[:,0], _us_zoh[:,1], _us_zoh[:,2], color='r', length=0.5)
+
         ax.scatter(x0[0], x0[1], x0[2], marker='x', color='k', label='Initial state')
         ax.scatter(xf[0], xf[1], xf[2], marker='o', color='k', label='Final state')
         ax.plot(sol_lpo0[1].T[0,:], sol_lpo0[1].T[1,:], sol_lpo0[1].T[2,:], 'k-', lw=0.3)
         ax.plot(sol_lpo1[1].T[0,:], sol_lpo1[1].T[1,:], sol_lpo1[1].T[2,:], 'k-', lw=0.3)
-        ax.quiver(xopt[:,0], xopt[:,1], xopt[:,2], uopt[:,0], uopt[:,1], uopt[:,2], color='r', length=1.0)
         ax.set_aspect('equal')
         ax.legend()
 
         ax_u = fig.add_subplot(2,2,2)
         ax_u.grid(True, alpha=0.5)
-        ax_u.stem(times, gopt, markerfmt='D', label="Gamma")
+        ax_u.step(times, np.concatenate((gopt[:,0], [0.0])), label="Gamma", where='post', color='k')
         ax_u.set(xlabel="Time", ylabel="Control")
         ax_u.legend()
 
@@ -119,7 +125,7 @@ def test_scp_scipy_impulsive(get_plot=False):
         ax_DeltaL.legend()
 
         plt.tight_layout()
-        fig.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots/scp_heyoka_impulsive_transfer.png"), dpi=300)
+        fig.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots/scp_heyoka_continuous_transfer.png"), dpi=300)
         plt.show()
     return
 
