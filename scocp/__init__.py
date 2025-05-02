@@ -1,7 +1,7 @@
 """scocp: Sequential Convex Optimization Control Problem"""
 
 # check for dependencies
-_hard_dependencies = ("cvxpy", "numpy", "matplotlib")
+_hard_dependencies = ("cvxpy", "numba", "numpy", "matplotlib")
 _missing_dependencies = []
 for _dependency in _hard_dependencies:
     try:
