@@ -1,4 +1,4 @@
-"""CR3BP equations of motion"""
+"""CR3BP equations of motion with scipy"""
 
 from numba import njit, float64
 import numpy as np

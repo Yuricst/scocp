@@ -3,7 +3,6 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 
-
 class ScipyIntegrator:
     """Integrator class using `scipy.integrate.solve_ivp`
     
@@ -27,8 +26,22 @@ class ScipyIntegrator:
         self.args = args
         return
 
-    def solve(self, tspan, x0, stm=False, t_eval=None, args=None):
-        """Solve initial value problem"""
+    def solve(self, tspan, x0, stm=False, t_eval=None, args=None, get_ODESolution=False):
+        """Solve initial value problem
+
+        Args:
+            tspan (tuple): time span
+            x0 (np.array): initial state
+            stm (bool): whether to solve for state transition matrix
+            t_eval (np.array): evaluation times
+            args (tuple): additional arguments for the right-hand side function
+            get_ODESolution (bool): whether to return an `ODESolution` object
+        
+        Returns:
+            (tuple or ODESolution):
+                if `get_ODESolution` is False, return a tuple of times and state with shape `N-by-nx`
+                if `get_ODESolution` is True, return an `ODESolution` object
+        """
         assert len(x0) == self.nx, f"x0 must be of length {self.nx}, but got {len(x0)}"
         if args is None:
             args = self.args
@@ -37,4 +50,8 @@ class ScipyIntegrator:
         else:
             x0_stm = np.concatenate((x0, np.eye(self.nx).flatten()))
             sol = solve_ivp(self.rhs_stm, tspan, x0_stm, t_eval=t_eval, method=self.method, rtol=self.reltol, atol=self.abstol, args=args)
-        return sol
+        if get_ODESolution is True:
+            return sol
+        else:
+            return sol.t, sol.y.T
+    

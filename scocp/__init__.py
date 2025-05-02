@@ -1,7 +1,7 @@
 """scocp: Sequential Convex Optimization Control Problem"""
 
 # check for dependencies
-_hard_dependencies = ("cvxpy", "numba", "numpy", "matplotlib")
+_hard_dependencies = ("cvxpy", "heyoka", "numba", "numpy", "matplotlib", "scipy")
 _missing_dependencies = []
 for _dependency in _hard_dependencies:
     try:
@@ -15,9 +15,12 @@ if _missing_dependencies:  # pragma: no cover
     )
 del _hard_dependencies, _dependency, _missing_dependencies
 
-# import functions and classes
+# functions for integrating dynamics
 from .eoms import *
-from ._integrator import ScipyIntegrator
+from ._integrator_scipy import ScipyIntegrator
+from ._integrator_heyoka import HeyokaIntegrator
+
+# functions for setting up & solving SCOCPs
 from ._scocp_impulsive import (
     ImpulsiveControlSCOCP,
     FixedTimeImpulsiveRendezvous
