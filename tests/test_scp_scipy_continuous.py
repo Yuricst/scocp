@@ -80,8 +80,8 @@ def test_scp_scipy_continuous(get_plot=False):
 
     # evaluate solution
     if (get_plot is True) and (summary_dict["status"] != "CPFailed"):
-        _, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar)
-        _, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt)
+        _, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, steps=5)
+        _, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, steps=5)
     
         # plot results
         fig = plt.figure(figsize=(7,7))
@@ -90,11 +90,15 @@ def test_scp_scipy_continuous(get_plot=False):
             ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], '--', color='grey')
         for (_ts, _ys) in sols:
             ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], 'b-')
+
+            # interpolate control
+            _us_zoh = scocp.zoh_controls(times, uopt, _ts)
+            ax.quiver(_ys[:,0], _ys[:,1], _ys[:,2], _us_zoh[:,0], _us_zoh[:,1], _us_zoh[:,2], color='r', length=0.5)
+
         ax.scatter(x0[0], x0[1], x0[2], marker='x', color='k', label='Initial state')
         ax.scatter(xf[0], xf[1], xf[2], marker='o', color='k', label='Final state')
         ax.plot(sol_lpo0.y[0,:], sol_lpo0.y[1,:], sol_lpo0.y[2,:], 'k-', lw=0.3)
         ax.plot(sol_lpo1.y[0,:], sol_lpo1.y[1,:], sol_lpo1.y[2,:], 'k-', lw=0.3)
-        #ax.quiver(xopt[:,0], xopt[:,1], xopt[:,2], uopt[:,0], uopt[:,1], uopt[:,2], color='r', length=1.0)
         ax.set_aspect('equal')
         ax.legend()
 

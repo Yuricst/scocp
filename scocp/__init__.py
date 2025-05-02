@@ -15,6 +15,9 @@ if _missing_dependencies:  # pragma: no cover
     )
 del _hard_dependencies, _dependency, _missing_dependencies
 
+# miscellaneous functions
+from ._misc import zoh_control, zoh_controls
+
 # functions for integrating dynamics
 from .eoms import *
 from ._integrator_scipy import ScipyIntegrator

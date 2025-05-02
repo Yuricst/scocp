@@ -77,8 +77,8 @@ def test_scp_scipy_impulsive(get_plot=False):
 
     # evaluate solution
     if (get_plot is True) and (summary_dict["status"] != "CPFailed"):
-        _, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar)
-        _, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt)
+        _, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, steps=20)
+        _, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, steps=20)
     
         # plot results
         fig = plt.figure(figsize=(7,7))

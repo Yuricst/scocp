@@ -78,6 +78,7 @@ class ContinuousControlSCOCP:
         xbar,
         ubar,
         stm = False,
+        steps = None,
     ):
         """Evaluate nonlinear dynamics along given state and control history
         
@@ -95,7 +96,11 @@ class ContinuousControlSCOCP:
         geq_nl = np.zeros((self.N-1,6))
         for i,ti in enumerate(self.times[:-1]):
             _tspan = (ti, self.times[i+1])
-            _ts, _ys = self.integrator.solve(_tspan, xbar[i,:], u=ubar[i,:], stm=stm)
+            if steps is None:
+                t_eval = None
+            else:
+                t_eval = np.linspace(ti, self.times[i+1], steps)
+            _ts, _ys = self.integrator.solve(_tspan, xbar[i,:], u=ubar[i,:], stm=stm, t_eval=t_eval)
             sols.append([_ts,_ys])
             geq_nl[i,:] = xbar[i+1,:] - _ys[-1,0:6]
         return geq_nl, sols

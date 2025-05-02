@@ -85,6 +85,7 @@ class ImpulsiveControlSCOCP:
         xbar,
         ubar,
         stm = False,
+        steps = None,
     ):
         """Evaluate nonlinear dynamics along given state and control history
         
@@ -102,8 +103,12 @@ class ImpulsiveControlSCOCP:
         geq_nl = np.zeros((self.N-1,self.integrator.nx))
         for i,ti in enumerate(self.times[:-1]):
             _tspan = (ti, self.times[i+1])
+            if steps is None:
+                t_eval = None
+            else:
+                t_eval = np.linspace(ti, self.times[i+1], steps)
             _x0 = xbar[i,:] + self.B @ ubar[i,:]
-            _ts, _ys = self.integrator.solve(_tspan, _x0, stm=stm)
+            _ts, _ys = self.integrator.solve(_tspan, _x0, stm=stm, t_eval=t_eval)
             sols.append([_ts,_ys])
             geq_nl[i,:] = xbar[i+1,:] - _ys[-1,0:self.integrator.nx]
         return geq_nl, sols
