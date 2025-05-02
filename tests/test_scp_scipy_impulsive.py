@@ -11,7 +11,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import scocp
 
 
-def test_scp_impulsive(get_plot=False):
+def test_scp_scipy_impulsive(get_plot=False):
     """Test SCP impulsive transfer"""
     mu = 1.215058560962404e-02
     integrator = scocp.ScipyIntegrator(nx=6, rhs=scocp.rhs_cr3bp, rhs_stm=scocp.rhs_cr3bp_with_stm, args=(mu,),
@@ -26,7 +26,7 @@ def test_scp_impulsive(get_plot=False):
         -1.9895001215078018E-01,
         0.0])
     period_0 = 2.3538670417546639E+00
-    sol_lpo0 = integrator.solve([0, period_0], x0)
+    sol_lpo0 = integrator.solve([0, period_0], x0, get_ODESolution=True)
 
     xf = np.array([
         1.1648780946517576,
@@ -36,10 +36,10 @@ def test_scp_impulsive(get_plot=False):
         -2.0191923237095796E-1,
         0.0])
     period_f = 3.3031221822879884
-    sol_lpo1 = integrator.solve([0, period_f], xf)
+    sol_lpo1 = integrator.solve([0, period_f], xf, get_ODESolution=True)
 
     # transfer problem discretization
-    N = 15
+    N = 20
     tf = (period_0 + period_f) / 2
     times = np.linspace(0, tf, N)
 
@@ -48,8 +48,8 @@ def test_scp_impulsive(get_plot=False):
 
     # create initial guess
     print(f"Preparing initial guess...")
-    sol_initial = integrator.solve([0, times[-1]], x0, t_eval=times)
-    sol_final  = integrator.solve([0, times[-1]], xf, t_eval=times)
+    sol_initial = integrator.solve([0, times[-1]], x0, t_eval=times, get_ODESolution=True)
+    sol_final  = integrator.solve([0, times[-1]], xf, t_eval=times, get_ODESolution=True)
 
     alphas = np.linspace(1,0,N)
     xbar = (np.multiply(sol_initial.y, np.tile(alphas, (6,1))) + np.multiply(sol_final.y, np.tile(1-alphas, (6,1)))).T
@@ -87,10 +87,10 @@ def test_scp_impulsive(get_plot=False):
         # plot results
         fig = plt.figure(figsize=(12,4))
         ax = fig.add_subplot(1,3,1,projection='3d')
-        for sol in sols_ig:
-            ax.plot(sol.y[0,:], sol.y[1,:], sol.y[2,:], '--', color='grey')
-        for sol in sols:
-            ax.plot(sol.y[0,:], sol.y[1,:], sol.y[2,:], 'b-')
+        for (_ts, _ys) in sols_ig:
+            ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], '--', color='grey')
+        for (_ts, _ys) in sols:
+            ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], 'b-')
         ax.scatter(x0[0], x0[1], x0[2], marker='x', color='k', label='Initial state')
         ax.scatter(xf[0], xf[1], xf[2], marker='o', color='k', label='Final state')
         ax.plot(sol_lpo0.y[0,:], sol_lpo0.y[1,:], sol_lpo0.y[2,:], 'k-', label='LPO0', lw=0.3)
@@ -114,11 +114,11 @@ def test_scp_impulsive(get_plot=False):
         ax_DeltaL.legend()
 
         plt.tight_layout()
-        fig.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots/scp_impulsive_transfer.png"), dpi=300)
+        fig.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots/scp_scipy_impulsive_transfer.png"), dpi=300)
         plt.show()
     return
 
 
 if __name__ == "__main__":
-    test_scp_impulsive(get_plot=True)
+    test_scp_scipy_impulsive(get_plot=True)
     plt.show()

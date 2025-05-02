@@ -1,0 +1,123 @@
+"""Test SCP impulsive transfer"""
+
+import cvxpy as cp
+import numpy as np
+import matplotlib.pyplot as plt
+
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+
+import scocp
+
+
+def test_scp_scipy_impulsive(get_plot=False):
+    """Test SCP impulsive transfer"""
+    ta_dyn, ta_dyn_aug = scocp.get_heyoka_integrator_cr3bp(mu=1.215058560962404e-02, tol=1e-12)
+    integrator = scocp.HeyokaIntegrator(nx=6, ta=ta_dyn, ta_stm=ta_dyn_aug)
+    
+    # propagate uncontrolled and controlled dynamics
+    x0 = np.array([
+        1.0809931218390707E+00,
+        0.0,
+        -2.0235953267405354E-01,
+        0.0,
+        -1.9895001215078018E-01,
+        0.0])
+    period_0 = 2.3538670417546639E+00
+    sol_lpo0 = integrator.solve([0.0, period_0], x0, t_eval=np.linspace(0.0, period_0, 100))
+
+    xf = np.array([
+        1.1648780946517576,
+        0.0,
+        -1.1145303634437023E-1,
+        0.0,
+        -2.0191923237095796E-1,
+        0.0])
+    period_f = 3.3031221822879884
+    sol_lpo1 = integrator.solve([0.0, period_f], xf, t_eval=np.linspace(0.0, period_f, 100))
+
+    # transfer problem discretization
+    N = 20
+    tf = (period_0 + period_f) / 2
+    times = np.linspace(0, tf, N)
+
+    # create subproblem
+    problem = scocp.FixedTimeImpulsiveRendezvous(x0, xf, integrator, times)
+
+    # create initial guess
+    print(f"Preparing initial guess...")
+    sol_initial = integrator.solve([0, times[-1]], x0, t_eval=times)
+    sol_final  = integrator.solve([0, times[-1]], xf, t_eval=times)
+
+    alphas = np.linspace(1,0,N)
+    xbar = (np.multiply(sol_initial[1].T, np.tile(alphas, (6,1))) + np.multiply(sol_final[1].T, np.tile(1-alphas, (6,1)))).T
+    xbar[0,:] = x0  # overwrite initial state
+    xbar[-1,:] = xf # overwrite final state
+    ubar = np.zeros((N,3))
+    print(f"xbar.shape = {xbar.shape}")
+    print(f"ubar.shape = {ubar.shape}")
+
+    # solve subproblem
+    gbar = np.sum(ubar, axis=1).reshape(-1,1)
+    print(f"gbar.shape = {gbar.shape}")
+    _, _, _, _, _, _ = problem.solve_convex_problem(xbar, ubar, gbar)
+    assert problem.cp_status == "optimal"
+
+    # setup algorithm & solve
+    tol_feas = 1e-10
+    tol_opt = 1e-4
+    algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas)
+    xopt, uopt, gopt, status_AL, sols, scp_summary_dict = algo.solve(
+        xbar,
+        ubar,
+        gbar,
+        maxiter = 100,
+        verbose = True
+    )
+    assert status_AL == "Optimal"
+    assert scp_summary_dict["chi"][-1] <= tol_feas
+
+    # evaluate solution
+    if (get_plot is True) and (status_AL != "CPFailed"):
+        _, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar)
+        _, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt)
+    
+        # plot results
+        fig = plt.figure(figsize=(12,4))
+        ax = fig.add_subplot(1,3,1,projection='3d')
+        for (_ts, _ys) in sols_ig:
+            ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], '--', color='grey')
+        for (_ts, _ys) in sols:
+            ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], 'b-')
+        ax.scatter(x0[0], x0[1], x0[2], marker='x', color='k', label='Initial state')
+        ax.scatter(xf[0], xf[1], xf[2], marker='o', color='k', label='Final state')
+        ax.plot(sol_lpo0[1].T[0,:], sol_lpo0[1].T[1,:], sol_lpo0[1].T[2,:], 'k-', label='LPO0', lw=0.3)
+        ax.plot(sol_lpo1[1].T[0,:], sol_lpo1[1].T[1,:], sol_lpo1[1].T[2,:], 'k-', label='LPO1', lw=0.3)
+        ax.quiver(xopt[:,0], xopt[:,1], xopt[:,2], uopt[:,0], uopt[:,1], uopt[:,2], color='r', length=1.0)
+        ax.set_aspect('equal')
+        ax.legend()
+
+        ax_DeltaJ = fig.add_subplot(1,3,2)
+        ax_DeltaJ.grid(True, alpha=0.5)
+        ax_DeltaJ.plot(np.abs(scp_summary_dict["DeltaJ"]), marker="o", color="k", ms=3)
+        ax_DeltaJ.axhline(tol_opt, color='r', linestyle='--', label='tol_opt')
+        ax_DeltaJ.set(yscale='log', ylabel='|DeltaJ|')
+        ax_DeltaJ.legend()
+
+        ax_DeltaL = fig.add_subplot(1,3,3)
+        ax_DeltaL.grid(True, alpha=0.5)
+        ax_DeltaL.plot(scp_summary_dict["chi"], marker="o", color="k", ms=3)
+        ax_DeltaL.axhline(tol_feas, color='r', linestyle='--', label='tol_feas')
+        ax_DeltaL.set(yscale='log', ylabel='chi')
+        ax_DeltaL.legend()
+
+        plt.tight_layout()
+        fig.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots/scp_heyoka_impulsive_transfer.png"), dpi=300)
+        plt.show()
+    return
+
+
+if __name__ == "__main__":
+    test_scp_scipy_impulsive(get_plot=True)
+    plt.show()
