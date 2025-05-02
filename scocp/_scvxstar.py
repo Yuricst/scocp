@@ -48,12 +48,25 @@ class SCvxStar:
         return
     
 
-    def evaluate_penalty(self, g):
-        """Evaluate penalty function according to Augmented Lagrangian formulation"""
+    def evaluate_penalty(self, gdyn, g, h):
+        """Evaluate penalty function according to Augmented Lagrangian formulation
+        
+        Args:
+            gdyn (np.array): (N-1)-by-nx array of nonlinear dynamics constraints violations
+            g (np.array): ng-by-1 array of nonlinear equality constraints violations
+            h (np.array): nh-by-1 array of nonlinear inequality constraints violations
+        """
+        assert gdyn.shape == (self.problem.N-1, self.problem.integrator.nx)
         Nseg,_ = self.problem.lmb_dynamics.shape
         penalty = 0.0
         for i in range(Nseg):
-            penalty += self.problem.lmb_dynamics[i,:] @ g[i,:] + self.problem.weight/2 * g[i,:] @ g[i,:]
+            penalty += self.problem.lmb_dynamics[i,:] @ gdyn[i,:] + self.problem.weight/2 * gdyn[i,:] @ gdyn[i,:]
+        if self.problem.ng > 0:
+            assert g.shape == (self.problem.ng,)
+            penalty += self.problem.lmb_eq @ g + self.problem.weight/2 * (g @ g)
+        if self.problem.nh > 0:
+            assert h.shape == (self.problem.nh,)
+            penalty += self.problem.lmb_ineq @ h + self.problem.weight/2 * (h @ h)
         return penalty
     
     def solve(
@@ -86,7 +99,8 @@ class SCvxStar:
             gbar = np.sum(ubar, axis=1).reshape(-1,1)
 
         # initial constraint violation evaluation
-        geq_nl_bar, _ = self.problem.evaluate_nonlinear_dynamics(xbar, ubar)
+        gdyn_nl_bar, _ = self.problem.evaluate_nonlinear_dynamics(xbar, ubar)
+        g_nl_bar, h_nl_bar = self.problem.evaluate_nonlinear_constraints(xbar, ubar, gbar)
 
         # initialize summary dictionary
         scp_summary_dict = {
@@ -111,13 +125,16 @@ class SCvxStar:
                 break
             
             # evaluate nonlinear dynamics
-            geq_nl_opt, sols = self.problem.evaluate_nonlinear_dynamics(xopt, uopt)
-            chi = np.linalg.norm(geq_nl_opt.flatten(), np.inf)
+            gdyn_nl_opt, sols = self.problem.evaluate_nonlinear_dynamics(xopt, uopt)
+            chi = np.linalg.norm(gdyn_nl_opt.flatten(), np.inf)
+
+            # evaluate nonlinear constraints
+            g_nl_opt, h_nl_opt = self.problem.evaluate_nonlinear_constraints(xopt, uopt, gopt)
 
             # evaluate penalized objective
-            J_bar = self.problem.evaluate_objective(xbar, ubar, gbar) + self.evaluate_penalty(geq_nl_bar)
-            J_opt = self.problem.evaluate_objective(xopt, uopt, gopt) + self.evaluate_penalty(geq_nl_opt)
-            L_opt = self.problem.evaluate_objective(xopt, uopt, gopt) + self.evaluate_penalty(xi_dyn_opt)
+            J_bar = self.problem.evaluate_objective(xbar, ubar, gbar) + self.evaluate_penalty(gdyn_nl_bar, g_nl_bar, h_nl_bar)
+            J_opt = self.problem.evaluate_objective(xopt, uopt, gopt) + self.evaluate_penalty(gdyn_nl_opt, g_nl_opt, h_nl_opt)
+            L_opt = self.problem.evaluate_objective(xopt, uopt, gopt) + self.evaluate_penalty(xi_dyn_opt, xi_opt, zeta_opt)
 
             # evaluate step acceptance criterion parameter
             DeltaJ = J_bar - J_opt
@@ -147,9 +164,13 @@ class SCvxStar:
                 xbar[:,:] = xopt[:,:]
                 ubar[:,:] = uopt[:,:]   
                 gbar[:,:] = gopt[:,:]
-                geq_nl_bar = geq_nl_opt
+                gdyn_nl_bar[:,:] = gdyn_nl_opt[:,:]
+                if self.problem.ng > 0:
+                    g_nl_bar[:,:] = g_nl_opt[:,:]
+                if self.problem.nh > 0:
+                    h_nl_bar[:,:] = h_nl_opt[:,:]
                 if abs(DeltaJ) < delta:
-                    self.problem.lmb_dynamics = self.problem.lmb_dynamics + self.problem.weight * geq_nl_opt   # multiplier update
+                    self.problem.lmb_dynamics = self.problem.lmb_dynamics + self.problem.weight * gdyn_nl_opt   # multiplier update
                     self.problem.weight = self.beta * self.problem.weight                                      # weight update 
                     
                     # multiplier & weight update
@@ -186,4 +207,4 @@ class SCvxStar:
         scp_summary_dict["weight"] = self.problem.weight
         scp_summary_dict["trust_region_radius"] = self.problem.trust_region_radius
         scp_summary_dict["rho"] = rho
-        return xopt, uopt, gopt, status_AL, sols, scp_summary_dict
+        return xopt, uopt, gopt, sols, scp_summary_dict

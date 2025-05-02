@@ -56,12 +56,9 @@ def test_scp_scipy_impulsive(get_plot=False):
     xbar[0,:] = x0  # overwrite initial state
     xbar[-1,:] = xf # overwrite final state
     ubar = np.zeros((N,3))
-    print(f"xbar.shape = {xbar.shape}")
-    print(f"ubar.shape = {ubar.shape}")
 
     # solve subproblem
     gbar = np.sum(ubar, axis=1).reshape(-1,1)
-    print(f"gbar.shape = {gbar.shape}")
     _, _, _, _, _, _ = problem.solve_convex_problem(xbar, ubar, gbar)
     assert problem.cp_status == "optimal"
 
@@ -69,18 +66,18 @@ def test_scp_scipy_impulsive(get_plot=False):
     tol_feas = 1e-10
     tol_opt = 1e-4
     algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas)
-    xopt, uopt, gopt, status_AL, sols, scp_summary_dict = algo.solve(
+    xopt, uopt, gopt, sols, summary_dict = algo.solve(
         xbar,
         ubar,
         gbar,
         maxiter = 100,
         verbose = True
     )
-    assert status_AL == "Optimal"
-    assert scp_summary_dict["chi"][-1] <= tol_feas
+    assert summary_dict["status"] == "Optimal"
+    assert summary_dict["chi"][-1] <= tol_feas
 
     # evaluate solution
-    if (get_plot is True) and (status_AL != "CPFailed"):
+    if (get_plot is True) and (summary_dict["status"] != "CPFailed"):
         _, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar)
         _, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt)
     
@@ -93,22 +90,22 @@ def test_scp_scipy_impulsive(get_plot=False):
             ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], 'b-')
         ax.scatter(x0[0], x0[1], x0[2], marker='x', color='k', label='Initial state')
         ax.scatter(xf[0], xf[1], xf[2], marker='o', color='k', label='Final state')
-        ax.plot(sol_lpo0.y[0,:], sol_lpo0.y[1,:], sol_lpo0.y[2,:], 'k-', label='LPO0', lw=0.3)
-        ax.plot(sol_lpo1.y[0,:], sol_lpo1.y[1,:], sol_lpo1.y[2,:], 'k-', label='LPO1', lw=0.3)
+        ax.plot(sol_lpo0.y[0,:], sol_lpo0.y[1,:], sol_lpo0.y[2,:], 'k-', lw=0.3)
+        ax.plot(sol_lpo1.y[0,:], sol_lpo1.y[1,:], sol_lpo1.y[2,:], 'k-', lw=0.3)
         ax.quiver(xopt[:,0], xopt[:,1], xopt[:,2], uopt[:,0], uopt[:,1], uopt[:,2], color='r', length=1.0)
         ax.set_aspect('equal')
         ax.legend()
 
         ax_DeltaJ = fig.add_subplot(1,3,2)
         ax_DeltaJ.grid(True, alpha=0.5)
-        ax_DeltaJ.plot(np.abs(scp_summary_dict["DeltaJ"]), marker="o", color="k", ms=3)
+        ax_DeltaJ.plot(np.abs(summary_dict["DeltaJ"]), marker="o", color="k", ms=3)
         ax_DeltaJ.axhline(tol_opt, color='r', linestyle='--', label='tol_opt')
         ax_DeltaJ.set(yscale='log', ylabel='|DeltaJ|')
         ax_DeltaJ.legend()
 
         ax_DeltaL = fig.add_subplot(1,3,3)
         ax_DeltaL.grid(True, alpha=0.5)
-        ax_DeltaL.plot(scp_summary_dict["chi"], marker="o", color="k", ms=3)
+        ax_DeltaL.plot(summary_dict["chi"], marker="o", color="k", ms=3)
         ax_DeltaL.axhline(tol_feas, color='r', linestyle='--', label='tol_feas')
         ax_DeltaL.set(yscale='log', ylabel='chi')
         ax_DeltaL.legend()

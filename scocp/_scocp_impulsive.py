@@ -45,7 +45,11 @@ class ImpulsiveControlSCOCP:
         self.Phi_A = np.zeros((Nseg,6,6))
         self.Phi_B = np.zeros((Nseg,6,3))
         self.Phi_c = np.zeros((Nseg,6))
+
+        # initialize multipliers
         self.lmb_dynamics = np.zeros((Nseg,6))
+        self.lmb_eq       = np.zeros(self.ng)
+        self.lmb_ineq     = np.zeros(self.nh)
         return
     
     def evaluate_objective(self, xs, us, gs):
@@ -98,6 +102,14 @@ class ImpulsiveControlSCOCP:
             sols.append([_ts,_ys])
             geq_nl[i,:] = xbar[i+1,:] - _ys[-1,0:6]
         return geq_nl, sols
+    
+    def evaluate_nonlinear_constraints(self, xs, us, gs):
+        """Evaluate nonlinear constraints
+        
+        Returns:
+            (tuple): tuple of 1D arrays of nonlinear equality and inequality constraints
+        """
+        return np.zeros(self.ng), np.zeros(self.nh)
     
 
 class FixedTimeImpulsiveRendezvous(ImpulsiveControlSCOCP):
