@@ -99,7 +99,7 @@ def control_rhs_cr3bp(t, state, mu, u):
     """Equation of motion in CR3BP with continuous control in the rotating frame"""
     # derivative of state
     B = np.concatenate((np.zeros((3,3)), np.eye(3)))
-    deriv = rhs_cr3bp(t, state[0:6], mu) + B @ u
+    deriv = rhs_cr3bp(t, state[0:6], mu) + B @ u[0:3]
     return deriv
 
 
@@ -108,7 +108,59 @@ def control_rhs_cr3bp_stm(t, state, mu, u):
     # derivative of state
     B = np.concatenate((np.zeros((3,3)), np.eye(3)))
     deriv = np.zeros(60)
-    deriv[0:6] = rhs_cr3bp(t, state[0:6], mu) + B @ u
+    deriv[0:6] = rhs_cr3bp(t, state[0:6], mu) + B @ u[0:3]
+    
+    # derivative of STM
+    Phi_A = state[6:42].reshape(6,6)
+    A = np.zeros((6,6))
+    A[0:3,3:6] = np.eye(3)
+    A[3,4] = 2
+    A[4,3] = -2
+    A[3:6,0:3] = gravity_gradient_cr3bp(state[0:3], mu)
+    deriv[6:42] = np.dot(A, Phi_A).reshape(36,)
+
+    # derivative of control sensitivity
+    Phi_B = state[42:60].reshape(6,3)
+    deriv[42:60] = (np.dot(A, Phi_B) + B).reshape(18,)
+    return deriv
+
+
+def control_rhs_cr3bp_logmass(t, state, parameters, u):
+    """Equation of motion in CR3BP with continuous control in the rotating frame"""
+    # unpack parameters
+    mu, cex = parameters
+    # derivative of state
+    B = np.array([
+        [0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0, 0.0],
+        [0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, -1/cex],
+    ])
+    deriv = np.zeros(7)
+    deriv[0:6] = rhs_cr3bp(t, state[0:6], mu)
+    deriv += B @ u
+    return deriv
+
+
+def control_rhs_cr3bp_logmass_stm(t, state, parameters, u):
+    """Equation of motion in CR3BP with continuous control in the rotating frame with STM"""
+    # derivative of state
+    mu, cex = parameters
+    B = np.array([
+        [0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0, 0.0],
+        [0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, -1/cex],
+    ])
+    deriv = np.zeros(60)
+    deriv[0:6] = rhs_cr3bp(t, state[0:6], mu)
+    deriv += B @ u
     
     # derivative of STM
     Phi_A = state[6:42].reshape(6,6)

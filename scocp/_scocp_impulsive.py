@@ -67,7 +67,7 @@ class ImpulsiveControlSCOCP:
         """Solve the convex subproblem"""
         raise NotImplementedError("Subproblem must be implemented by inherited class!")
     
-    def build_linear_model(self, xbar, ubar):
+    def build_linear_model(self, xbar, ubar, gbar):
         for i,ti in enumerate(self.times[:-1]):
             _tspan = (ti, self.times[i+1])
             _x0 = xbar[i,:] + self.B @ ubar[i,:]

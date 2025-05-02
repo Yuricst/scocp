@@ -78,12 +78,12 @@ def test_scp_scipy_impulsive(get_plot=False):
     assert summary_dict["chi"][-1] <= tol_feas
 
     # evaluate nonlinear violations
-    geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, steps=5)
+    geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, gopt, steps=5)
     assert np.max(np.abs(geq_nl_opt)) <= tol_feas
 
     # evaluate solution
     if (get_plot is True) and (summary_dict["status"] != "CPFailed"):
-        _, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, steps=5)
+        _, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, gbar, steps=5)
     
         # plot results
         fig = plt.figure(figsize=(7,7))

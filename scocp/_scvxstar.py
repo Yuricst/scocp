@@ -99,7 +99,7 @@ class SCvxStar:
             gbar = np.sum(ubar, axis=1).reshape(-1,1)
 
         # initial constraint violation evaluation
-        gdyn_nl_bar, _ = self.problem.evaluate_nonlinear_dynamics(xbar, ubar)
+        gdyn_nl_bar, _ = self.problem.evaluate_nonlinear_dynamics(xbar, ubar, gbar)
         g_nl_bar, h_nl_bar = self.problem.evaluate_nonlinear_constraints(xbar, ubar, gbar)
 
         # initialize summary dictionary
@@ -117,7 +117,7 @@ class SCvxStar:
 
         for k in range(maxiter):
             # build linear model
-            self.problem.build_linear_model(xbar, ubar)
+            self.problem.build_linear_model(xbar, ubar, gbar)
             xopt, uopt, gopt, xi_dyn_opt, xi_opt, zeta_opt = self.problem.solve_convex_problem(xbar, ubar, gbar)
             if self.problem.cp_status != "optimal":
                 status_AL = "CPFailed"
@@ -125,7 +125,7 @@ class SCvxStar:
                 break
             
             # evaluate nonlinear dynamics
-            gdyn_nl_opt, sols = self.problem.evaluate_nonlinear_dynamics(xopt, uopt)
+            gdyn_nl_opt, sols = self.problem.evaluate_nonlinear_dynamics(xopt, uopt, gopt)
             chi = np.linalg.norm(gdyn_nl_opt.flatten(), np.inf)
 
             # evaluate nonlinear constraints

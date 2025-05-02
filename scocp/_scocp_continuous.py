@@ -12,6 +12,7 @@ class ContinuousControlSCOCP:
         times (np.array): time grid
         ng (int): number of nonlinear equality constraints, excluding dynamics constraints
         nh (int): number of nonlinear inequality constraints
+        augment_Gamma (bool): whether to augment the control with the constraint vector when integrating the dynamics
         weight (float): weight of the objective function
         trust_region_radius (float): trust region radius
         solver (str): solver to use
@@ -23,6 +24,7 @@ class ContinuousControlSCOCP:
         times,
         ng: int = 0,
         nh: int = 0,
+        augment_Gamma: bool = False,
         weight: float = 1e2,
         trust_region_radius: float = 0.1,
         solver = cp.CLARABEL,
@@ -39,7 +41,7 @@ class ContinuousControlSCOCP:
         self.trust_region_radius = trust_region_radius
         self.solver = solver
         self.verbose_solver = verbose_solver
-
+        self.augment_Gamma = augment_Gamma
         # initialize storage
         self.cp_status = "not_solved"
         Nseg = self.N - 1
@@ -61,11 +63,14 @@ class ContinuousControlSCOCP:
         """Solve the convex subproblem"""
         raise NotImplementedError("Subproblem must be implemented by inherited class!")
     
-    def build_linear_model(self, xbar, ubar):
+    def build_linear_model(self, xbar, ubar, gbar):
         i_PhiA_end = self.integrator.nx + self.integrator.nx * self.integrator.nx
         for i,ti in enumerate(self.times[:-1]):
             _tspan = (ti, self.times[i+1])
-            _, _ys = self.integrator.solve(_tspan, xbar[i,:], u=ubar[i,:], stm=True)
+            if self.augment_Gamma:
+                _, _ys = self.integrator.solve(_tspan, xbar[i,:], u=np.concatenate((ubar[i,:], gbar[i,:])), stm=True)
+            else:
+                _, _ys = self.integrator.solve(_tspan, xbar[i,:], u=ubar[i,:], stm=True)
 
             xf  = _ys[-1,0:self.integrator.nx]
             self.Phi_A[i,:,:] = _ys[-1,self.integrator.nx:i_PhiA_end].reshape(self.integrator.nx,self.integrator.nx)
@@ -73,24 +78,18 @@ class ContinuousControlSCOCP:
             self.Phi_c[i,:]   = xf - self.Phi_A[i,:,:] @ xbar[i,:] - self.Phi_B[i,:,:] @ ubar[i,:]
         return
         
-    def evaluate_nonlinear_dynamics(
-        self,
-        xbar,
-        ubar,
-        stm = False,
-        steps = None,
-    ):
+    def evaluate_nonlinear_dynamics(self, xs, us, gs, stm = False, steps = None):
         """Evaluate nonlinear dynamics along given state and control history
         
         Args:
             integrator (obj): integrator object
             times (np.array): time grid
-            xbar (np.array): state history
+            xs (np.array): state history
             ubar (np.array): control history
             stm (bool): whether to propagate STMs, defaults to False
         """
-        assert xbar.shape == (self.N,6)
-        assert ubar.shape == (self.N-1,3)
+        assert xs.shape == (self.N,6)
+        assert us.shape == (self.N-1,3)
 
         sols = []
         geq_nl = np.zeros((self.N-1,6))
@@ -100,9 +99,12 @@ class ContinuousControlSCOCP:
                 t_eval = None
             else:
                 t_eval = np.linspace(ti, self.times[i+1], steps)
-            _ts, _ys = self.integrator.solve(_tspan, xbar[i,:], u=ubar[i,:], stm=stm, t_eval=t_eval)
+            if self.augment_Gamma:
+                _ts, _ys = self.integrator.solve(_tspan, xs[i,:], u=np.concatenate((us[i,:], gs[i,:])), stm=stm, t_eval=t_eval)
+            else:
+                _ts, _ys = self.integrator.solve(_tspan, xs[i,:], u=us[i,:], stm=stm, t_eval=t_eval)
             sols.append([_ts,_ys])
-            geq_nl[i,:] = xbar[i+1,:] - _ys[-1,0:6]
+            geq_nl[i,:] = xs[i+1,:] - _ys[-1,0:6]
         return geq_nl, sols
     
     def evaluate_nonlinear_constraints(self, xs, us, gs):

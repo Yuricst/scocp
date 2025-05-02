@@ -47,8 +47,6 @@ class ScipyIntegrator:
                 if `get_ODESolution` is True, return an `ODESolution` object
         """
         assert len(x0) == self.nx, f"x0 must be of length {self.nx}, but got {len(x0)}"
-        if u is not None:
-            assert len(u) == self.nu, f"u must be of length {self.nu}, but got {len(u)}"
 
         if args is None:
             args = self.args

@@ -37,8 +37,6 @@ class HeyokaIntegrator:
             (tuple): times and states
         """
         assert len(x0) == self.nx, f"x0 must be of length {self.nx}, but got {len(x0)}"
-        if u is not None:
-            assert len(u) == self.nu, f"u must be of length {self.nu}, but got {len(u)}"
 
         if t_eval is None:
             t_eval = [float(tspan[0]), float(tspan[1])]
@@ -47,7 +45,7 @@ class HeyokaIntegrator:
             self.ta.time = tspan[0]
             self.ta.state[:] = copy.copy(x0)
             if (u is not None) and (self.impulsive is False):
-                self.ta.pars[0:self.nu] = u[:]
+                self.ta.pars[:] = u[:]
             out = self.ta.propagate_grid(grid=t_eval)
         else:
             self.ta_stm.time = tspan[0]
@@ -55,7 +53,7 @@ class HeyokaIntegrator:
                 self.ta_stm.state[:] = np.concatenate((x0, np.eye(self.nx).flatten()))
             else:
                 if u is not None:
-                    self.ta_stm.pars[0:self.nu] = u[:]
+                    self.ta_stm.pars[:] = u[:]
                 self.ta_stm.state[:] = np.concatenate((x0, np.eye(self.nx).flatten(), np.zeros(self.nx*self.nu)))
             out = self.ta_stm.propagate_grid(grid=t_eval)
         return t_eval, out[5]
