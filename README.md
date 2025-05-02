@@ -1,6 +1,7 @@
 # scocp
 Sequential convexified optimal control problem (scocp) solver in python
 
+![pytest workflow](https://github.com/Yuricst/scocp/actions/workflows/pytest.yml/badge.svg)
 
 ## Examples
 
