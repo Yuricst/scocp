@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "scocp"
+version = "0.1.0"
+description = ""
+authors = ["Yuri <yuri.shimane@gmail.com>"]
+license = "GPL-3.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+numba = "^0.61.2"
+numpy = "^2.2.5"
+cvxpy = "^1.6.5"
+matplotlib = "^3.10.1"
+scipy = "^1.15.2"
+pytest = "^8.3.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
