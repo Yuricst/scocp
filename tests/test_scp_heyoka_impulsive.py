@@ -14,7 +14,7 @@ import scocp
 def test_scp_scipy_impulsive(get_plot=False):
     """Test SCP impulsive transfer"""
     ta_dyn, ta_dyn_aug = scocp.get_heyoka_integrator_cr3bp(mu=1.215058560962404e-02, tol=1e-12)
-    integrator = scocp.HeyokaIntegrator(nx=6, ta=ta_dyn, ta_stm=ta_dyn_aug)
+    integrator = scocp.HeyokaIntegrator(nx=6, nu=3, ta=ta_dyn, ta_stm=ta_dyn_aug, impulsive=True)
     
     # propagate uncontrolled and controlled dynamics
     x0 = np.array([

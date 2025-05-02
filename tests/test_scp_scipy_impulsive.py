@@ -14,7 +14,7 @@ import scocp
 def test_scp_scipy_impulsive(get_plot=False):
     """Test SCP impulsive transfer"""
     mu = 1.215058560962404e-02
-    integrator = scocp.ScipyIntegrator(nx=6, rhs=scocp.rhs_cr3bp, rhs_stm=scocp.rhs_cr3bp_with_stm, args=(mu,),
+    integrator = scocp.ScipyIntegrator(nx=6, nu=3, rhs=scocp.rhs_cr3bp, rhs_stm=scocp.rhs_cr3bp_stm, args=(mu,),
                                        method='DOP853', reltol=1e-12, abstol=1e-12)
     
     # propagate uncontrolled and controlled dynamics
