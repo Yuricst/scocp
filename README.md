@@ -1,8 +1,6 @@
-# scocp
+# `scocp`: **Sequential Convexified Optimal Control Problem (scocp) solver in Python**
 
 ![pytest workflow](https://github.com/Yuricst/scocp/actions/workflows/pytest.yml/badge.svg)
-
-**Sequential convexified optimal control problem (scocp) solver in python**
 
 `scocp` is a pythononic framework for solving optimal control problems (OCPs) of the form:
 
