@@ -130,8 +130,8 @@ class FixedTimeContinuousRendezvous(ContinuousControlSCOCP):
     """Fixed-time continuous rendezvous subproblem"""
     def __init__(self, x0, xf, umax, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        assert len(x0) == 7
-        assert len(xf) >= 6
+        assert len(x0) == 6
+        assert len(xf) == 6
         self.x0 = x0
         self.xf = xf
         self.umax = umax
@@ -193,6 +193,8 @@ class FixedTimeContinuousRendezvous(ContinuousControlSCOCP):
 class FixedTimeContinuousRendezvousLogMass(ContinuousControlSCOCP):
     """Fixed-time continuous rendezvous subproblem with log-mass dynamics"""
     def __init__(self, x0, xf, Tmax, N, *args, **kwargs):
+        assert len(x0) == 7
+        assert len(xf) >= 6
         super().__init__(nh = N - 1, *args, **kwargs)
         self.x0 = x0
         self.xf = xf

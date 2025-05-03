@@ -18,7 +18,7 @@ $$
 $$
 
 via sequential convex programming (SCP).
-The SCP is solved with the SCvx* algorithm, an augmented Lagrangian framework to handle non-convex constraints [1].
+The SCP is solved with the `SCvx*` algorithm, an augmented Lagrangian framework to handle non-convex constraints [1].
 
 The dynamics in the OCP is handled by defining an integrator class, which requires a `solve(tspan, x0, u=None,stm=False)` method.
 `scocp` provides wrappers to be used with either `scipy`'s [`solve_ivp()` method](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) or [`heyoka`](https://bluescarni.github.io/heyoka.py/index.html), but a user-defined integrator class can be used instead as well.
@@ -41,9 +41,9 @@ class ImpulsiveControlProblem(scocp.ContinuousControlSCOCP):
         xs = cp.Variable((N, nx), name='state')
         us = cp.Variable((N, nu), name='control')
         gs = cp.Variable((N, 1),  name='Gamma')
-        xis_dyn = cp.Variable((N-1,nx), name='xi_dyn')   # slacks for dynamics constraints violations
-        xis     = cp.Variable(self.ng, name='xi')        # slacks for non-dynamics equality constraints violations
-        zetas   = cp.Variable(self.nh, name='xi')        # slacks for inequality constraints violations
+        xis_dyn = cp.Variable((N-1,nx), name='xi_dyn')   # slacks for dynamics constraints
+        xis     = cp.Variable(self.ng, name='xi')        # slacks for non-dynamics equality constraints
+        zetas   = cp.Variable(self.nh, name='xi')        # slacks for inequality constraints
         # (formulate & solve OCP)
         return xs.value, us.value, gs.value, xis.value, xis.value, zetas.value
 
@@ -52,6 +52,11 @@ class ImpulsiveControlProblem(scocp.ContinuousControlSCOCP):
         h_eval = ...        # array of nonlinear inequality constraints evaluated along `xs`, `us`, `gs`
         return g_eval, h_eval
 ```
+
+In addition, we provide problem classes that can be readily used for typical OCPs in astrodynamics: 
+
+- Fixed-time continuous rendezvous's: `FixedTimeContinuousRendezvous`, `FixedTimeContinuousRendezvousLogMass`
+- Fixed-time impulsive rendezvous's: `FixedTimeImpulsiveRendezvous`
 
 
 ### References
