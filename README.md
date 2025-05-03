@@ -12,7 +12,7 @@
 \\ \mathrm{s.t.} \quad&     \dot{x}(t) = f(x(t),u(t),t)
 \\&     g(x(t),u(t),t) = 0
 \\&     h(x(t),u(t),t) \leq 0
-\\&     x(t_0) = x_0 ,\,\, x(t_f) \in \mathcal{X}(t_f)
+\\&     x(t_0) = \in \mathcal{X}(t_0) ,\,\, x(t_f) \in \mathcal{X}(t_f)
 \\&     x(t) \in \mathcal{X}(t),\,\, u(t) \in \mathcal{U}(t)
 \end{align}
 ```
