@@ -7,14 +7,14 @@
 `scocp` is a pythononic framework for solving optimal control problems (OCPs) of the form
 
 $$
-\begin{aligned}
+\begin{align}
 \min_{x,u} \quad& \int_{t_0}^{t_f} \mathcal{L}(x(t),u(t),t) \mathrm{d}t
 \\ \mathrm{s.t.} \quad&     \dot{x}(t) = f(x(t),u(t),t)
 \\&     g(x(t),u(t),t) = 0
 \\&     h(x(t),u(t),t) \leq 0
 \\&     x(t_0) = x_0 ,\,\, x(t_f) \in \mathcal{X}(t_f)
 \\&     x(t) \in \mathcal{X}(t),\,\, u(t) \in \mathcal{U}(t)
-\end{aligned}
+\end{align}
 $$
 
 via sequential convex programming (SCP).
