@@ -4,9 +4,9 @@
 
 **Sequential convexified optimal control problem (scocp) solver in python**
 
-`scocp` is a pythononic framework for solving optimal control problems (OCPs) of the form
+`scocp` is a pythononic framework for solving optimal control problems (OCPs) of the form:
 
-$$
+```math
 \begin{align}
 \min_{x,u} \quad& \int_{t_0}^{t_f} \mathcal{L}(x(t),u(t),t) \mathrm{d}t
 \\ \mathrm{s.t.} \quad&     \dot{x}(t) = f(x(t),u(t),t)
@@ -15,9 +15,9 @@ $$
 \\&     x(t_0) = x_0 ,\,\, x(t_f) \in \mathcal{X}(t_f)
 \\&     x(t) \in \mathcal{X}(t),\,\, u(t) \in \mathcal{U}(t)
 \end{align}
-$$
+```
 
-via sequential convex programming (SCP).
+with either fixed or free $t_f$ via sequential convex programming (SCP).
 The SCP is solved with the `SCvx*` algorithm, an augmented Lagrangian framework to handle non-convex constraints [1].
 
 The dynamics in the OCP is handled by defining an integrator class, which requires a `solve(tspan, x0, u=None,stm=False)` method.
