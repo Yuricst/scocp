@@ -158,20 +158,20 @@ def control_rhs_cr3bp_logmass_stm(t, state, parameters, u):
         [0.0, 0.0, 1.0, 0.0],
         [0.0, 0.0, 0.0, -1/cex],
     ])
-    deriv = np.zeros(60)
+    deriv = np.zeros(84)
     deriv[0:6] = rhs_cr3bp(t, state[0:6], mu)
     deriv += B @ u
     
     # derivative of STM
-    Phi_A = state[6:42].reshape(6,6)
-    A = np.zeros((6,6))
+    Phi_A = state[7:56].reshape(7,7)
+    A = np.zeros((7,7))
     A[0:3,3:6] = np.eye(3)
     A[3,4] = 2
     A[4,3] = -2
     A[3:6,0:3] = gravity_gradient_cr3bp(state[0:3], mu)
-    deriv[6:42] = np.dot(A, Phi_A).reshape(36,)
+    deriv[7:56] = np.dot(A, Phi_A).reshape(49,)
 
     # derivative of control sensitivity
-    Phi_B = state[42:60].reshape(6,3)
-    deriv[42:60] = (np.dot(A, Phi_B) + B).reshape(18,)
+    Phi_B = state[56:84].reshape(7,4)
+    deriv[56:84] = (np.dot(A, Phi_B) + B).reshape(28,)
     return deriv
