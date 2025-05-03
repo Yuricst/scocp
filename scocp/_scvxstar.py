@@ -6,7 +6,9 @@ import numpy as np
 
 class SCvxStar:
     """SCvx* algorithm for optimal control problems
-    
+
+    Hyperparameters are defined according to `Oguri, 2023` (doi: 10.1109/CDC49753.2023.10383462).
+
     Args:
         problem (SCVxStarOCP): `SCOCP` instance, e.g. an instance of the `ImpulsiveControlSCOCP` class
         tol_opt (float): optimality tolerance

@@ -38,7 +38,7 @@ def test_scp_scipy_logmass(get_plot=False):
         0.0,
         -1.9895001215078018E-01,
         0.0,
-        np.log(1.0),    # initial log-mass
+        np.log(1.0),                        # initial log-mass (fixed)
     ])
     period_0 = 2.3538670417546639E+00
     sol_lpo0 = integrator.solve([0, period_0], x0, get_ODESolution=True)
@@ -50,7 +50,7 @@ def test_scp_scipy_logmass(get_plot=False):
         0.0,
         -2.0191923237095796E-1,
         0.0,
-        np.log(0.5),                        # final log-mass
+        np.log(0.5),                        # final log-mass (guess)
     ])
     period_f = 3.3031221822879884
     sol_lpo1 = integrator.solve([0, period_f], xf, get_ODESolution=True)

@@ -130,6 +130,8 @@ class FixedTimeContinuousRendezvous(ContinuousControlSCOCP):
     """Fixed-time continuous rendezvous subproblem"""
     def __init__(self, x0, xf, umax, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        assert len(x0) == 7
+        assert len(xf) >= 6
         self.x0 = x0
         self.xf = xf
         self.umax = umax
