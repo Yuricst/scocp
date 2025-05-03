@@ -12,6 +12,8 @@ class ImpulsiveControlSCOCP:
         times (np.array): time grid
         ng (int): number of nonlinear equality constraints, excluding dynamics constraints
         nh (int): number of nonlinear inequality constraints
+        augment_Gamma (bool): whether to augment the control with the constraint vector when integrating the dynamics
+        B (np.array): control matrix
         weight (float): weight of the objective function
         trust_region_radius (float): trust region radius
         solver (str): solver to use
@@ -23,6 +25,7 @@ class ImpulsiveControlSCOCP:
         times,
         ng: int = 0,
         nh: int = 0,
+        augment_Gamma: bool = False,
         B = None,
         weight: float = 1e2,
         trust_region_radius: float = 0.1,
@@ -40,18 +43,34 @@ class ImpulsiveControlSCOCP:
         self.trust_region_radius = trust_region_radius
         self.solver = solver
         self.verbose_solver = verbose_solver
+        self.augment_Gamma = augment_Gamma
 
         if B is None:
-            self.B = np.concatenate((np.zeros((3,3)), np.eye(3)))
+            if augment_Gamma:
+                self.B = np.array([
+                    [0.0, 0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 0.0],
+                    [1.0, 0.0, 0.0, 0.0],
+                    [0.0, 1.0, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 0.0],
+                ])
+            else:
+                self.B = np.concatenate((np.zeros((3,3)), np.eye(3)))
         else:
             self.B = B
 
         # initialize storage
         self.cp_status = "not_solved"
         Nseg = self.N - 1
-        self.Phi_A = np.zeros((Nseg,6,6))
-        self.Phi_B = np.zeros((Nseg,6,3))
-        self.Phi_c = np.zeros((Nseg,6))
+        if augment_Gamma:
+            self.Phi_A = np.zeros((Nseg,self.integrator.nx,self.integrator.nx))
+            self.Phi_B = np.zeros((Nseg,self.integrator.nx,self.integrator.nu+1))
+            self.Phi_c = np.zeros((Nseg,self.integrator.nx))
+        else:
+            self.Phi_A = np.zeros((Nseg,self.integrator.nx,self.integrator.nx))
+            self.Phi_B = np.zeros((Nseg,self.integrator.nx,self.integrator.nu))
+            self.Phi_c = np.zeros((Nseg,self.integrator.nx))
 
         # initialize multipliers
         self.lmb_dynamics = np.zeros((Nseg,6))

@@ -45,12 +45,17 @@ class ContinuousControlSCOCP:
         # initialize storage
         self.cp_status = "not_solved"
         Nseg = self.N - 1
-        self.Phi_A = np.zeros((Nseg,6,6))
-        self.Phi_B = np.zeros((Nseg,6,3))
-        self.Phi_c = np.zeros((Nseg,6))
+        if augment_Gamma:
+            self.Phi_A = np.zeros((Nseg,self.integrator.nx,self.integrator.nx))
+            self.Phi_B = np.zeros((Nseg,self.integrator.nx,self.integrator.nu+1))
+            self.Phi_c = np.zeros((Nseg,self.integrator.nx))
+        else:
+            self.Phi_A = np.zeros((Nseg,self.integrator.nx,self.integrator.nx))
+            self.Phi_B = np.zeros((Nseg,self.integrator.nx,self.integrator.nu))
+            self.Phi_c = np.zeros((Nseg,self.integrator.nx))
 
         # initialize multipliers
-        self.lmb_dynamics = np.zeros((Nseg,6))
+        self.lmb_dynamics = np.zeros((Nseg,self.integrator.nx))
         self.lmb_eq       = np.zeros(self.ng)
         self.lmb_ineq     = np.zeros(self.nh)
         return
