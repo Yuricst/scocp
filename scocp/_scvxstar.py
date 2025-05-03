@@ -69,6 +69,7 @@ class SCvxStar:
             penalty += self.problem.lmb_ineq @ h + self.problem.weight/2 * (h @ h)
         return penalty
     
+    
     def solve(
         self,
         xbar,
@@ -119,17 +120,17 @@ class SCvxStar:
             # build linear model
             self.problem.build_linear_model(xbar, ubar, gbar)
             xopt, uopt, gopt, xi_dyn_opt, xi_opt, zeta_opt = self.problem.solve_convex_problem(xbar, ubar, gbar)
-            if self.problem.cp_status != "optimal":
+            if self.problem.cp_status not in ["optimal", "optimal_inaccurate"]:
                 status_AL = "CPFailed"
                 print(f"Convex problem did not converge to optimality (status = {self.problem.cp_status})!")
                 break
             
             # evaluate nonlinear dynamics
             gdyn_nl_opt, sols = self.problem.evaluate_nonlinear_dynamics(xopt, uopt, gopt)
-            chi = np.linalg.norm(gdyn_nl_opt.flatten(), np.inf)
 
             # evaluate nonlinear constraints
             g_nl_opt, h_nl_opt = self.problem.evaluate_nonlinear_constraints(xopt, uopt, gopt)
+            chi = np.linalg.norm(np.concatenate((gdyn_nl_opt.flatten(), g_nl_opt, h_nl_opt)), np.inf)
 
             # evaluate penalized objective
             J_bar = self.problem.evaluate_objective(xbar, ubar, gbar) + self.evaluate_penalty(gdyn_nl_bar, g_nl_bar, h_nl_bar)
@@ -166,16 +167,23 @@ class SCvxStar:
                 gbar[:,:] = gopt[:,:]
                 gdyn_nl_bar[:,:] = gdyn_nl_opt[:,:]
                 if self.problem.ng > 0:
-                    g_nl_bar[:,:] = g_nl_opt[:,:]
+                    g_nl_bar[:] = g_nl_opt[:]
                 if self.problem.nh > 0:
-                    h_nl_bar[:,:] = h_nl_opt[:,:]
+                    h_nl_bar[:] = h_nl_opt[:]
                 if abs(DeltaJ) < delta:
-                    self.problem.lmb_dynamics = self.problem.lmb_dynamics + self.problem.weight * gdyn_nl_opt   # multiplier update
-                    self.problem.weight = self.beta * self.problem.weight                                      # weight update 
+                    # update multipliers
+                    self.problem.lmb_dynamics = self.problem.lmb_dynamics + self.problem.weight * gdyn_nl_opt
+                    if self.problem.ng > 0:
+                        self.problem.lmb_eq   = self.problem.lmb_eq + self.problem.weight * g_nl_opt
+                    if self.problem.nh > 0:
+                        self.problem.lmb_ineq = self.problem.lmb_ineq + self.problem.weight * h_nl_opt
+
+                    # update weight
+                    self.problem.weight = self.beta * self.problem.weight
                     
                     # multiplier & weight update
                     if delta > 1e15:
-                        delta = abs(DeltaJ) 
+                        delta = abs(DeltaJ)
                     else:
                         delta *= self.gamma
 

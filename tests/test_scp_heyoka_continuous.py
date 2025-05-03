@@ -1,4 +1,4 @@
-"""Test SCP impulsive transfer"""
+"""Test SCP continuous transfer with Heyoka integrator"""
 
 import cvxpy as cp
 import numpy as np
@@ -12,7 +12,7 @@ import scocp
 
 
 def test_scp_scipy_impulsive(get_plot=False):
-    """Test SCP impulsive transfer"""
+    """Test SCP continuous transfer"""
     mu = 1.215058560962404e-02
     ta_dyn, ta_dyn_aug = scocp.get_heyoka_integrator_cr3bp(mu=mu, tol=1e-12, impulsive=False)
     integrator = scocp.HeyokaIntegrator(nx=6, nu=3, ta=ta_dyn, ta_stm=ta_dyn_aug, impulsive=False)

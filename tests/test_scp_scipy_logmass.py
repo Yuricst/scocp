@@ -1,4 +1,9 @@
-"""Test SCP continuous transfer"""
+"""Test SCP continuous transfer with log-mass dynamics
+
+For OCP with mass dynamics, make sure to do the following:
+- Set `impulsive = False` in the integrator
+- Set `augment_Gamma = True` in the problem class
+"""
 
 import cvxpy as cp
 import numpy as np
@@ -11,11 +16,18 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import scocp
 
 
-def test_scp_scipy_continuous(get_plot=False):
-    """Test SCP continuous transfer"""
+def test_scp_scipy_logmass(get_plot=False):
+    """Test SCP continuous transfer with log-mass dynamics"""
     mu = 1.215058560962404e-02
-    integrator = scocp.ScipyIntegrator(nx=6, nu=3, rhs=scocp.control_rhs_cr3bp, rhs_stm=scocp.control_rhs_cr3bp_stm,
-                                       impulsive=False, args=(mu,[0.0,0.0,0.0]),
+    cex = 0.8       # exhaust velocity
+    parameters_ode = (mu, cex)
+    integrator = scocp.ScipyIntegrator(nx=7,
+                                       nu=3,
+                                       n_gamma=1,
+                                       rhs=scocp.control_rhs_cr3bp_logmass,
+                                       rhs_stm=scocp.control_rhs_cr3bp_logmass_stm,
+                                       impulsive=False,
+                                       args=(parameters_ode,[0.0,0.0,0.0,0.0]),
                                        method='DOP853', reltol=1e-12, abstol=1e-12)
     
     # propagate uncontrolled and controlled dynamics
@@ -25,7 +37,9 @@ def test_scp_scipy_continuous(get_plot=False):
         -2.0235953267405354E-01,
         0.0,
         -1.9895001215078018E-01,
-        0.0])
+        0.0,
+        np.log(1.0),    # initial log-mass
+    ])
     period_0 = 2.3538670417546639E+00
     sol_lpo0 = integrator.solve([0, period_0], x0, get_ODESolution=True)
 
@@ -35,18 +49,20 @@ def test_scp_scipy_continuous(get_plot=False):
         -1.1145303634437023E-1,
         0.0,
         -2.0191923237095796E-1,
-        0.0])
+        0.0,
+        np.log(0.5),                        # final log-mass
+    ])
     period_f = 3.3031221822879884
     sol_lpo1 = integrator.solve([0, period_f], xf, get_ODESolution=True)
 
     # transfer problem discretization
-    N = 40
-    tf = (period_0 + period_f) / 2
+    N = 50
+    tf = 2.8
     times = np.linspace(0, tf, N)
-    umax = 0.1  # max acceleration
+    Tmax = 0.37637494800142673      # max thrust
 
     # create subproblem
-    problem = scocp.FixedTimeContinuousRendezvous(x0, xf, umax, integrator, times)
+    problem = scocp.FixedTimeContinuousRendezvousLogMass(x0, xf, Tmax, N, integrator, times, augment_Gamma=True)
 
     # create initial guess
     print(f"Preparing initial guess...")
@@ -54,9 +70,10 @@ def test_scp_scipy_continuous(get_plot=False):
     sol_final  = integrator.solve([0, times[-1]], xf, t_eval=times, get_ODESolution=True)
 
     alphas = np.linspace(1,0,N)
-    xbar = (np.multiply(sol_initial.y, np.tile(alphas, (6,1))) + np.multiply(sol_final.y, np.tile(1-alphas, (6,1)))).T
-    xbar[0,:] = x0  # overwrite initial state
-    xbar[-1,:] = xf # overwrite final state
+    xbar = (np.multiply(sol_initial.y, np.tile(alphas, (7,1))) + np.multiply(sol_final.y, np.tile(1-alphas, (7,1)))).T
+    xbar[:,6]   = np.log(np.linspace(1.0, 0.5, N))
+    xbar[0,:]   = x0                 # overwrite initial state
+    xbar[-1,:]  = xf                 # overwrite final state
     ubar = np.zeros((N-1,3))
 
     # solve subproblem
@@ -65,8 +82,8 @@ def test_scp_scipy_continuous(get_plot=False):
     assert problem.cp_status == "optimal"
 
     # setup algorithm & solve
-    tol_feas = 1e-10
-    tol_opt = 1e-4
+    tol_feas = 1e-8
+    tol_opt = 1e-6
     algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas)
     xopt, uopt, gopt, sols, summary_dict = algo.solve(
         xbar,
@@ -87,8 +104,8 @@ def test_scp_scipy_continuous(get_plot=False):
         _, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, gbar, steps=5)
     
         # plot results
-        fig = plt.figure(figsize=(7,7))
-        ax = fig.add_subplot(2,2,1,projection='3d')
+        fig = plt.figure(figsize=(12,7))
+        ax = fig.add_subplot(2,3,1,projection='3d')
         for (_ts, _ys) in sols_ig:
             ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], '--', color='grey')
         for (_ts, _ys) in sols:
@@ -96,7 +113,7 @@ def test_scp_scipy_continuous(get_plot=False):
 
             # interpolate control
             _us_zoh = scocp.zoh_controls(times, uopt, _ts)
-            ax.quiver(_ys[:,0], _ys[:,1], _ys[:,2], _us_zoh[:,0], _us_zoh[:,1], _us_zoh[:,2], color='r', length=0.5)
+            ax.quiver(_ys[:,0], _ys[:,1], _ys[:,2], _us_zoh[:,0], _us_zoh[:,1], _us_zoh[:,2], color='r', length=0.1)
 
         ax.scatter(x0[0], x0[1], x0[2], marker='x', color='k', label='Initial state')
         ax.scatter(xf[0], xf[1], xf[2], marker='o', color='k', label='Final state')
@@ -105,20 +122,29 @@ def test_scp_scipy_continuous(get_plot=False):
         ax.set_aspect('equal')
         ax.legend()
 
-        ax_u = fig.add_subplot(2,2,2)
+        ax_m = fig.add_subplot(2,3,2)
+        ax_m.grid(True, alpha=0.5)
+        for (_ts, _ys) in sols:
+            ax_m.plot(_ts, np.exp(_ys[:,6]), 'b-')
+        ax_m.set(xlabel="Time", ylabel="Mass")
+        ax_m.legend()
+
+        ax_u = fig.add_subplot(2,3,3)
         ax_u.grid(True, alpha=0.5)
-        ax_u.step(times, np.concatenate((gopt[:,0], [0.0])), label="Gamma", where='post', color='k')
-        ax_u.set(xlabel="Time", ylabel="Control")
+        ax_u.step(times, np.concatenate((gopt[:,0], [0.0])), label="Control", where='post', color='k')
+        for idx, (_ts, _ys) in enumerate(sols):
+            ax_u.plot(_ts, Tmax/np.exp(_ys[:,6]), color='r', linestyle=':', label="Max accel." if idx == 0 else None)
+        ax_u.set(xlabel="Time", ylabel="Acceleration")
         ax_u.legend()
 
-        ax_DeltaJ = fig.add_subplot(2,2,3)
+        ax_DeltaJ = fig.add_subplot(2,3,4)
         ax_DeltaJ.grid(True, alpha=0.5)
         ax_DeltaJ.plot(np.abs(summary_dict["DeltaJ"]), marker="o", color="k", ms=3)
         ax_DeltaJ.axhline(tol_opt, color='r', linestyle='--', label='tol_opt')
         ax_DeltaJ.set(yscale='log', ylabel='|DeltaJ|')
         ax_DeltaJ.legend()
 
-        ax_DeltaL = fig.add_subplot(2,2,4)
+        ax_DeltaL = fig.add_subplot(2,3,5)
         ax_DeltaL.grid(True, alpha=0.5)
         ax_DeltaL.plot(summary_dict["chi"], marker="o", color="k", ms=3)
         ax_DeltaL.axhline(tol_feas, color='r', linestyle='--', label='tol_feas')
@@ -126,11 +152,11 @@ def test_scp_scipy_continuous(get_plot=False):
         ax_DeltaL.legend()
 
         plt.tight_layout()
-        fig.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots/scp_scipy_continuous_transfer.png"), dpi=300)
+        fig.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots/scp_scipy_logmass_transfer.png"), dpi=300)
         plt.show()
     return
 
 
 if __name__ == "__main__":
-    test_scp_scipy_continuous(get_plot=True)
+    test_scp_scipy_logmass(get_plot=True)
     plt.show()

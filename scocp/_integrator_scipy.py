@@ -17,10 +17,11 @@ class ScipyIntegrator:
         abstol (float): absolute tolerance
         args (tuple): additional arguments for the right-hand side function
     """
-    def __init__(self, nx, nu, rhs, rhs_stm, impulsive=True, method='RK45', reltol=1e-12, abstol=1e-12, args=None):
+    def __init__(self, nx, nu, rhs, rhs_stm, impulsive=True, n_gamma=0, method='RK45', reltol=1e-12, abstol=1e-12, args=None):
         """Initialize the integrator"""
         self.nx = nx
         self.nu = nu
+        self.n_gamma = n_gamma
         self.rhs = rhs
         self.rhs_stm = rhs_stm
         self.impulsive = impulsive
@@ -51,7 +52,7 @@ class ScipyIntegrator:
         if args is None:
             args = self.args
         if (u is not None) and (self.impulsive is False):
-            args[-1][0:self.nu] = u[:]
+            args[-1][:] = u[:]
 
         if stm is False:
             sol = solve_ivp(self.rhs, tspan, x0, t_eval=t_eval, method=self.method, rtol=self.reltol, atol=self.abstol, args=args)
@@ -59,7 +60,7 @@ class ScipyIntegrator:
             if self.impulsive is True:
                 x0_stm = np.concatenate((x0, np.eye(self.nx).flatten()))
             else:
-                x0_stm = np.concatenate((x0, np.eye(self.nx).flatten(), np.zeros(self.nx*self.nu)))
+                x0_stm = np.concatenate((x0, np.eye(self.nx).flatten(), np.zeros(self.nx*(self.nu+self.n_gamma))))
             sol = solve_ivp(self.rhs_stm, tspan, x0_stm, t_eval=t_eval, method=self.method, rtol=self.reltol, atol=self.abstol, args=args)
         if get_ODESolution is True:
             return sol

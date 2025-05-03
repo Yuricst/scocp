@@ -160,7 +160,7 @@ def control_rhs_cr3bp_logmass_stm(t, state, parameters, u):
     ])
     deriv = np.zeros(84)
     deriv[0:6] = rhs_cr3bp(t, state[0:6], mu)
-    deriv += B @ u
+    deriv[0:7] += B @ u
     
     # derivative of STM
     Phi_A = state[7:56].reshape(7,7)
