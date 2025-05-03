@@ -12,7 +12,7 @@
 \\ \mathrm{s.t.} \quad&     \dot{x}(t) = f(x(t),u(t),t)
 \\&     g(x(t),u(t),t) = 0
 \\&     h(x(t),u(t),t) \leq 0
-\\&     x(t_0) = \in \mathcal{X}(t_0) ,\,\, x(t_f) \in \mathcal{X}(t_f)
+\\&     x(t_0) \in \mathcal{X}(t_0) ,\,\, x(t_f) \in \mathcal{X}(t_f)
 \\&     x(t) \in \mathcal{X}(t),\,\, u(t) \in \mathcal{U}(t)
 \end{align}
 ```
@@ -20,7 +20,7 @@
 with either fixed or free $t_f$ via sequential convex programming (SCP).
 The SCP is solved with the `SCvx*` algorithm, an augmented Lagrangian framework to handle non-convex constraints [1].
 
-The dynamics in the OCP is handled by defining an integrator class, which requires a `solve(tspan, x0, u=None,stm=False)` method.
+The dynamics in the OCP are handled by defining an integrator class, which requires a `solve(tspan, x0, u=None,stm=False)` method.
 `scocp` provides wrappers to be used with either `scipy`'s [`solve_ivp()` method](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) or [`heyoka`](https://bluescarni.github.io/heyoka.py/index.html), but a user-defined integrator class can be used instead as well.
 
 To solve an OCP, the user needs to define a problem class, for example:
