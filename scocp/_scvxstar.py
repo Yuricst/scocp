@@ -79,6 +79,7 @@ class SCvxStar:
         gbar = None,
         maxiter: int = 10,
         verbose: bool = True,
+        feasability_norm = np.inf,
     ):
         """Solve optimal control problem via SCvx* algorithm
         
@@ -88,6 +89,7 @@ class SCvxStar:
             gbar (np.array): N-by-1 array of reference constraints
             maxiter (int): maximum number of iterations
             verbose (bool): whether to print verbose output
+            feasability_norm (str): norm to use for feasibility evaluation
         """
         header = f"|  Iter  |     J0      |   Delta J   |   Delta L   |    chi     |     rho     |     r      |   weight   | step acpt. |"
         print_frequency = 10
@@ -132,7 +134,7 @@ class SCvxStar:
 
             # evaluate nonlinear constraints
             g_nl_opt, h_nl_opt = self.problem.evaluate_nonlinear_constraints(xopt, uopt, gopt)
-            chi = np.linalg.norm(np.concatenate((gdyn_nl_opt.flatten(), g_nl_opt, h_nl_opt)), np.inf)
+            chi = np.linalg.norm(np.concatenate((gdyn_nl_opt.flatten(), g_nl_opt, h_nl_opt)), feasability_norm)
 
             # evaluate penalized objective
             J_bar = self.problem.evaluate_objective(xbar, ubar, gbar) + self.evaluate_penalty(gdyn_nl_bar, g_nl_bar, h_nl_bar)

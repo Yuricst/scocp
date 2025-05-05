@@ -3,6 +3,7 @@
 import cvxpy as cp
 import numpy as np
 
+from ._misc import get_augmented_lagrangian_penalty
 
 class ContinuousControlSCOCP:
     """Sequentially convexified optimal control problem (SCOCP) for continuous dynamics
@@ -151,9 +152,7 @@ class FixedTimeContinuousRendezvous(ContinuousControlSCOCP):
         gs = cp.Variable((Nseg, 1), name='Gamma')
         xis = cp.Variable((Nseg,nx), name='xi')         # slack for dynamics
         
-        penalty = self.weight/2 * cp.sum_squares(xis)
-        for i in range(Nseg):
-            penalty += self.lmb_dynamics[i,:] @ xis[i,:]
+        penalty = get_augmented_lagrangian_penalty(self.weight, xis, self.lmb_dynamics)
         objective_func = cp.sum(gs) + penalty
         constraints_objsoc = [cp.SOC(gs[i,0], us[i,:]) for i in range(N-1)]
 
@@ -216,9 +215,7 @@ class FixedTimeContinuousRendezvousLogMass(ContinuousControlSCOCP):
         xis = cp.Variable((Nseg,nx), name='xi')         # slack for dynamics
         zetas = cp.Variable((Nseg,), name='zeta')     # slack for non-convex inequality
         
-        penalty = self.weight/2 * cp.sum_squares(xis) + self.weight/2 * cp.sum_squares(zetas)
-        for i in range(Nseg):
-            penalty += self.lmb_dynamics[i,:] @ xis[i,:] + self.lmb_ineq[i] * zetas[i]
+        penalty = get_augmented_lagrangian_penalty(self.weight, xis, self.lmb_dynamics, zeta=zetas, lmb_ineq=self.lmb_ineq)
         objective_func = cp.sum(gs) + penalty
         constraints_objsoc = [cp.SOC(gs[i,0], us[i,:]) for i in range(N-1)]
 
