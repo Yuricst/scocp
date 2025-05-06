@@ -24,7 +24,7 @@ The dynamics in the OCP are handled by defining an integrator class, which requi
 To solve an OCP, the user needs to define a problem class, for example:
 
 ```python
-class ImpulsiveControlProblem(scocp.ContinuousControlSCOCP):
+class MyOptimalControlProblem(scocp.ContinuousControlSCOCP):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs):
         return
