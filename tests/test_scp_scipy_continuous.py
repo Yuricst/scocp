@@ -43,7 +43,7 @@ def test_scp_scipy_continuous(get_plot=False):
     N = 40
     tf = (period_0 + period_f) / 2
     times = np.linspace(0, tf, N)
-    umax = 0.1  # max acceleration
+    umax = 0.3  # max acceleration
 
     # create subproblem
     problem = scocp.FixedTimeContinuousRendezvous(x0, xf, umax, integrator, times)

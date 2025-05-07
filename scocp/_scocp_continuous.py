@@ -166,7 +166,8 @@ class FixedTimeContinuousRendezvous(ContinuousControlSCOCP):
         
     def evaluate_objective(self, xs, us, gs):
         """Evaluate the objective function"""
-        return np.sum(gs)
+        dts = np.diff(self.times)
+        return np.sum(gs.T @ dts)
     
     def solve_convex_problem(self, xbar, ubar, gbar):
         """Solve the convex subproblem
@@ -189,7 +190,8 @@ class FixedTimeContinuousRendezvous(ContinuousControlSCOCP):
         xis = cp.Variable((Nseg,nx), name='xi')         # slack for dynamics
         
         penalty = get_augmented_lagrangian_penalty(self.weight, xis, self.lmb_dynamics)
-        objective_func = cp.sum(gs) + penalty
+        dts = np.diff(self.times)
+        objective_func = cp.sum(gs.T @ dts) + penalty
         constraints_objsoc = [cp.SOC(gs[i,0], us[i,:]) for i in range(N-1)]
 
         if self.augment_Gamma:
@@ -333,7 +335,8 @@ class FreeTimeContinuousRendezvous(ContinuousControlSCOCP):
         
     def evaluate_objective(self, xs, us, gs):
         """Evaluate the objective function"""
-        return np.sum(gs)
+        dts = np.diff(self.times)
+        return np.sum(gs.T @ dts)
     
     def solve_convex_problem(self, xbar, ubar, gbar):
         """Solve the convex subproblem
@@ -358,7 +361,8 @@ class FreeTimeContinuousRendezvous(ContinuousControlSCOCP):
         xis = cp.Variable((Nseg,nx), name='xi')         # slack for dynamics
         
         penalty = get_augmented_lagrangian_penalty(self.weight, xis, self.lmb_dynamics)
-        objective_func = cp.sum(gs) + penalty
+        dts = np.diff(self.times)
+        objective_func = cp.sum(gs.T @ dts) + penalty
         constraints_objsoc = [cp.SOC(gs[i,0], us[i,0:3]) for i in range(N-1)]
 
         if self.augment_Gamma:

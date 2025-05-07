@@ -151,14 +151,14 @@ def test_scp_scipy_freetf(get_plot=False):
     sol_lpo1 = integrator_timedomain.solve([0, period_f], xf, get_ODESolution=True)
 
     # transfer problem discretization
-    N = 20
+    N = 40
     tf_bounds = np.array([period_0, period_f])
     tf_guess = np.mean(tf_bounds)
-    s_bounds = [0.1*tf_guess, 10*tf_guess]
+    s_bounds = [0.01*tf_guess, 10*tf_guess]
     
     times_guess = np.linspace(0, tf_guess, N)    # initial guess
     taus = np.linspace(0, 1, N)
-    umax = 0.1  # max acceleration
+    umax = 0.3  # max acceleration
 
     # create subproblem
     problem = scocp.FreeTimeContinuousRendezvous(x0, xf, umax, tf_bounds, s_bounds, integrator_01domain, taus)
@@ -242,7 +242,7 @@ def test_scp_scipy_freetf(get_plot=False):
 
         ax_u = fig.add_subplot(2,3,2)
         ax_u.grid(True, alpha=0.5)
-        ax_u.step(taus, np.concatenate((gopt[:,0], [0.0])), label="Gamma", where='post', color='k')
+        ax_u.step(xopt[:,6], np.concatenate((gopt[:,0], [0.0])), label="Gamma", where='post', color='k')
         ax_u.set(xlabel="Time", ylabel="Control")
         ax_u.legend()
 
