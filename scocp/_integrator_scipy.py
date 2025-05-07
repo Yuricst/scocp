@@ -12,6 +12,7 @@ class ScipyIntegrator:
         rhs (function): right-hand side function
         rhs_stm (function): right-hand side function for state transition matrix
         impulsive (bool): whether the dynamics are impulsive
+        n_gamma (int): dimensions corresponding to control norms to be augmented 
         method (str): integration method
         reltol (float): relative tolerance
         abstol (float): absolute tolerance
@@ -29,6 +30,9 @@ class ScipyIntegrator:
         self.reltol = reltol
         self.abstol = abstol
         self.args = args
+        if impulsive is False:
+            assert len(self.args[-1]) == self.nu + self.n_gamma,\
+                f"last argument must be a place-holder for control with length {self.nu + self.n_gamma}, but got {len(self.args[-1])}"
         return
 
     def solve(self, tspan, x0, u=None, stm=False, t_eval=None, args=None, get_ODESolution=False):
