@@ -68,10 +68,36 @@ class ContinuousControlSCOCP:
         raise NotImplementedError("Subproblem must be implemented by inherited class!")
     
     def solve_convex_problem(self, xbar, ubar, gbar):
-        """Solve the convex subproblem"""
+        """Solve the convex subproblem
+        
+        Args:
+            xbar (np.array): `(N, self.integrator.nx)` array of reference state history
+            ubar (np.array): `(N-1, self.integrator.nu)` array of reference control history
+            gbar (np.array): `(N-1, self.integrator.n_gamma)` array of reference constraint history
+        
+        Returns:
+            (tuple): np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq
+        """
         raise NotImplementedError("Subproblem must be implemented by inherited class!")
     
     def build_linear_model(self, xbar, ubar, gbar):
+        """Construct linear model for dynamics multiple-shooting constraints within SCP algorithm
+        This function computes the Phi_A, Phi_B, and Phi_c matrices and stores them in the class attributes.
+
+        Args:
+            xbar (np.array): `(N, self.integrator.nx)` array of state history
+            ubar (np.array): `(N-1, self.integrator.nu)` array of control history
+            gbar (np.array): `(N-1, self.integrator.n_gamma)` array of constraint history
+        """
+        assert xbar.shape == (self.N, self.integrator.nx),\
+            f"Given incorrect xbar shape {xbar.shape}; should be {(self.N, self.integrator.nx)}"
+        assert ubar.shape == (self.N-1, self.integrator.nu),\
+            f"Given incorrect ubar shape {ubar.shape}; should be {(self.N-1, self.integrator.nu)}"
+        if self.integrator.n_gamma == 0:
+            assert gbar.shape == (self.N-1,1), f"Given incorrect gbar shape {gbar.shape}; should be {(self.N-1,1)}"
+        else:
+            assert gbar.shape == (self.N-1, self.integrator.n_gamma),\
+                f"Given incorrect gbar shape {gbar.shape}; should be {(self.N-1, self.integrator.n_gamma)}"
         i_PhiA_end = self.integrator.nx + self.integrator.nx * self.integrator.nx
         for i,ti in enumerate(self.times[:-1]):
             _tspan = (ti, self.times[i+1])
@@ -128,7 +154,7 @@ class ContinuousControlSCOCP:
         return np.zeros(self.ng), np.zeros(self.nh)
 
 class FixedTimeContinuousRendezvous(ContinuousControlSCOCP):
-    """Fixed-time continuous rendezvous subproblem"""
+    """Fixed-time continuous rendezvous problem class"""
     def __init__(self, x0, xf, umax, *args, **kwargs):
         super().__init__(*args, **kwargs)
         assert len(x0) == 6
@@ -143,6 +169,16 @@ class FixedTimeContinuousRendezvous(ContinuousControlSCOCP):
         return np.sum(gs)
     
     def solve_convex_problem(self, xbar, ubar, gbar):
+        """Solve the convex subproblem
+        
+        Args:
+            xbar (np.array): `(N, self.integrator.nx)` array of reference state history
+            ubar (np.array): `(N-1, self.integrator.nu)` array of reference control history
+            gbar (np.array): `(N-1, self.integrator.n_gamma)` array of reference constraint history
+        
+        Returns:
+            (tuple): np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq
+        """
         N,nx = xbar.shape
         _,nu = ubar.shape
         Nseg = N - 1
@@ -190,7 +226,7 @@ class FixedTimeContinuousRendezvous(ContinuousControlSCOCP):
     
 
 class FixedTimeContinuousRendezvousLogMass(ContinuousControlSCOCP):
-    """Fixed-time continuous rendezvous subproblem with log-mass dynamics"""
+    """Fixed-time continuous rendezvous problem class with log-mass dynamics"""
     def __init__(self, x0, xf, Tmax, N, *args, **kwargs):
         assert len(x0) == 7
         assert len(xf) >= 6
@@ -205,6 +241,16 @@ class FixedTimeContinuousRendezvousLogMass(ContinuousControlSCOCP):
         return -xs[-1,6]
     
     def solve_convex_problem(self, xbar, ubar, gbar):
+        """Solve the convex subproblem
+        
+        Args:
+            xbar (np.array): `(N, self.integrator.nx)` array of reference state history
+            ubar (np.array): `(N-1, self.integrator.nu)` array of reference control history
+            gbar (np.array): `(N-1, self.integrator.n_gamma)` array of reference constraint history
+        
+        Returns:
+            (tuple): np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq
+        """
         N,nx = xbar.shape
         _,nu = ubar.shape
         Nseg = N - 1
@@ -257,4 +303,97 @@ class FixedTimeContinuousRendezvousLogMass(ContinuousControlSCOCP):
         ])
         return np.zeros(self.ng), h_ineq
 
+
+
+class FreeTimeContinuousRendezvous(ContinuousControlSCOCP):
+    """Free-time continuous rendezvous problem class
+    A good initial guess for the dilation factor `s` is the guessed TOF, since `dt/dtau = s`.
     
+    Args:
+        x0 (np.array): initial state
+        xf (np.array): final state
+        umax (float): maximum control magnitude
+        tf_bounds (list): bounds on the final time, given as [tf_min, tf_max]
+        s_bounds (list): bounds on time dilation factor, given as [s_min, s_max]
+    """
+    def __init__(self, x0, xf, umax, tf_bounds, s_bounds, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        assert len(x0) == 6
+        assert len(xf) == 6
+        assert abs(self.times[0]  - 0.0) < 1e-14, f"self.times[0] must be 0.0, but given {self.times[0]}"
+        assert abs(self.times[-1] - 1.0) < 1e-14, f"self.times[-1] must be 1.0, but given {self.times[-1]}"
+        assert s_bounds[0] > 0.0, f"s_bounds[0] must be greater than 0.0, but given {s_bounds[0]}"
+        assert s_bounds[0] < s_bounds[1], f"s_bounds[0] must be less than s_bounds[1], but given {s_bounds[0]} and {s_bounds[1]}"
+        self.x0 = x0
+        self.xf = xf
+        self.umax = umax
+        self.tf_bounds = tf_bounds
+        self.s_bounds = s_bounds
+        return
+        
+    def evaluate_objective(self, xs, us, gs):
+        """Evaluate the objective function"""
+        return np.sum(gs)
+    
+    def solve_convex_problem(self, xbar, ubar, gbar):
+        """Solve the convex subproblem
+        
+        Args:
+            xbar (np.array): `(N, self.integrator.nx)` array of reference state history
+            ubar (np.array): `(N-1, self.integrator.nu)` array of reference control history
+            gbar (np.array): `(N-1, self.integrator.n_gamma)` array of reference constraint history
+        
+        Returns:
+            (tuple): np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq
+        """
+        N,nx = xbar.shape
+        _,nu = ubar.shape
+        Nseg = N - 1
+        assert nx == self.integrator.nx, f"xbar.shape[1] = {xbar.shape[1]} must match integrator.nx = {self.integrator.nx}"
+        assert nu == self.integrator.nu, f"ubar.shape[1] = {ubar.shape[1]} must match integrator.nu = {self.integrator.nu}"
+        
+        xs = cp.Variable((N, nx), name='state')
+        us = cp.Variable((Nseg, nu), name='control')
+        gs = cp.Variable((Nseg, 1), name='Gamma')
+        xis = cp.Variable((Nseg,nx), name='xi')         # slack for dynamics
+        
+        penalty = get_augmented_lagrangian_penalty(self.weight, xis, self.lmb_dynamics)
+        objective_func = cp.sum(gs) + penalty
+        constraints_objsoc = [cp.SOC(gs[i,0], us[i,0:3]) for i in range(N-1)]
+
+        if self.augment_Gamma:
+            constraints_dyn = [
+                xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,:] @ np.concatenate([us[i,:], gs[i,:]]) + self.Phi_c[i,:] + xis[i,:]
+                for i in range(Nseg)
+            ]
+        else:
+            constraints_dyn = [
+                xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,:] @ us[i,:] + self.Phi_c[i,:] + xis[i,:]
+                for i in range(Nseg)
+            ]
+
+        constraints_trustregion = [
+            xs[i,0:6] - xbar[i,0:6] <= self.trust_region_radius for i in range(N)
+        ] + [
+            xs[i,0:6] - xbar[i,0:6] >= -self.trust_region_radius for i in range(N)
+        ]
+
+        constraints_initial = [xs[0,0:6]  == self.x0[0:6]]
+        constraints_final   = [xs[-1,0:3] == self.xf[0:3], 
+                               xs[-1,3:6] == self.xf[3:6]]
+        constraints_tf      = [self.tf_bounds[0] <= xs[-1,6],
+                               xs[-1,6] <= self.tf_bounds[1]]
+        constraints_s       = [self.s_bounds[0] <= us[i,3] for i in range(Nseg)] + [us[i,3] <= self.s_bounds[1] for i in range(Nseg)]
+
+        constraints_control = [
+            gs[i,0] <= self.umax for i in range(Nseg)
+        ]
+
+        convex_problem = cp.Problem(
+            cp.Minimize(objective_func),
+            constraints_objsoc + constraints_dyn + constraints_trustregion +\
+            constraints_initial + constraints_final + constraints_control + constraints_tf + constraints_s
+        )
+        convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
+        self.cp_status = convex_problem.status
+        return xs.value, us.value, gs.value, xis.value, None, None
