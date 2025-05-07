@@ -137,9 +137,10 @@ class SCvxStar:
             chi = np.linalg.norm(np.concatenate((gdyn_nl_opt.flatten(), g_nl_opt, h_nl_opt)), feasability_norm)
 
             # evaluate penalized objective
+            J0 = self.problem.evaluate_objective(xopt, uopt, gopt)
             J_bar = self.problem.evaluate_objective(xbar, ubar, gbar) + self.evaluate_penalty(gdyn_nl_bar, g_nl_bar, h_nl_bar)
-            J_opt = self.problem.evaluate_objective(xopt, uopt, gopt) + self.evaluate_penalty(gdyn_nl_opt, g_nl_opt, h_nl_opt)
-            L_opt = self.problem.evaluate_objective(xopt, uopt, gopt) + self.evaluate_penalty(xi_dyn_opt, xi_opt, zeta_opt)
+            J_opt = J0                                                + self.evaluate_penalty(gdyn_nl_opt, g_nl_opt, h_nl_opt)
+            L_opt = J0                                                + self.evaluate_penalty(xi_dyn_opt, xi_opt, zeta_opt)
 
             # evaluate step acceptance criterion parameter
             DeltaJ = J_bar - J_opt
@@ -147,7 +148,7 @@ class SCvxStar:
             rho = DeltaJ / DeltaL
 
             # update storage
-            scp_summary_dict["J0"].append(J_bar)
+            scp_summary_dict["J0"].append(J0)
             scp_summary_dict["chi"].append(chi)
             scp_summary_dict["DeltaJ"].append(DeltaJ)
             scp_summary_dict["DeltaL"].append(DeltaL)
@@ -159,7 +160,7 @@ class SCvxStar:
             if verbose:
                 if np.mod(k, print_frequency) == 0:
                     print(f"\n{header}")
-                print(f"   {k+1:3d}   | {np.sum(gopt): 1.4e} | {DeltaJ: 1.4e} | {DeltaL: 1.4e} | {chi:1.4e} | {rho: 1.4e} | {self.problem.trust_region_radius:1.4e} | {self.problem.weight:1.4e} |    {step_acpt_msg}     |")
+                print(f"   {k+1:3d}   | {J0: 1.4e} | {DeltaJ: 1.4e} | {DeltaL: 1.4e} | {chi:1.4e} | {rho: 1.4e} | {self.problem.trust_region_radius:1.4e} | {self.problem.weight:1.4e} |    {step_acpt_msg}     |")
 
             if chi <= self.tol_feas and DeltaJ <= self.tol_opt:
                 status_AL = "Optimal"
