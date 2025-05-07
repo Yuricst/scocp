@@ -158,7 +158,7 @@ def test_scp_scipy_freetf(get_plot=False):
     
     times_guess = np.linspace(0, tf_guess, N)    # initial guess
     taus = np.linspace(0, 1, N)
-    umax = 0.3  # max acceleration
+    umax = 0.1  # max acceleration
 
     # create subproblem
     problem = scocp.FreeTimeContinuousRendezvous(x0, xf, umax, tf_bounds, s_bounds, integrator_01domain, taus)
