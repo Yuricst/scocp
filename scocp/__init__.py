@@ -31,7 +31,8 @@ from ._scocp_impulsive import (
 from ._scocp_continuous import (
     ContinuousControlSCOCP,
     FixedTimeContinuousRendezvous,
-    FixedTimeContinuousRendezvousLogMass
+    FixedTimeContinuousRendezvousLogMass,
+    FreeTimeContinuousRendezvous,
 )
 
 # SCP algorithm
