@@ -162,7 +162,7 @@ class SCvxStar:
                     print(f"\n{header}")
                 print(f"   {k+1:3d}   | {J0: 1.4e} | {DeltaJ: 1.4e} | {DeltaL: 1.4e} | {chi:1.4e} | {rho: 1.4e} | {self.problem.trust_region_radius:1.4e} | {self.problem.weight:1.4e} |    {step_acpt_msg}     |")
 
-            if chi <= self.tol_feas and DeltaJ <= self.tol_opt:
+            if chi <= self.tol_feas and abs(DeltaJ) <= self.tol_opt:
                 status_AL = "Optimal"
                 break
                 
@@ -208,9 +208,11 @@ class SCvxStar:
         if verbose:
             print("\n")
             print(f"    SCvx* algorithm summary:")
-            print(f"        Status: {status_AL}")
-            print(f"        Objective value          : {scp_summary_dict['J0'][-1]:1.8e}")
-            print(f"        Constraint violation     : {scp_summary_dict['chi'][-1]:1.8e} (tol: {self.tol_feas:1.4e})")
+            print(f"        Status                          : {status_AL}")
+            print(f"        Objective value                 : {scp_summary_dict['J0'][-1]:1.8e}")
+            print(f"        Penalized objective improvement : {scp_summary_dict['DeltaJ'][-1]:1.8e} (tol: {self.tol_opt:1.4e})")
+            print(f"        Constraint violation            : {scp_summary_dict['chi'][-1]:1.8e} (tol: {self.tol_feas:1.4e})")
+            print(f"        Total iterations                : {k+1}")
             print("\n")
 
         # update summary dictionary

@@ -33,6 +33,7 @@ from ._scocp_continuous import (
     FixedTimeContinuousRendezvous,
     FixedTimeContinuousRendezvousLogMass,
     FreeTimeContinuousRendezvous,
+    FreeTimeContinuousRendezvousLogMass,
 )
 
 # SCP algorithm

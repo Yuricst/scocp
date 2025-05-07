@@ -11,46 +11,6 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import scocp
 
 
-def control_rhs_cr3bp_freetf(tau, state, mu, u):
-    """Equation of motion in CR3BP with free final time
-    State = [x,y,z,vx,vy,vz,t]
-    u = [ax,ay,az,s] where s is the dilation factor
-    """
-    t = state[6]
-    B = np.concatenate((np.zeros((3,3)), np.eye(3)))
-    deriv = np.zeros(7,)
-    deriv[0:6] = u[3] * (scocp.rhs_cr3bp(t, state[0:6], mu) + B @ u[0:3])
-    deriv[6]   = u[3]
-    return deriv
-
-def control_rhs_cr3bp_freetf_stm(tau, state, mu, u):
-    """Equation of motion in CR3BP with free final time
-    State = [x,y,z,vx,vy,vz,t]
-    u = [ax,ay,az,s] where s is the dilation factor
-    """
-    # derivative of state
-    t = state[6]
-    deriv = np.zeros(84)    # 7 + 7*7 + 7*4
-    deriv[0:7] = control_rhs_cr3bp_freetf(tau, state[0:7], mu, u)
-    
-    # derivative of STM
-    Phi_A = state[7:56].reshape(7,7)
-    A = np.zeros((7,7))
-    A[0:3,3:6] = np.eye(3)
-    A[3,4] = 2
-    A[4,3] = -2
-    A[3:6,0:3] = scocp.gravity_gradient_cr3bp(state[0:3], mu)
-    deriv[7:56] = np.dot(u[3] * A, Phi_A).reshape(49,)          # note: multiply A by time-dilation factor
-
-    # derivative of control sensitivity
-    f_eval = control_rhs_cr3bp_freetf(tau, state[0:7], mu, u)[0:6]/u[3]
-    B_accel = np.concatenate((np.concatenate((np.zeros((3,3)), u[3]*np.eye(3))), f_eval.reshape(-1,1)), axis=1)
-    B = np.concatenate((B_accel, np.array([0.0, 0.0, 0.0, 1.0]).reshape(1,-1)))
-    Phi_B = state[56:84].reshape(7,4)
-    deriv[56:84] = (np.dot(u[3] * A, Phi_B) + B).reshape(28,)
-    return deriv
-
-
 def test_freetf_integrator(get_plot=False):
     """Test SCP continuous transfer"""
     mu = 1.215058560962404e-02
@@ -65,7 +25,7 @@ def test_freetf_integrator(get_plot=False):
     integrator_01domain = scocp.ScipyIntegrator(
         nx=7,        # state is [x,y,z,vx,vy,vz,t]
         nu=4,        # controls are [ax,ay,az,s]    
-        rhs=control_rhs_cr3bp_freetf, rhs_stm=control_rhs_cr3bp_freetf_stm,
+        rhs=scocp.control_rhs_cr3bp_freetf, rhs_stm=scocp.control_rhs_cr3bp_freetf_stm,
         impulsive=False,
         args=(mu,[0.0,0.0,0.0,1.0]),   # last argument is dummy placeholder
         method='DOP853', reltol=1e-12, abstol=1e-12
@@ -122,8 +82,8 @@ def test_scp_scipy_freetf(get_plot=False):
     integrator_01domain = scocp.ScipyIntegrator(
         nx=7,        # state is [x,y,z,vx,vy,vz,t]
         nu=4,        # controls are [ax,ay,az,s]    
-        rhs=control_rhs_cr3bp_freetf,
-        rhs_stm=control_rhs_cr3bp_freetf_stm,
+        rhs=scocp.control_rhs_cr3bp_freetf,
+        rhs_stm=scocp.control_rhs_cr3bp_freetf_stm,
         impulsive=False,
         args=(mu,[0.0,0.0,0.0,1.0]),   # last argument is dummy placeholder
         method='DOP853', reltol=1e-12, abstol=1e-12
@@ -178,7 +138,8 @@ def test_scp_scipy_freetf(get_plot=False):
     ubar = np.concatenate((np.zeros((N-1,3)), sbar_initial), axis=1)
     gbar = np.sum(ubar[:,0:3], axis=1).reshape(-1,1)
 
-    # # check initial guess
+    # check initial guess
+    _, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, gbar, steps=5)
     # geq_nl_initial, sols_initial = problem.evaluate_nonlinear_dynamics(xbar, ubar, gbar)
     # fig = plt.figure(figsize=(10,5))
     # ax = fig.add_subplot(1,2,1,projection='3d')
@@ -218,9 +179,7 @@ def test_scp_scipy_freetf(get_plot=False):
     geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, gopt, steps=20)
     
     # evaluate solution
-    if (get_plot is True) and (summary_dict["status"] != "CPFailed"):
-        _, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, gbar, steps=5)
-    
+    if (get_plot is True) and (summary_dict["status"] != "CPFailed"):    
         # plot results
         fig = plt.figure(figsize=(10,7))
         ax = fig.add_subplot(2,3,1,projection='3d')

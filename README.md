@@ -55,7 +55,7 @@ In addition, we provide problem classes that can be readily used for typical OCP
 
 - Fixed final time continuous rendezvous's: `FixedTimeContinuousRendezvous`, `FixedTimeContinuousRendezvousLogMass`
 - Fixed final time impulsive rendezvous's: `FixedTimeImpulsiveRendezvous`
-- Free final time continuous rendezvous's: `FreeTimeContinuousRendezvous`
+- Free final time continuous rendezvous's: `FreeTimeContinuousRendezvous`, `FreeTimeContinuousRendezvousLogMass`
 
 
 ### References
@@ -77,18 +77,45 @@ pytest tests
 
 ## Examples
 
-**Fixed TOF Impulsive control rendez-vous between libration point orbits**
+### Continuous Control
 
-<img src="tests/plots/scp_scipy_impulsive_transfer.png" width="70%">
+#### `FixedTimeContinuousRendezvous`:Fixed TOF Continuous control rendez-vous
 
-**Fixed TOF Continuous control rendez-vous between libration point orbits**
+- State: Cartesian position, velocity
+- Controls: acceleration
+- Fixed TOF
+- Fixed boundary conditions
 
 <img src="tests/plots/scp_scipy_continuous_transfer.png" width="70%">
 
-**Free TOF Continuous control rendez-vous between libration point orbits**
 
-<img src="tests/plots/scp_scipy_scipy_freetf.png" width="70%">
+#### `FixedTimeContinuousRendezvousLogMass`: Fixed TOF Continuous control rendez-vous with mass dynamics
 
-**Fixed TOF Continuous control rendez-vous between libration point orbits with mass dynamics**
+- State: Cartesian position, velocity + log(mass)
+- Controls: acceleration
+- Fixed TOF
+- Fixed boundary conditions
 
 <img src="tests/plots/scp_scipy_logmass_transfer.png" width="100%">
+
+
+#### `FreeTimeContinuousRendezvousLogMass`: Free TOF Continuous control rendez-vous with mass dynamics
+
+- State: Cartesian position, velocity + log(mass) + dilated time
+- Controls: acceleration + time dilation factor
+- Free TOF
+- Fixed boundary conditions
+
+<img src="tests/plots/scp_scipy_logmass_freetf_transfer.png" width="100%">
+
+
+### Impulsive Control
+
+#### `FixedTimeImpulsiveRendezvous`:Fixed TOF impulsive control rendez-vous
+
+- State: Cartesian position, velocity
+- Controls: impulsive delta-V's
+- Fixed TOF
+- Fixed boundary conditions
+
+<img src="tests/plots/scp_scipy_impulsive_transfer.png" width="70%">
