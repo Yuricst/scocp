@@ -20,6 +20,25 @@ The SCP is solved with the `SCvx*` algorithm, an augmented Lagrangian framework 
 
 The dynamics in the OCP are handled by defining an integrator class, which requires a `solve(tspan, x0, u=None,stm=False)` method.
 `scocp` provides wrappers to be used with either `scipy`'s [`solve_ivp()` method](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) or [`heyoka`](https://bluescarni.github.io/heyoka.py/index.html), but a user-defined integrator class can be used instead as well.
+A custom integrator class should look like:
+
+```python
+class MyIntegrator:
+    def __init__(self, nx, nu, impulsive: bool, n_gamma, *args):
+        self.nx = nx                  # dimension of states
+        self.nu = nu                  # dimension of controls
+        self.impulsive = impulsive    # whether to consider impulsive or continuous control
+        self.n_gamma = n_gamma        # dimension of control magnitudes to be augmented in the linearized map
+        # (whatever other stuff you want to do with the integrator)
+
+    def solve(self, tspan, x0, u=None, stm=False):
+        """Solve IVP
+        If `u` is provided, solve IVP with control
+        If `stm = True`, also propagate sensitivities
+        """
+        # (solve initial value problem)
+        return t_eval, states
+```
 
 To solve an OCP, the user needs to define a problem class, for example:
 
