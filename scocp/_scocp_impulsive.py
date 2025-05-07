@@ -143,7 +143,7 @@ class ImpulsiveControlSCOCP:
     
 
 class FixedTimeImpulsiveRendezvous(ImpulsiveControlSCOCP):
-    """Fixed-time impulsive rendezvous subproblem"""
+    """Fixed-time impulsive rendezvous problem class"""
     def __init__(self, x0, xf, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.x0 = x0
@@ -155,6 +155,16 @@ class FixedTimeImpulsiveRendezvous(ImpulsiveControlSCOCP):
         return np.sum(gs)
     
     def solve_convex_problem(self, xbar, ubar, gbar):
+        """Solve the convex subproblem
+        
+        Args:
+            xbar (np.array): `(N, self.integrator.nx)` array of reference state history
+            ubar (np.array): `(N-1, self.integrator.nu)` array of reference control history
+            gbar (np.array): `(N-1, self.integrator.n_gamma)` array of reference constraint history
+        
+        Returns:
+            (tuple): np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq
+        """
         N,nx = xbar.shape
         _,nu = ubar.shape
         Nseg = N - 1
