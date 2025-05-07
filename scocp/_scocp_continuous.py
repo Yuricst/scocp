@@ -32,6 +32,7 @@ class ContinuousControlSCOCP:
         verbose_solver: bool = False,
     ):
         assert integrator.impulsive is False, "Continuous control problem must be initialized with an integrator for continuous dynamics"
+        assert weight >= 0.0, f"weight must be non-negative, but given {weight}"
         self.integrator = integrator
         self.times = times
         self.N = len(times)

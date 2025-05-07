@@ -82,7 +82,8 @@ def test_scp_scipy_logmass(get_plot=False):
 
     # create subproblem
     problem = scocp.FreeTimeContinuousRendezvousLogMass(
-        x0, xf, Tmax, tf_bounds, s_bounds, N, integrator_01domain, taus, augment_Gamma=True
+        x0, xf, Tmax, tf_bounds, s_bounds, N, integrator_01domain, taus, augment_Gamma=True,
+        weight = 1.0
     )
 
     # create initial guess
@@ -155,7 +156,9 @@ def test_scp_scipy_logmass(get_plot=False):
         ax_m = fig.add_subplot(2,3,2)
         ax_m.grid(True, alpha=0.5)
         for (_ts, _ys) in sols:
-            ax_m.plot(_ts, np.exp(_ys[:,6]), 'b-')
+            ax_m.plot(_ys[:,7], np.exp(_ys[:,6]), 'b-')
+        ax_m.axhline(np.exp(sols[-1][1][-1,6]), color='r', linestyle='--')
+        ax_m.text(0.0, 0.01 + np.exp(sols[-1][1][-1,6]), f"m_f = {np.exp(sols[-1][1][-1,6]):1.4f}", color='r')
         ax_m.set(xlabel="Time", ylabel="Mass")
         ax_m.legend()
 

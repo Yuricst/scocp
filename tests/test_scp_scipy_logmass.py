@@ -62,7 +62,10 @@ def test_scp_scipy_logmass(get_plot=False):
     Tmax = 0.37637494800142673      # max thrust
 
     # create subproblem
-    problem = scocp.FixedTimeContinuousRendezvousLogMass(x0, xf, Tmax, N, integrator, times, augment_Gamma=True)
+    problem = scocp.FixedTimeContinuousRendezvousLogMass(
+        x0, xf, Tmax, N, integrator, times, augment_Gamma=True,
+        weight = 1.0
+    )
 
     # create initial guess
     print(f"Preparing initial guess...")
@@ -126,6 +129,8 @@ def test_scp_scipy_logmass(get_plot=False):
         ax_m.grid(True, alpha=0.5)
         for (_ts, _ys) in sols:
             ax_m.plot(_ts, np.exp(_ys[:,6]), 'b-')
+        ax_m.axhline(np.exp(sols[-1][1][-1,6]), color='r', linestyle='--')
+        ax_m.text(0.0, 0.01 + np.exp(sols[-1][1][-1,6]), f"m_f = {np.exp(sols[-1][1][-1,6]):1.4f}", color='r')
         ax_m.set(xlabel="Time", ylabel="Mass")
         ax_m.legend()
 
