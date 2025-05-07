@@ -108,14 +108,14 @@ def test_scp_scipy_impulsive(get_plot=False):
         ax_DeltaJ.grid(True, alpha=0.5)
         ax_DeltaJ.plot(np.abs(summary_dict["DeltaJ"]), marker="o", color="k", ms=3)
         ax_DeltaJ.axhline(tol_opt, color='r', linestyle='--', label='tol_opt')
-        ax_DeltaJ.set(yscale='log', ylabel='|DeltaJ|')
+        ax_DeltaJ.set(yscale='log', xlabel='Iter.', ylabel='|DeltaJ|')
         ax_DeltaJ.legend()
 
         ax_DeltaL = fig.add_subplot(2,2,4)
         ax_DeltaL.grid(True, alpha=0.5)
         ax_DeltaL.plot(summary_dict["chi"], marker="o", color="k", ms=3)
         ax_DeltaL.axhline(tol_feas, color='r', linestyle='--', label='tol_feas')
-        ax_DeltaL.set(yscale='log', ylabel='chi')
+        ax_DeltaL.set(yscale='log', xlabel='Iter.', ylabel='chi')
         ax_DeltaL.legend()
 
         plt.tight_layout()
