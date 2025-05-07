@@ -162,7 +162,7 @@ class SCvxStar:
                     print(f"\n{header}")
                 print(f"   {k+1:3d}   | {J0: 1.4e} | {DeltaJ: 1.4e} | {DeltaL: 1.4e} | {chi:1.4e} | {rho: 1.4e} | {self.problem.trust_region_radius:1.4e} | {self.problem.weight:1.4e} |    {step_acpt_msg}     |")
 
-            if chi <= self.tol_feas and abs(DeltaJ) <= self.tol_opt:
+            if (chi <= self.tol_feas) and (abs(DeltaJ) <= self.tol_opt) and (rho >= self.rho0):
                 status_AL = "Optimal"
                 break
                 
