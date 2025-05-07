@@ -83,7 +83,7 @@ def test_scp_scipy_logmass(get_plot=False):
     # create subproblem
     problem = scocp.FreeTimeContinuousRendezvousLogMass(
         x0, xf, Tmax, tf_bounds, s_bounds, N, integrator_01domain, taus, augment_Gamma=True,
-        weight = 1.0
+        weight = 10.0
     )
 
     # create initial guess
@@ -99,15 +99,17 @@ def test_scp_scipy_logmass(get_plot=False):
     xbar = np.concatenate((xbar,  times_guess.reshape(-1,1)), axis=1)    # append initial guess for time
 
     sbar_initial = tf_guess * np.ones((N-1,1))
-    ubar = np.concatenate((np.zeros((N-1,3)), sbar_initial), axis=1)
+    ubar = np.concatenate((np.divide(np.diff(xbar[:,3:6], axis=0), np.diff(times_guess)[:,None]), sbar_initial), axis=1)
     gbar = np.sum(ubar[:,0:3], axis=1).reshape(-1,1)
     print(f"Initial guess objective: {problem.evaluate_objective(xbar, ubar, gbar):1.4e}")
 
+    geq_nl_ig, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, gbar, steps=5)
+    print(f"np.linalg.norm(geq_nl_ig) = {np.linalg.norm(geq_nl_ig)}")
+    
     # solve subproblem
-    gbar = np.sum(ubar, axis=1).reshape(-1,1)
     print(f"ubar.shape = {ubar.shape}, xbar.shape = {xbar.shape}, gbar.shape = {gbar.shape}")
     print(f"problem.Phi_A.shape = {problem.Phi_A.shape}, problem.Phi_B.shape = {problem.Phi_B.shape}, problem.Phi_c.shape = {problem.Phi_c.shape}")
-    _, _, _, _, _, _ = problem.solve_convex_problem(xbar, ubar, gbar)
+    problem.solve_convex_problem(xbar, ubar, gbar)
     assert problem.cp_status == "optimal"
 
     # setup algorithm & solve
@@ -121,19 +123,16 @@ def test_scp_scipy_logmass(get_plot=False):
         maxiter = 250,
         verbose = True
     )
-    #assert summary_dict["status"] == "Optimal"
+    assert summary_dict["status"] == "Optimal"
     assert summary_dict["chi"][-1] <= tol_feas
     print(f"Initial guess TOF: {tf_guess:1.4f} --> Optimized TOF: {xopt[-1,7]:1.4f} (bounds: {tf_bounds[0]:1.4f} ~ {tf_bounds[1]:1.4f})")
-
-
+    
     # evaluate nonlinear violations
-    geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, gopt, steps=5)
+    geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, gopt, steps=20)
     assert np.max(np.abs(geq_nl_opt)) <= tol_feas
     
     # evaluate solution
     if (get_plot is True) and (summary_dict["status"] != "CPFailed"):
-        _, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, gbar, steps=5)
-    
         # plot results
         fig = plt.figure(figsize=(12,7))
         ax = fig.add_subplot(2,3,1,projection='3d')
