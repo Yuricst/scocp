@@ -53,8 +53,9 @@ class MyOptimalControlProblem(scocp.ContinuousControlSCOCP):
 
 In addition, we provide problem classes that can be readily used for typical OCPs in astrodynamics: 
 
-- Fixed-time continuous rendezvous's: `FixedTimeContinuousRendezvous`, `FixedTimeContinuousRendezvousLogMass`
-- Fixed-time impulsive rendezvous's: `FixedTimeImpulsiveRendezvous`
+- Fixed final time continuous rendezvous's: `FixedTimeContinuousRendezvous`, `FixedTimeContinuousRendezvousLogMass`
+- Fixed final time impulsive rendezvous's: `FixedTimeImpulsiveRendezvous`
+- Free final time continuous rendezvous's: `FreeTimeContinuousRendezvous`
 
 
 ### References
@@ -76,14 +77,18 @@ pytest tests
 
 ## Examples
 
-**Impulsive control rendez-vous between libration point orbits**
+**Fixed TOF Impulsive control rendez-vous between libration point orbits**
 
 <img src="tests/plots/scp_scipy_impulsive_transfer.png" width="70%">
 
-**Continuous control rendez-vous between libration point orbits**
+**Fixed TOF Continuous control rendez-vous between libration point orbits**
 
 <img src="tests/plots/scp_scipy_continuous_transfer.png" width="70%">
 
-**Continuous control rendez-vous between libration point orbits with mass dynamics**
+**Free TOF Continuous control rendez-vous between libration point orbits**
+
+<img src="tests/plots/scp_scipy_scipy_freetf.png" width="70%">
+
+**Fixed TOF Continuous control rendez-vous between libration point orbits with mass dynamics**
 
 <img src="tests/plots/scp_scipy_logmass_transfer.png" width="100%">
