@@ -107,7 +107,7 @@ def control_rhs_cr3bp_stm(t, state, mu, u):
     """Equation of motion in CR3BP with continuous control in the rotating frame with STM"""
     # derivative of state
     B = np.concatenate((np.zeros((3,3)), np.eye(3)))
-    deriv = np.zeros(60)
+    deriv = np.zeros(60)    # 6 + 6*6 + 6*3
     deriv[0:6] = rhs_cr3bp(t, state[0:6], mu) + B @ u[0:3]
     
     # derivative of STM
@@ -158,9 +158,9 @@ def control_rhs_cr3bp_logmass_stm(t, state, parameters, u):
         [0.0, 0.0, 1.0, 0.0],
         [0.0, 0.0, 0.0, -1/cex],
     ])
-    deriv = np.zeros(84)
+    deriv = np.zeros(84)    # 7 + 7*7 + 7*4
     deriv[0:6] = rhs_cr3bp(t, state[0:6], mu)
-    deriv[0:7] += B @ u
+    deriv[0:7] += B @ u[:]
     
     # derivative of STM
     Phi_A = state[7:56].reshape(7,7)
