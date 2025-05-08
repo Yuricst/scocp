@@ -9,32 +9,32 @@ from pykep.examples import add_gradient, algo_factory
 
 def pykep_direct_pl2pl():
     # 1 - Algorithm
-    # uda = pg.ipopt() # pylint: disable=no-member
-    # uda.set_integer_option("print_level", 5)
-    # uda.set_integer_option("acceptable_iter", 4)
-    # uda.set_integer_option("max_iter", 500)
+    uda = pg.ipopt() # pylint: disable=no-member
+    uda.set_integer_option("print_level", 5)
+    uda.set_integer_option("acceptable_iter", 4)
+    uda.set_integer_option("max_iter", 500)
 
-    # uda.set_numeric_option("tol", 1e-8)
-    # uda.set_numeric_option("dual_inf_tol", 1e-8)
-    # uda.set_numeric_option("constr_viol_tol", 1e-8)
-    # uda.set_numeric_option("compl_inf_tol", 1e-8)
+    uda.set_numeric_option("tol", 1e-8)
+    uda.set_numeric_option("dual_inf_tol", 1e-8)
+    uda.set_numeric_option("constr_viol_tol", 1e-8)
+    uda.set_numeric_option("compl_inf_tol", 1e-8)
 
-    # uda.set_numeric_option("acceptable_tol", 1e-3)
-    # uda.set_numeric_option("acceptable_dual_inf_tol", 1e-2)
-    # uda.set_numeric_option("acceptable_constr_viol_tol", 1e-6)
-    # uda.set_numeric_option("acceptable_compl_inf_tol", 1e-6)
+    uda.set_numeric_option("acceptable_tol", 1e-3)
+    uda.set_numeric_option("acceptable_dual_inf_tol", 1e-2)
+    uda.set_numeric_option("acceptable_constr_viol_tol", 1e-6)
+    uda.set_numeric_option("acceptable_compl_inf_tol", 1e-6)
 
-    # algo = pg.algorithm(uda)
-
-    import pygmo_plugins_nonfree as ppnf
-    uda = ppnf.snopt7(True,
-                     "/Users/yuri/libsnopt7_cpp/libsnopt7_cpp.dylib",
-                     7)
-    uda.set_integer_option("Major iterations limit", 2000)
-    uda.set_integer_option("Iterations limit", 200000)
-    uda.set_numeric_option("Major optimality tolerance", 1e-2)
-    uda.set_numeric_option("Major feasibility tolerance", 1e-9)
     algo = pg.algorithm(uda)
+
+    # import pygmo_plugins_nonfree as ppnf
+    # uda = ppnf.snopt7(True,
+    #                  "/Users/yuri/libsnopt7_cpp/libsnopt7_cpp.dylib",
+    #                  7)
+    # uda.set_integer_option("Major iterations limit", 2000)
+    # uda.set_integer_option("Iterations limit", 200000)
+    # uda.set_numeric_option("Major optimality tolerance", 1e-2)
+    # uda.set_numeric_option("Major feasibility tolerance", 1e-9)
+    # algo = pg.algorithm(uda)
     
     # 2 - Problem
     nseg = 40
@@ -42,15 +42,15 @@ def pykep_direct_pl2pl():
         pk.trajopt.direct_pl2pl(
             p0="earth",
             pf="mars",
-            mass=1000,
-            thrust=0.8, #0.1,
+            mass=800.0,
+            thrust=0.2,
             isp=3000,
             vinf_arr=1e-6,
-            vinf_dep=3.5,
+            vinf_dep=1e-6,
             hf=False,
             nseg=nseg,
             t0=[1100, 1400],
-            tof=[500,600], #[200, 750]
+            tof=[100,800], #[200, 750]
         ),
         with_grad=True
     )
@@ -96,6 +96,5 @@ def scocp_pl2pl():
 
 
 if __name__ == "__main__":
-    #pykep_direct_pl2pl()
-    scocp_pl2pl()
+    pykep_direct_pl2pl()
     plt.show()
