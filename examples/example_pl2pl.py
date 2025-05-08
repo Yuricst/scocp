@@ -38,7 +38,7 @@ def example_pl2pl(get_plot=False):
     pl0 = pk.planet.jpl_lp('earth')
     plf = pk.planet.jpl_lp('mars')
 
-    t0_mjd2000_bounds = [1100.0, 1100.0]    # initial epoch in mjd2000
+    t0_mjd2000_bounds = [1100.0, 1200.0]    # initial epoch in mjd2000
     TU2DAY = TU / 86400.0  # convert non-dimensional time to elapsed time in days
 
     # this is the non-dimentional time integrator for solving the OCP
@@ -54,15 +54,15 @@ def example_pl2pl(get_plot=False):
     )
 
     # define transfer problem discretization
-    tf_bounds = np.array([100.0, 800.0]) / TU2DAY
+    tf_bounds = np.array([100.0, 500.0]) / TU2DAY
     t0_guess = 0.0
     tof_guess = 250.0 / TU2DAY
     N = 30
-    s_bounds = [0.1*tof_guess, 10*tof_guess]
+    s_bounds = [0.01*tof_guess, 10*tof_guess]
 
     # max v-infinity vector magnitudes
-    vinf_dep = 0.0 #1e3 / VU
-    vinf_arr = 0.0
+    vinf_dep = 1e3 / VU     # 1000 m/s
+    vinf_arr = 500 / VU     # 500 m/s
 
     # create problem
     problem = scocp.scocp_pl2pl(
@@ -79,7 +79,7 @@ def example_pl2pl(get_plot=False):
         s_bounds,
         vinf_dep,
         vinf_arr,
-        weight = 1.0,
+        weight = 100.0,
     )
 
     # create initial guess
@@ -91,29 +91,11 @@ def example_pl2pl(get_plot=False):
     initial_orbit_states = problem.get_initial_orbit()
     final_orbit_states = problem.get_final_orbit()
 
-    # fig = plt.figure(figsize=(7,6))
-    # ax = fig.add_subplot(1,1,1,projection='3d')
-    # ax.scatter(problem.x0[0], problem.x0[1], problem.x0[2], marker='x', color='k', label='Initial state')
-    # for idx, (_ts, _ys) in enumerate(sols_ig):
-    #     ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], '--', color='grey')
-    #     if idx == len(sols_ig)-1:
-    #         ax.scatter(_ys[-1,0], _ys[-1,1], _ys[-1,2], marker='^', color='k', label='Final state (initial guess)')
-    # ax.plot(initial_orbit_states[1][:,0], initial_orbit_states[1][:,1], initial_orbit_states[1][:,2], 'k-')
-    # ax.plot(final_orbit_states[1][:,0], final_orbit_states[1][:,1], final_orbit_states[1][:,2], 'k-')
-    # ax.set_aspect('equal')
-    # ax.legend()
-
-    # solve subproblem
-    print(f"ubar.shape = {ubar.shape}, xbar.shape = {xbar.shape}, gbar.shape = {gbar.shape}")
-    print(f"problem.Phi_A.shape = {problem.Phi_A.shape}, problem.Phi_B.shape = {problem.Phi_B.shape}, problem.Phi_c.shape = {problem.Phi_c.shape}")
-    problem.solve_convex_problem(xbar, ubar, gbar)
-    assert problem.cp_status == "optimal", f"CP status: {problem.cp_status}"
-
     # setup algorithm & solve
     tol_feas = 1e-10
     tol_opt = 1e-6
-    algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas, r_bounds=[1e-10, 10.0])
-    xopt, uopt, gopt, sols, summary_dict = algo.solve(
+    algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas, rho1=1e-8, r_bounds=[1e-10, 10.0])
+    xopt, uopt, gopt, yopt, sols, summary_dict = algo.solve(
         xbar,
         ubar,
         gbar,
@@ -123,14 +105,16 @@ def example_pl2pl(get_plot=False):
     assert summary_dict["status"] == "Optimal"
     assert summary_dict["chi"][-1] <= tol_feas
     print(f"Initial guess TOF: {tof_guess*TU2DAY:1.4f}d --> Optimized TOF: {xopt[-1,7]*TU2DAY:1.4f}d (bounds: {tf_bounds[0]*TU2DAY:1.4f}d ~ {tf_bounds[1]*TU2DAY:1.4f}d)")
+    x0 = problem.target_initial.target_state(xopt[0,7])
     xf = problem.target_final.target_state(xopt[-1,7])
 
     # evaluate v-infinity vectors
-    vinf_dep_vec, vinf_arr_vec = problem.get_vinf(xopt)
-    print(f"|vinf_dep| = {np.linalg.norm(vinf_dep_vec)*VU:1.4f} m/s, |vinf_arr| = {np.linalg.norm(vinf_arr_vec)*VU:1.4f} m/s")
+    vinf_dep_vec, vinf_arr_vec = yopt[0:3], yopt[3:6]
+    print(f"||vinf_dep|| = {np.linalg.norm(vinf_dep_vec)*VU:1.4f} m/s (max: {vinf_dep*VU:1.4f} m/s), ||vinf_arr|| = {np.linalg.norm(vinf_arr_vec)*VU:1.4f} m/s (max: {vinf_arr*VU:1.4f} m/s)")
 
     # evaluate nonlinear violations
     geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, gopt, steps=20)
+    print(f"Max dynamics constraint violation: {np.max(np.abs(geq_nl_opt)):1.4e}")
     assert np.max(np.abs(geq_nl_opt)) <= tol_feas
     
     # evaluate solution
@@ -146,7 +130,7 @@ def example_pl2pl(get_plot=False):
             _us_zoh = scocp.zoh_controls(problem.times, uopt, _ts)
             ax.quiver(_ys[:,0], _ys[:,1], _ys[:,2], _us_zoh[:,0], _us_zoh[:,1], _us_zoh[:,2], color='r', length=1.0)
 
-        ax.scatter(problem.x0[0], problem.x0[1], problem.x0[2], marker='x', color='k', label='Initial state')
+        ax.scatter(x0[0], x0[1], x0[2], marker='x', color='k', label='Initial state')
         ax.scatter(xf[0], xf[1], xf[2], marker='o', color='k', label='Final state')
         ax.plot(initial_orbit_states[1][:,0], initial_orbit_states[1][:,1], initial_orbit_states[1][:,2], 'k-', lw=0.3)
         ax.plot(final_orbit_states[1][:,0], final_orbit_states[1][:,1], final_orbit_states[1][:,2], 'k-', lw=0.3)
@@ -170,20 +154,23 @@ def example_pl2pl(get_plot=False):
         ax_u.set(xlabel="Time, days", ylabel="Acceleration")
         ax_u.legend()
 
+        iters = np.arange(len(summary_dict["DeltaJ"]))
         ax_DeltaJ = fig.add_subplot(2,3,4)
         ax_DeltaJ.grid(True, alpha=0.5)
-        ax_DeltaJ.plot(np.abs(summary_dict["DeltaJ"]), marker="o", color="k", ms=3)
-        ax_DeltaJ.axhline(tol_opt, color='r', linestyle='--', label='tol_opt')
-        ax_DeltaJ.set(yscale='log', xlabel='Iter.', ylabel='|DeltaJ|')
+        algo.plot_DeltaJ(ax_DeltaJ, summary_dict)
+        ax_DeltaJ.axhline(tol_opt, color='k', linestyle='--', label='tol_opt')
         ax_DeltaJ.legend()
 
         ax_DeltaL = fig.add_subplot(2,3,5)
         ax_DeltaL.grid(True, alpha=0.5)
-        ax_DeltaL.plot(summary_dict["chi"], marker="o", color="k", ms=3)
-        ax_DeltaL.axhline(tol_feas, color='r', linestyle='--', label='tol_feas')
-        ax_DeltaL.set(yscale='log', xlabel='Iter.', ylabel='chi')
+        algo.plot_chi(ax_DeltaL, summary_dict)
+        ax_DeltaL.axhline(tol_feas, color='k', linestyle='--', label='tol_feas')
         ax_DeltaL.legend()
 
+        # ax_J0 = fig.add_subplot(2,3,6)
+        # ax_J0.grid(True, alpha=0.5)
+        # algo.plot_J0(ax_J0, summary_dict)
+        # ax_J0.legend()
         ax = fig.add_subplot(2,3,6)
         for (_ts, _ys) in sols_ig:
             ax.plot(_ts, _ys[:,7]*canonical_scales.TU2DAY, '--', color='grey')

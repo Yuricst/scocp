@@ -125,10 +125,11 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         # define problem parameters and inherit parent class
         N = nseg + 1
         ng = 12
+        ny = 6              # v-infinity vectors
         nh = N - 1
         augment_Gamma = True
         times = np.linspace(0, 1, N)
-        super().__init__(integrator, times, ng=ng, nh=nh, augment_Gamma=augment_Gamma, *args, **kwargs)
+        super().__init__(integrator, times, ng=ng, nh=nh, ny=ny, augment_Gamma=augment_Gamma, *args, **kwargs)
 
         # define additional attributes
         self.canonical_scales = canonical_scales
@@ -170,6 +171,10 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             VU = self.canonical_scales.VU,
             mu = self.canonical_scales.mu,
         )
+
+        # setup storage for v-infinity vectors
+        self.vinf_dep_vec = np.zeros(3,)
+        self.vinf_arr_vec = np.zeros(3,)
         return
     
     def get_initial_orbit(self, steps: int=100):
@@ -207,20 +212,6 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         for i, t in enumerate(t_eval):
             states[i,0:3], states[i,3:6] = pk.propagate_lagrangian(xf0[0:3], xf0[3:6], t, mu=self.canonical_scales.mu)
         return t_eval, states
-    
-    def get_vinf(self, xs):
-        """Evaluate the objective function
-        
-        Args:
-            xs (np.array): `(N,8)` array of state history
-        
-        Returns:
-            (tuple): tuple of `(3,)` array of v-infinity vectors at departure and arrival
-        """
-        assert xs.shape == (self.N, 8), f"xs must be a `(N,8)` array, but given {xs.shape}"
-        vinf_dep = xs[0,3:6]  - self.target_initial.target_state(xs[0,7])[3:6]
-        vinf_arr = xs[-1,3:6] - self.target_final.target_state(xs[-1,7])[3:6]
-        return vinf_dep, vinf_arr
     
     def get_initial_guess(self, t0_guess: float, tof_guess: float):
         """Construct initial guess based on linear interpolation along orbital elements
@@ -264,18 +255,19 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         gbar = np.sum(ubar[:,0:3], axis=1).reshape(-1,1)
         return xbar, ubar, gbar
     
-    def evaluate_objective(self, xs, us, gs):
+    def evaluate_objective(self, xs, us, gs, ys=None):
         """Evaluate the objective function"""
         return -xs[-1,6]
     
-    def solve_convex_problem(self, xbar, ubar, gbar):
+    def solve_convex_problem(self, xbar, ubar, gbar, ybar=None):
         """Solve the convex subproblem
         
         Args:
             xbar (np.array): `(N, self.integrator.nx)` array of reference state history
             ubar (np.array): `(N-1, self.integrator.nu)` array of reference control history
             gbar (np.array): `(N-1, self.integrator.n_gamma)` array of reference constraint history
-        
+            ybar (np.array): `(N, self.integrator.ny)` array of reference v-infinity vectors
+
         Returns:
             (tuple): np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq
         """
@@ -286,16 +278,11 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         xs      = cp.Variable((N, nx), name='state')
         us      = cp.Variable((Nseg, nu), name='control')
         gs      = cp.Variable((Nseg, 1), name='Gamma')
+        ys      = cp.Variable((self.ny,), name='v-infinity vectors')
         xis_dyn = cp.Variable((Nseg,nx), name='xi_dyn')     # slack for dynamics
         xis     = cp.Variable((self.ng,), name='xi')        # slack for target state
         zetas   = cp.Variable((Nseg,), name='zeta')         # slack for non-convex inequality
-
-        # additional variables for initial and final v-infinity vectors
-        vinf_dep_vec = cp.Variable((3,), name='vinf_dep_vec')
-        vinf_dep_mag = cp.Variable((1,), name='vinf_dep_mag')
-        vinf_arr_vec = cp.Variable((3,), name='vinf_arr_vec')
-        vinf_arr_mag = cp.Variable((1,), name='vinf_arr_mag')
-                
+        
         penalty = get_augmented_lagrangian_penalty(
             self.weight,
             xis_dyn,
@@ -308,31 +295,33 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         objective_func = -xs[-1,6] + penalty
         constraints_objsoc = [cp.SOC(gs[i,0], us[i,0:3]) for i in range(N-1)]
         
+        Bvinf = np.zeros((8,3))
+        Bvinf[3:6,0:3] = np.eye(3)
         constraints_dyn = [
             xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,0:4] @ us[i,:] + self.Phi_B[i,:,4] * gs[i,:] + self.Phi_c[i,:] + xis_dyn[i,:]
             for i in range(Nseg)
         ]
 
         constraints_trustregion = [
-            xs[i,:] - xbar[i,:] <= self.trust_region_radius for i in range(N)
+            #xs[i,:] - xbar[i,:] <= self.trust_region_radius for i in range(N)
+            xs[i,0:7] - xbar[i,0:7] <= self.trust_region_radius for i in range(N)
         ] + [
-            xs[i,:] - xbar[i,:] >= -self.trust_region_radius for i in range(N)
+            #xs[i,:] - xbar[i,:] >= -self.trust_region_radius for i in range(N)
+            xs[i,0:7] - xbar[i,0:7] >= -self.trust_region_radius for i in range(N)
         ]
 
         constraints_initial = [
-            xs[0,0:6] - np.concatenate((np.zeros((3,3)), np.eye(3))) @ vinf_dep_vec[:] \
+            xs[0,0:6] - np.concatenate((np.zeros((3,3)), np.eye(3))) @ ys[0:3] \
                 - self.target_initial.target_state(xbar[0,7]) - self.target_initial.target_state_derivative(xbar[0,7]) * (xs[0,7] - xbar[0,7]) == xis[0:6],
             xs[0,6] == np.log(self.mass0),
         ]
         constraints_final = [
-            xs[-1,0:6] - np.concatenate((np.zeros((3,3)), np.eye(3))) @ vinf_arr_vec[:] \
+            xs[-1,0:6] - np.concatenate((np.zeros((3,3)), np.eye(3))) @ ys[3:6] \
                 - self.target_final.target_state(xbar[-1,7]) - self.target_final.target_state_derivative(xbar[-1,7]) * (xs[-1,7] - xbar[-1,7]) == xis[6:12]
-        ]  
+        ]
         constraints_vinf_mag = [
-            cp.SOC(vinf_dep_mag[0], vinf_dep_vec[:]),       # connect v-infinity vector to magnitude
-            vinf_dep_mag[0] <= self.vinf_dep,               # magnitude upper-bounded
-            cp.SOC(vinf_arr_mag[0], vinf_arr_vec[:]),       # connect v-infinity vector to magnitude
-            vinf_arr_mag[0] <= self.vinf_arr,               # magnitude upper-bounded
+            cp.SOC(self.vinf_dep, ys[0:3]),
+            cp.SOC(self.vinf_arr, ys[3:6]),
         ]
         
         # constraints on times
@@ -345,29 +334,28 @@ class scocp_pl2pl(ContinuousControlSCOCP):
                           xs[-1,7] <= self.tf_bounds[1]]
         constraints_s = [self.s_bounds[0] <= us[i,3] for i in range(Nseg)] + [us[i,3] <= self.s_bounds[1] for i in range(Nseg)]
         
-        constraints_control = [
-            gs[i,0] - self.Tmax * np.exp(-xbar[i,6]) * (1 - (xs[i,6] - xbar[i,6])) <= zetas[i]
-            for i in range(Nseg)
-        ]
+        constraints_control = [gs[i,0] - self.Tmax * np.exp(-xbar[i,6]) * (1 - (xs[i,6] - xbar[i,6])) <= zetas[i] for i in range(Nseg)]
 
         convex_problem = cp.Problem(
             cp.Minimize(objective_func),
             constraints_objsoc + constraints_dyn + constraints_trustregion +\
-            constraints_initial + constraints_final + constraints_vinf_mag +constraints_control +\
+            constraints_initial + constraints_final + constraints_vinf_mag + constraints_control +\
             constraints_t0 + constraints_tf + constraints_s)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
-        return xs.value, us.value, gs.value, xis_dyn.value, xis.value, zetas.value
+        return xs.value, us.value, gs.value, ys.value, xis_dyn.value, xis.value, zetas.value
     
-    def evaluate_nonlinear_constraints(self, xs, us, gs):
+    def evaluate_nonlinear_constraints(self, xs, us, gs, ys):
         """Evaluate nonlinear constraints
         
         Returns:
             (tuple): tuple of 1D arrays of nonlinear equality and inequality constraints
         """
         g_eq = np.concatenate((
-            xs[0,0:6] - self.target_initial.target_state(xs[0,7]),
-            xs[-1,0:6] - self.target_final.target_state(xs[-1,7]),
+            xs[0,0:3] - self.target_initial.target_state(xs[0,7])[0:3],
+            xs[0,3:6] - ys[0:3] - self.target_initial.target_state(xs[0,7])[3:6],
+            xs[-1,0:3] - self.target_final.target_state(xs[-1,7])[0:3],
+            xs[-1,3:6] - ys[3:6] - self.target_final.target_state(xs[-1,7])[3:6],
         ))
         h_ineq = np.array([
             max(gs[i,0] - self.Tmax * np.exp(-xs[i,6]), 0.0) for i in range(self.N-1)

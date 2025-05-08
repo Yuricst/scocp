@@ -25,6 +25,7 @@ class ContinuousControlSCOCP:
         times,
         ng: int = 0,
         nh: int = 0,
+        ny: int = 0,
         augment_Gamma: bool = False,
         weight: float = 1e2,
         trust_region_radius: float = 0.1,
@@ -39,6 +40,7 @@ class ContinuousControlSCOCP:
         self.ng_dyn = self.integrator.nx * (self.N - 1)
         self.ng = ng
         self.nh = nh
+        self.ny = ny
         self.weight = weight
         self.trust_region_radius = trust_region_radius
         self.solver = solver
@@ -64,17 +66,18 @@ class ContinuousControlSCOCP:
         self.lmb_ineq     = np.zeros(self.nh)
         return
     
-    def evaluate_objective(self, xs, us, gs):
+    def evaluate_objective(self, xs, us, gs, ys=None):
         """Evaluate the objective function"""
         raise NotImplementedError("Subproblem must be implemented by inherited class!")
     
-    def solve_convex_problem(self, xbar, ubar, gbar):
+    def solve_convex_problem(self, xbar, ubar, gbar, ybar = None):
         """Solve the convex subproblem
         
         Args:
             xbar (np.array): `(N, self.integrator.nx)` array of reference state history
             ubar (np.array): `(N-1, self.integrator.nu)` array of reference control history
             gbar (np.array): `(N-1, self.integrator.n_gamma)` array of reference constraint history
+            ybar (np.array): `(self.ny,)` other reference variables
         
         Returns:
             (tuple): np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq
@@ -146,7 +149,7 @@ class ContinuousControlSCOCP:
             geq_nl[i,:] = xs[i+1,:] - _ys[-1,0:self.integrator.nx]
         return geq_nl, sols
     
-    def evaluate_nonlinear_constraints(self, xs, us, gs):
+    def evaluate_nonlinear_constraints(self, xs, us, gs, ys=None):
         """Evaluate nonlinear constraints
         
         Returns:
@@ -165,12 +168,12 @@ class FixedTimeContinuousRdv(ContinuousControlSCOCP):
         self.umax = umax
         return
         
-    def evaluate_objective(self, xs, us, gs):
+    def evaluate_objective(self, xs, us, gs, ys=None):
         """Evaluate the objective function"""
         dts = np.diff(self.times)
         return np.sum(gs.T @ dts)
     
-    def solve_convex_problem(self, xbar, ubar, gbar):
+    def solve_convex_problem(self, xbar, ubar, gbar, ybar=None):
         """Solve the convex subproblem
         
         Args:
@@ -225,7 +228,7 @@ class FixedTimeContinuousRdv(ContinuousControlSCOCP):
             constraints_objsoc + constraints_dyn + constraints_trustregion + constraints_initial + constraints_final + constraints_control)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
-        return xs.value, us.value, gs.value, xis.value, None, None
+        return xs.value, us.value, gs.value, None, xis.value, None, None
     
 
 class FixedTimeContinuousRdvLogMass(ContinuousControlSCOCP):
@@ -239,11 +242,11 @@ class FixedTimeContinuousRdvLogMass(ContinuousControlSCOCP):
         self.Tmax = Tmax
         return
         
-    def evaluate_objective(self, xs, us, gs):
+    def evaluate_objective(self, xs, us, gs, ys=None):
         """Evaluate the objective function"""
         return -xs[-1,6]
     
-    def solve_convex_problem(self, xbar, ubar, gbar):
+    def solve_convex_problem(self, xbar, ubar, gbar, ybar=None):
         """Solve the convex subproblem
         
         Args:
@@ -293,9 +296,9 @@ class FixedTimeContinuousRdvLogMass(ContinuousControlSCOCP):
             constraints_objsoc + constraints_dyn + constraints_trustregion + constraints_initial + constraints_final + constraints_control)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
-        return xs.value, us.value, gs.value, xis.value, None, zetas.value
+        return xs.value, us.value, gs.value, None, xis.value, None, zetas.value
     
-    def evaluate_nonlinear_constraints(self, xs, us, gs):
+    def evaluate_nonlinear_constraints(self, xs, us, gs, ys=None):
         """Evaluate nonlinear constraints
         
         Returns:
@@ -334,12 +337,12 @@ class FreeTimeContinuousRdv(ContinuousControlSCOCP):
         self.s_bounds = s_bounds
         return
         
-    def evaluate_objective(self, xs, us, gs):
+    def evaluate_objective(self, xs, us, gs, ys=None):
         """Evaluate the objective function"""
         dts = np.diff(self.times)
         return np.sum(gs.T @ dts)
     
-    def solve_convex_problem(self, xbar, ubar, gbar):
+    def solve_convex_problem(self, xbar, ubar, gbar, ybar=None):
         """Solve the convex subproblem
         
         Args:
@@ -404,7 +407,7 @@ class FreeTimeContinuousRdv(ContinuousControlSCOCP):
         )
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
-        return xs.value, us.value, gs.value, xis.value, None, None
+        return xs.value, us.value, gs.value, None, xis.value, None, None
 
 
 class FreeTimeContinuousRdvLogMass(ContinuousControlSCOCP):
@@ -431,11 +434,11 @@ class FreeTimeContinuousRdvLogMass(ContinuousControlSCOCP):
         self.s_bounds = s_bounds
         return
         
-    def evaluate_objective(self, xs, us, gs):
+    def evaluate_objective(self, xs, us, gs, ys=None):
         """Evaluate the objective function"""
         return -xs[-1,6]
     
-    def solve_convex_problem(self, xbar, ubar, gbar):
+    def solve_convex_problem(self, xbar, ubar, gbar, ybar=None):
         """Solve the convex subproblem
         
         Args:
@@ -493,9 +496,9 @@ class FreeTimeContinuousRdvLogMass(ContinuousControlSCOCP):
             constraint_t0 + constraints_tf + constraints_s)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
-        return xs.value, us.value, gs.value, xis.value, None, zetas.value
+        return xs.value, us.value, gs.value, None, xis.value, None, zetas.value
     
-    def evaluate_nonlinear_constraints(self, xs, us, gs):
+    def evaluate_nonlinear_constraints(self, xs, us, gs, ys=None):
         """Evaluate nonlinear constraints
         
         Returns:
@@ -530,11 +533,11 @@ class FreeTimeContinuousMovingTargetRdvLogMass(ContinuousControlSCOCP):
         self.s_bounds = s_bounds
         return
         
-    def evaluate_objective(self, xs, us, gs):
+    def evaluate_objective(self, xs, us, gs, ys=None):
         """Evaluate the objective function"""
         return -xs[-1,6]
     
-    def solve_convex_problem(self, xbar, ubar, gbar):
+    def solve_convex_problem(self, xbar, ubar, gbar, ybar=None):
         """Solve the convex subproblem
         
         Args:
@@ -602,9 +605,9 @@ class FreeTimeContinuousMovingTargetRdvLogMass(ContinuousControlSCOCP):
             constraint_t0 + constraints_tf + constraints_s)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
-        return xs.value, us.value, gs.value, xis_dyn.value, xis.value, zetas.value
+        return xs.value, us.value, gs.value, None, xis_dyn.value, xis.value, zetas.value
     
-    def evaluate_nonlinear_constraints(self, xs, us, gs):
+    def evaluate_nonlinear_constraints(self, xs, us, gs, ys=None):
         """Evaluate nonlinear constraints
         
         Returns:

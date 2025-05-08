@@ -60,14 +60,14 @@ def test_scp_scipy_impulsive(get_plot=False):
 
     # solve subproblem
     gbar = np.sum(ubar, axis=1).reshape(-1,1)
-    _, _, _, _, _, _ = problem.solve_convex_problem(xbar, ubar, gbar)
+    problem.solve_convex_problem(xbar, ubar, gbar)
     assert problem.cp_status == "optimal"
 
     # setup algorithm & solve
     tol_feas = 1e-10
     tol_opt = 1e-4
     algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas)
-    xopt, uopt, gopt, sols, summary_dict = algo.solve(
+    xopt, uopt, gopt, yopt, sols, summary_dict = algo.solve(
         xbar,
         ubar,
         gbar,

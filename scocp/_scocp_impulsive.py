@@ -26,6 +26,7 @@ class ImpulsiveControlSCOCP:
         times,
         ng: int = 0,
         nh: int = 0,
+        ny: int = 0,
         augment_Gamma: bool = False,
         B = None,
         weight: float = 1e2,
@@ -40,6 +41,7 @@ class ImpulsiveControlSCOCP:
         self.ng_dyn = self.integrator.nx * (self.N - 1)
         self.ng = ng
         self.nh = nh
+        self.ny = ny
         self.weight = weight
         self.trust_region_radius = trust_region_radius
         self.solver = solver
@@ -79,11 +81,11 @@ class ImpulsiveControlSCOCP:
         self.lmb_ineq     = np.zeros(self.nh)
         return
     
-    def evaluate_objective(self, xs, us, gs):
+    def evaluate_objective(self, xs, us, gs, ys=None):
         """Evaluate the objective function"""
         raise NotImplementedError("Subproblem must be implemented by inherited class!")
     
-    def solve_convex_problem(self, xbar, ubar, gbar):
+    def solve_convex_problem(self, xbar, ubar, gbar, ybar=None):
         """Solve the convex subproblem"""
         raise NotImplementedError("Subproblem must be implemented by inherited class!")
     
@@ -133,7 +135,7 @@ class ImpulsiveControlSCOCP:
             geq_nl[i,:] = xbar[i+1,:] - _ys[-1,0:self.integrator.nx]
         return geq_nl, sols
     
-    def evaluate_nonlinear_constraints(self, xs, us, gs):
+    def evaluate_nonlinear_constraints(self, xs, us, gs, ys=None):
         """Evaluate nonlinear constraints
         
         Returns:
@@ -150,11 +152,11 @@ class FixedTimeImpulsiveRdv(ImpulsiveControlSCOCP):
         self.xf = xf
         return
         
-    def evaluate_objective(self, xs, us, gs):
+    def evaluate_objective(self, xs, us, gs, ys=None):
         """Evaluate the objective function"""
         return np.sum(gs)
     
-    def solve_convex_problem(self, xbar, ubar, gbar):
+    def solve_convex_problem(self, xbar, ubar, gbar, ybar=None):
         """Solve the convex subproblem
         
         Args:
@@ -163,7 +165,7 @@ class FixedTimeImpulsiveRdv(ImpulsiveControlSCOCP):
             gbar (np.array): `(N-1, self.integrator.n_gamma)` array of reference constraint history
         
         Returns:
-            (tuple): np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq
+            (tuple): np.array values of xs, us, gs, ys, xi_dyn, xi_eq, zeta_ineq
         """
         N,nx = xbar.shape
         _,nu = ubar.shape
@@ -198,5 +200,5 @@ class FixedTimeImpulsiveRdv(ImpulsiveControlSCOCP):
             constraints_objsoc + constraints_dyn + constraints_trustregion + constraints_initial + constraints_final)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
-        return xs.value, us.value, gs.value, xis.value, None, None
+        return xs.value, us.value, gs.value, None, xis.value, None, None
     

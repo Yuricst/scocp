@@ -14,13 +14,13 @@ class SCvxStar:
         problem (SCVxStarOCP): `SCOCP` instance, e.g. an instance of the `ImpulsiveControlSCOCP` class
         tol_opt (float): optimality tolerance
         tol_feas (float): feasibility tolerance
-        rho0 (float): initial penalty parameter
-        rho1 (float): lower penalty parameter
-        rho2 (float): upper penalty parameter
-        alpha1 (float): penalty parameter update factor
-        alpha2 (float): penalty parameter update factor
-        beta (float): penalty parameter update factor
-        gamma (float): penalty parameter update factor
+        rho0 (float): step acceptance criterion parameter
+        rho1 (float): trust-region radius contraction threshold
+        rho2 (float): trust-region radius expansion threshold
+        alpha1 (float): trust-region radius contraction factor s.t. r_k+1 = max(r_k/alpha1, r_bounds[0])
+        alpha2 (float): trust-region radius expansion factor s.t. r_k+1 = min(r_k*alpha2, r_bounds[1])
+        beta (float): weight update factor
+        gamma (float): update factor forLagrange multiplier update criterion delta
         r_bounds (list): trust region bounds
     """
     def __init__(
@@ -35,8 +35,18 @@ class SCvxStar:
         alpha2 = 3.0,
         beta = 2.0,
         gamma = 0.9,
-        r_bounds = [1e-8, 10],
+        r_bounds = [1e-8, 10.0],
+        steps_minimum_trust_region = 10,
     ):
+        # assertions on hyperparameters
+        assert 0.0 <= rho0 < 1.0, "rho0 must be in [0.0, 1.0)"
+        assert alpha1 > 1.0, "alpha1 must be greater than 1.0"
+        assert alpha2 > 1.0, "alpha2 must be greater than 1.0"
+        assert beta > 1.0, "beta must be greater than 1.0"
+        assert 0.0 < gamma < 1.0, "gamma must be in (0.0, 1.0)"
+        assert r_bounds[0] > 0.0, "r_bounds[0] must be greater than 0.0"
+        assert r_bounds[1] > r_bounds[0], "r_bounds[1] must be greater than r_bounds[0]"
+        
         self.problem = problem
         self.tol_opt = tol_opt
         self.tol_feas = tol_feas
@@ -48,6 +58,7 @@ class SCvxStar:
         self.beta = beta
         self.gamma = gamma
         self.r_bounds = r_bounds
+        self.steps_minimum_trust_region = steps_minimum_trust_region
         return
     
 
@@ -78,6 +89,7 @@ class SCvxStar:
         xbar,
         ubar,
         gbar = None,
+        ybar = None,
         maxiter: int = 10,
         verbose: bool = True,
         feasability_norm = np.inf,
@@ -99,15 +111,18 @@ class SCvxStar:
         status_AL = "NotConverged"
         chi = 1e15
         rho = self.rho0  # initialize rho to rho0
+        n_min_trust_region = 0
         sols = []
 
         # initialize gbar if not provided
         if gbar is None:
             gbar = np.sum(ubar, axis=1).reshape(-1,1)
+        if ybar is None and self.problem.ny > 0:
+            ybar = np.zeros((self.problem.ny,))
 
         # initial constraint violation evaluation
         gdyn_nl_bar, _ = self.problem.evaluate_nonlinear_dynamics(xbar, ubar, gbar)
-        g_nl_bar, h_nl_bar = self.problem.evaluate_nonlinear_constraints(xbar, ubar, gbar)
+        g_nl_bar, h_nl_bar = self.problem.evaluate_nonlinear_constraints(xbar, ubar, gbar, ybar)
         assert g_nl_bar.shape == (self.problem.ng,),\
             f"Shape of equality constraint violations by self.problem.evaluate_nonlinear_constraints does not match (self.problem.ng,)"
         assert h_nl_bar.shape == (self.problem.nh,),\
@@ -121,6 +136,7 @@ class SCvxStar:
             "chi": [],
             "DeltaJ": [],
             "DeltaL": [],
+            "accept": [],
             "weight": self.problem.weight,
             "trust_region_radius": self.problem.trust_region_radius,
             "rho": self.rho0,
@@ -129,17 +145,18 @@ class SCvxStar:
         for k in range(maxiter):
             # build linear model
             self.problem.build_linear_model(xbar, ubar, gbar)
-            xopt, uopt, gopt, xi_dyn_opt, xi_opt, zeta_opt = self.problem.solve_convex_problem(xbar, ubar, gbar)
+            xopt, uopt, gopt, yopt, xi_dyn_opt, xi_opt, zeta_opt = self.problem.solve_convex_problem(xbar, ubar, gbar, ybar)
             if self.problem.cp_status not in ["optimal", "optimal_inaccurate"]:
                 status_AL = "CPFailed"
-                print(f"Convex problem did not converge to optimality (status = {self.problem.cp_status})!")
+                if verbose:
+                    print(f"    Convex problem did not converge to optimality (status = {self.problem.cp_status})!")
                 break
             
             # evaluate nonlinear dynamics
             gdyn_nl_opt, sols = self.problem.evaluate_nonlinear_dynamics(xopt, uopt, gopt)
 
             # evaluate nonlinear constraints
-            g_nl_opt, h_nl_opt = self.problem.evaluate_nonlinear_constraints(xopt, uopt, gopt)
+            g_nl_opt, h_nl_opt = self.problem.evaluate_nonlinear_constraints(xopt, uopt, gopt, yopt)
             chi = np.linalg.norm(np.concatenate((gdyn_nl_opt.flatten(), g_nl_opt, h_nl_opt)), feasability_norm)
 
             # evaluate penalized objective
@@ -153,12 +170,6 @@ class SCvxStar:
             DeltaL = J_bar - L_opt
             rho = DeltaJ / DeltaL
 
-            # update storage
-            scp_summary_dict["J0"].append(J0)
-            scp_summary_dict["chi"].append(chi)
-            scp_summary_dict["DeltaJ"].append(DeltaJ)
-            scp_summary_dict["DeltaL"].append(DeltaL)
-
             if rho >= self.rho0:
                 step_acpt_msg = "yes"
             else:
@@ -168,6 +179,13 @@ class SCvxStar:
                     print(f"\n{header}")
                 print(f"   {k+1:3d}   | {J0: 1.4e} | {DeltaJ: 1.4e} | {DeltaL: 1.4e} | {chi:1.4e} | {rho: 1.4e} | {self.problem.trust_region_radius:1.4e} | {self.problem.weight:1.4e} |    {step_acpt_msg}     |")
 
+            # update storage
+            scp_summary_dict["J0"].append(J0)
+            scp_summary_dict["chi"].append(chi)
+            scp_summary_dict["DeltaJ"].append(DeltaJ)
+            scp_summary_dict["DeltaL"].append(DeltaL)
+            scp_summary_dict["accept"].append(int(rho >= self.rho0))
+
             if (chi <= self.tol_feas) and (abs(DeltaJ) <= self.tol_opt) and (rho >= self.rho0):
                 status_AL = "Optimal"
                 break
@@ -176,11 +194,14 @@ class SCvxStar:
                 xbar[:,:] = xopt[:,:]
                 ubar[:,:] = uopt[:,:]   
                 gbar[:,:] = gopt[:,:]
+                if self.problem.ny > 0:
+                    ybar[:] = yopt[:]
                 gdyn_nl_bar[:,:] = gdyn_nl_opt[:,:]
                 if self.problem.ng > 0:
                     g_nl_bar[:] = g_nl_opt[:]
                 if self.problem.nh > 0:
                     h_nl_bar[:] = h_nl_opt[:]
+                    
                 if abs(DeltaJ) < delta:
                     # update multipliers
                     self.problem.lmb_dynamics = self.problem.lmb_dynamics + self.problem.weight * gdyn_nl_opt
@@ -204,7 +225,18 @@ class SCvxStar:
             elif rho >= self.rho2:
                 self.problem.trust_region_radius = min(self.problem.trust_region_radius*self.alpha2, self.r_bounds[1])
 
-        if (k == maxiter - 1) and (status_AL not in ["Optimal", "CPFailed"]):
+            # update steps at minimum trust region
+            if self.problem.trust_region_radius == self.r_bounds[0]:
+                n_min_trust_region += 1
+            else:
+                n_min_trust_region = 0
+            if n_min_trust_region >= self.steps_minimum_trust_region:
+                status_AL = "SlowProgress"
+                if verbose:
+                    print(f"    Exceeded {n_min_trust_region} steps at minimum trust region! Stopping SCvx*due to slow progress...\n")
+                break
+
+        if (k == maxiter - 1) and (status_AL not in ["Optimal", "CPFailed", "SlowProgress"]):
             if chi <= self.tol_feas:
                 status_AL = "Feasible"
             else:
@@ -231,4 +263,28 @@ class SCvxStar:
         scp_summary_dict["trust_region_radius"] = self.problem.trust_region_radius
         scp_summary_dict["rho"] = rho
         scp_summary_dict["t_algorithm"] = t_algorithm
-        return xopt, uopt, gopt, sols, scp_summary_dict
+        return xopt, uopt, gopt, yopt,sols, scp_summary_dict
+    
+    def plot_DeltaJ(self, axis, summary_dict: dict, s = 5):
+        """Plot iterations of DeltaJ"""
+        iters = np.arange(len(summary_dict["DeltaJ"]))
+        axis.plot(iters, np.abs(summary_dict["DeltaJ"]), c='k', lw=0.5)
+        axis.scatter(iters, np.abs(summary_dict["DeltaJ"]), marker="o", s=s, color=['g' if a == 1 else 'r' for a in summary_dict["accept"]], zorder=2)
+        axis.set(yscale='log', xlabel='Iter.', ylabel='|DeltaJ|')
+        return
+    
+    def plot_chi(self, axis, summary_dict: dict, s = 5):
+        """Plot iterations of chi"""
+        iters = np.arange(len(summary_dict["chi"]))
+        axis.plot(iters, summary_dict["chi"], c='k', lw=0.5)
+        axis.scatter(iters, summary_dict["chi"], marker="o", s=s, color=['g' if a == 1 else 'r' for a in summary_dict["accept"]], zorder=2)
+        axis.set(yscale='log', xlabel='Iter.', ylabel='chi')
+        return
+    
+    def plot_J0(self, axis, summary_dict: dict, s = 5):
+        """Plot iterations of J0"""
+        iters = np.arange(len(summary_dict["J0"]))
+        axis.plot(iters, summary_dict["J0"], c='k', lw=0.5)
+        axis.scatter(iters, summary_dict["J0"], marker="o", s=s, color=['g' if a == 1 else 'r' for a in summary_dict["accept"]], zorder=2)
+        axis.set(xlabel='Iter.', ylabel='J0')
+        return

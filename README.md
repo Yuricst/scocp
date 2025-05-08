@@ -6,10 +6,10 @@
 
 ```math
 \begin{align}
-\min_{u(t), t_f} \quad& \int_{t_0}^{t_f} \mathcal{L}(x(t),u(t),t) \mathrm{d}t
+\min_{u(t), t_f, y} \quad& \int_{t_0}^{t_f} \mathcal{L}(x(t),u(t),t) \mathrm{d}t
 \\ \mathrm{s.t.} \quad&     \dot{x}(t) = f(x(t),u(t),t)
-\\&     g(x(t),u(t),t) = 0
-\\&     h(x(t),u(t),t) \leq 0
+\\&     g(x(t),u(t),t,y) = 0
+\\&     h(x(t),u(t),t,y) \leq 0
 \\&     x(t_0) \in \mathcal{X}(t_0) ,\,\, x(t_f) \in \mathcal{X}(t_f)
 \\&     x(t) \in \mathcal{X}(t),\,\, u(t) \in \mathcal{U}(t)
 \end{align}
@@ -48,23 +48,24 @@ class MyOptimalControlProblem(scocp.ContinuousControlSCOCP):
         super().__init__(*args, **kwargs):
         return
 
-    def evaluate_objective(self, xs, us, gs):
+    def evaluate_objective(self, xs, us, gs, ys):
         """Evaluate the objective function"""
         # (compute objective)
         return objective
     
-    def solve_convex_problem(self, xbar, ubar, gbar):
+    def solve_convex_problem(self, xbar, ubar, gbar, ybar):
         N,nx = xbar.shape
         xs = cp.Variable((N, nx), name='state')
         us = cp.Variable((N, nu), name='control')
         gs = cp.Variable((N, 1),  name='Gamma')
+        ts = cp.Variable((N, 1),  name='ys')
         xis_dyn = cp.Variable((N-1,nx), name='xi_dyn')   # slacks for dynamics constraints
         xis     = cp.Variable(self.ng, name='xi')        # slacks for non-dynamics equality constraints
         zetas   = cp.Variable(self.nh, name='xi')        # slacks for inequality constraints
         # (formulate & solve OCP)
-        return xs.value, us.value, gs.value, xis.value, xis.value, zetas.value
+        return xs.value, us.value, gs.value, ys.value, xis.value, xis.value, zetas.value
 
-    def evaluate_nonlinear_constraints(self, xs, us, gs):
+    def evaluate_nonlinear_constraints(self, xs, us, gs, ys=None):
         g_eval = ...        # array of nonlinear equality constraints evaluated along `xs`, `us`, `gs`
         h_eval = ...        # array of nonlinear inequality constraints evaluated along `xs`, `us`, `gs`
         return g_eval, h_eval

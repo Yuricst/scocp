@@ -41,7 +41,6 @@ def get_augmented_lagrangian_penalty(weight, xi_dyn, lmb_dyn, xi=None, lmb_eq=No
     """
     assert xi_dyn.shape == lmb_dyn.shape, f"xi_dyn.shape = {xi_dyn.shape} must match lmb_dyn.shape = {lmb_dyn.shape}"
     penalty = weight/2 * cp.sum_squares(xi_dyn)
-    #+ cp.sum_squares(xi) + cp.sum_squares(zeta))
     for i in range(lmb_dyn.shape[0]):
         penalty += lmb_dyn[i,:] @ xi_dyn[i,:]
     if xi is not None:

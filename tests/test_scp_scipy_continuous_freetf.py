@@ -157,14 +157,14 @@ def test_scp_scipy_freetf(get_plot=False):
     # ax.grid(True, alpha=0.5)
 
     # solve subproblem
-    _, _, _, _, _, _ = problem.solve_convex_problem(xbar, ubar, gbar)
+    problem.solve_convex_problem(xbar, ubar, gbar)
     assert problem.cp_status == "optimal"
 
     # setup algorithm & solve
     tol_feas = 1e-10
     tol_opt = 1e-4
     algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas)
-    xopt, uopt, gopt, sols, summary_dict = algo.solve(
+    xopt, uopt, gopt, yopt, sols, summary_dict = algo.solve(
         xbar,
         ubar,
         gbar,

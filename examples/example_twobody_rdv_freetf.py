@@ -138,7 +138,7 @@ def test_scp_scipy_logmass(get_plot=False):
     tol_feas = 1e-8
     tol_opt = 1e-6
     algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas)
-    xopt, uopt, gopt, sols, summary_dict = algo.solve(
+    xopt, uopt, gopt, yopt, sols, summary_dict = algo.solve(
         xbar,
         ubar,
         gbar,
