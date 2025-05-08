@@ -40,7 +40,7 @@ class SCvxStar:
     Hyperparameters are defined according to `Oguri, 2023` (doi: 10.1109/CDC49753.2023.10383462).
 
     Args:
-        problem (SCVxStarOCP): `SCOCP` instance, e.g. an instance of the `ImpulsiveControlSCOCP` class
+        problem (ContinuousControlSCOCP or ImpulsiveControlSCOCP): `SCOCP` instance
         tol_opt (float): optimality tolerance
         tol_feas (float): feasibility tolerance
         rho0 (float): step acceptance criterion parameter

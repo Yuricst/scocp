@@ -6,7 +6,7 @@
 
 ```math
 \begin{align}
-\min_{u(t), t_f, y} \quad& \int_{t_0}^{t_f} \mathcal{L}(x(t),u(t),t) \mathrm{d}t
+\min_{u(t), t_f, y} \quad& \phi(x(t_f),u(t_f),t_f,y) + \int_{t_0}^{t_f} \mathcal{L}(x(t),u(t),t) \mathrm{d}t
 \\ \mathrm{s.t.} \quad&     \dot{x}(t) = f(x(t),u(t),t)
 \\&     g(x(t),u(t),t,y) = 0
 \\&     h(x(t),u(t),t,y) \leq 0
@@ -96,6 +96,13 @@ In addition, we provide problem classes that can be readily used for typical OCP
 
 ```
 pytest tests
+```
+
+Or, to also get coverage report
+
+```
+coverage run -m pytest  -v -s tests
+coverage report -m
 ```
 
 
