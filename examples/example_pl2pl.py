@@ -154,8 +154,7 @@ def example_pl2pl(get_plot=False):
             ax_u.plot(_ys[:,7]*canonical_scales.TU2DAY, Tmax/np.exp(_ys[:,6]), color='r', linestyle=':', label="Max accel." if idx == 0 else None)
         ax_u.set(xlabel="Time, days", ylabel="Acceleration")
         ax_u.legend()
-
-        iters = np.arange(len(summary_dict["DeltaJ"]))
+        
         ax_DeltaJ = fig.add_subplot(2,3,4)
         ax_DeltaJ.grid(True, alpha=0.5)
         algo.plot_DeltaJ(ax_DeltaJ, summary_dict)
