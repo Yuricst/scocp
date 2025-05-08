@@ -121,7 +121,7 @@ def test_scp_scipy_freetf(get_plot=False):
     umax = 0.3  # max acceleration
 
     # create subproblem
-    problem = scocp.FreeTimeContinuousRendezvous(x0, xf, umax, tf_bounds, s_bounds, integrator_01domain, taus)
+    problem = scocp.FreeTimeContinuousRdv(x0, xf, umax, tf_bounds, s_bounds, integrator_01domain, taus)
 
     # create initial guess
     print(f"Preparing initial guess...")

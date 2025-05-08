@@ -46,7 +46,7 @@ def test_scp_scipy_continuous(get_plot=False):
     umax = 0.3  # max acceleration
 
     # create subproblem
-    problem = scocp.FixedTimeContinuousRendezvous(x0, xf, umax, integrator, times)
+    problem = scocp.FixedTimeContinuousRdv(x0, xf, umax, integrator, times)
 
     # create initial guess
     print(f"Preparing initial guess...")

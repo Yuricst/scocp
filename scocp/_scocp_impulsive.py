@@ -142,7 +142,7 @@ class ImpulsiveControlSCOCP:
         return np.zeros(self.ng), np.zeros(self.nh)
     
 
-class FixedTimeImpulsiveRendezvous(ImpulsiveControlSCOCP):
+class FixedTimeImpulsiveRdv(ImpulsiveControlSCOCP):
     """Fixed-time impulsive rendezvous problem class"""
     def __init__(self, x0, xf, *args, **kwargs):
         super().__init__(*args, **kwargs)

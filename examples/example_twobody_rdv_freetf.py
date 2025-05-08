@@ -83,7 +83,7 @@ def test_scp_scipy_logmass(get_plot=False):
     taus = np.linspace(0, 1, N)
 
     # create subproblem
-    problem = scocp.FreeTimeContinuousRendezvousLogMass(
+    problem = scocp.FreeTimeContinuousRdvLogMass(
         x0, xf, Tmax, tf_bounds, s_bounds, N, integrator_01domain, taus, augment_Gamma=True,
         weight = 10.0
     )

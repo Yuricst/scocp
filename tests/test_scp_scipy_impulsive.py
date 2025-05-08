@@ -44,7 +44,7 @@ def test_scp_scipy_impulsive(get_plot=False):
     times = np.linspace(0, tf, N)
 
     # create subproblem
-    problem = scocp.FixedTimeImpulsiveRendezvous(x0, xf, integrator, times)
+    problem = scocp.FixedTimeImpulsiveRdv(x0, xf, integrator, times)
 
     # create initial guess
     print(f"Preparing initial guess...")

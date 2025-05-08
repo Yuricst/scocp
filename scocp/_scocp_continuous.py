@@ -154,7 +154,7 @@ class ContinuousControlSCOCP:
         """
         return np.zeros(self.ng), np.zeros(self.nh)
 
-class FixedTimeContinuousRendezvous(ContinuousControlSCOCP):
+class FixedTimeContinuousRdv(ContinuousControlSCOCP):
     """Fixed-time continuous rendezvous problem class"""
     def __init__(self, x0, xf, umax, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -228,7 +228,7 @@ class FixedTimeContinuousRendezvous(ContinuousControlSCOCP):
         return xs.value, us.value, gs.value, xis.value, None, None
     
 
-class FixedTimeContinuousRendezvousLogMass(ContinuousControlSCOCP):
+class FixedTimeContinuousRdvLogMass(ContinuousControlSCOCP):
     """Fixed-time continuous rendezvous problem class with log-mass dynamics"""
     def __init__(self, x0, xf, Tmax, N, *args, **kwargs):
         assert len(x0) == 7
@@ -308,7 +308,7 @@ class FixedTimeContinuousRendezvousLogMass(ContinuousControlSCOCP):
 
 
 
-class FreeTimeContinuousRendezvous(ContinuousControlSCOCP):
+class FreeTimeContinuousRdv(ContinuousControlSCOCP):
     """Free-time continuous rendezvous problem class
     A good initial guess for the dilation factor `s` is the guessed TOF, since `dt/dtau = s`.
     
@@ -407,7 +407,7 @@ class FreeTimeContinuousRendezvous(ContinuousControlSCOCP):
         return xs.value, us.value, gs.value, xis.value, None, None
 
 
-class FreeTimeContinuousRendezvousLogMass(ContinuousControlSCOCP):
+class FreeTimeContinuousRdvLogMass(ContinuousControlSCOCP):
     """Free-time continuous rendezvous problem class with log-mass dynamics
     
     Note the ordering expected for the state and the control vectors: 
@@ -506,7 +506,7 @@ class FreeTimeContinuousRendezvousLogMass(ContinuousControlSCOCP):
         ])
         return np.zeros(self.ng), h_ineq
 
-class FreeTimeContinuousMovingTargetRendezvousLogMass(ContinuousControlSCOCP):
+class FreeTimeContinuousMovingTargetRdvLogMass(ContinuousControlSCOCP):
     """Free-time continuous moving target rendezvous problem class with log-mass dynamics
     
     Note the ordering expected for the state and the control vectors: 

@@ -27,15 +27,15 @@ from ._integrator_heyoka import HeyokaIntegrator
 # sequentially convexified optimal control problems
 from ._scocp_impulsive import (
     ImpulsiveControlSCOCP,
-    FixedTimeImpulsiveRendezvous
+    FixedTimeImpulsiveRdv
 )
 from ._scocp_continuous import (
     ContinuousControlSCOCP,
-    FixedTimeContinuousRendezvous,
-    FixedTimeContinuousRendezvousLogMass,
-    FreeTimeContinuousRendezvous,
-    FreeTimeContinuousRendezvousLogMass,
-    FreeTimeContinuousMovingTargetRendezvousLogMass,
+    FixedTimeContinuousRdv,
+    FixedTimeContinuousRdvLogMass,
+    FreeTimeContinuousRdv,
+    FreeTimeContinuousRdvLogMass,
+    FreeTimeContinuousMovingTargetRdvLogMass,
 )
 
 # SCP algorithm

@@ -72,9 +72,9 @@ class MyOptimalControlProblem(scocp.ContinuousControlSCOCP):
 
 In addition, we provide problem classes that can be readily used for typical OCPs in astrodynamics: 
 
-- Fixed final time continuous rendezvous's: `FixedTimeContinuousRendezvous`, `FixedTimeContinuousRendezvousLogMass`
-- Fixed final time impulsive rendezvous's: `FixedTimeImpulsiveRendezvous`
-- Free final time continuous rendezvous's: `FreeTimeContinuousRendezvous`, `FreeTimeContinuousRendezvousLogMass`
+- Fixed final time continuous rendezvous's: `FixedTimeContinuousRdv`, `FixedTimeContinuousRdvLogMass`
+- Fixed final time impulsive rendezvous's: `FixedTimeImpulsiveRdv`
+- Free final time continuous rendezvous's: `FreeTimeContinuousRdv`, `FreeTimeContinuousRdvLogMass`
 
 
 ### References
@@ -103,7 +103,7 @@ See example notebooks in `./examples`.
 
 ### Continuous Control
 
-#### `FixedTimeContinuousRendezvous`:Fixed TOF Continuous control rendez-vous
+#### `FixedTimeContinuousRdv`:Fixed TOF Continuous control rendez-vous
 
 - State: Cartesian position, velocity
 - Controls: acceleration
@@ -113,7 +113,7 @@ See example notebooks in `./examples`.
 <img src="tests/plots/scp_scipy_continuous_transfer.png" width="70%">
 
 
-#### `FixedTimeContinuousRendezvousLogMass`: Fixed TOF Continuous control rendez-vous with mass dynamics
+#### `FixedTimeContinuousRdvLogMass`: Fixed TOF Continuous control rendez-vous with mass dynamics
 
 - State: Cartesian position, velocity + log(mass)
 - Controls: acceleration
@@ -123,7 +123,7 @@ See example notebooks in `./examples`.
 <img src="tests/plots/scp_scipy_logmass_transfer.png" width="100%">
 
 
-#### `FreeTimeContinuousRendezvousLogMass`: Free TOF Continuous control rendez-vous with mass dynamics
+#### `FreeTimeContinuousRdvLogMass`: Free TOF Continuous control rendez-vous with mass dynamics
 
 - State: Cartesian position, velocity + log(mass) + dilated time
 - Controls: acceleration + time dilation factor
@@ -133,7 +133,7 @@ See example notebooks in `./examples`.
 <img src="tests/plots/scp_scipy_logmass_freetf_transfer.png" width="100%">
 
 
-#### `FreeTimeContinuousMovingTargetRendezvousLogMass`: Free TOF Continuous rendez-vous with mass dynamics & moving target
+#### `FreeTimeContinuousMovingTargetRdvLogMass`: Free TOF Continuous rendez-vous with mass dynamics & moving target
 
 - State: Cartesian position, velocity + log(mass) + dilated time
 - Controls: acceleration + time dilation factor
@@ -145,7 +145,7 @@ See example notebooks in `./examples`.
 
 ### Impulsive Control
 
-#### `FixedTimeImpulsiveRendezvous`:Fixed TOF impulsive control rendez-vous
+#### `FixedTimeImpulsiveRdv`:Fixed TOF impulsive control rendez-vous
 
 - State: Cartesian position, velocity
 - Controls: impulsive delta-V's

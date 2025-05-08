@@ -90,7 +90,7 @@ def test_scp_scipy_logmass(get_plot=False):
     xf_guess = target.eval_state(tf_guess)
 
     # create subproblem
-    problem = scocp.FreeTimeContinuousMovingTargetRendezvousLogMass(
+    problem = scocp.FreeTimeContinuousMovingTargetRdvLogMass(
         x0, target, Tmax, tf_bounds, s_bounds, N, integrator_01domain, taus, augment_Gamma=True,
         weight = 10.0
     )

@@ -81,7 +81,7 @@ def test_scp_scipy_logmass(get_plot=False):
     Tmax = 0.37637494800142673      # max thrust
 
     # create subproblem
-    problem = scocp.FreeTimeContinuousRendezvousLogMass(
+    problem = scocp.FreeTimeContinuousRdvLogMass(
         x0, xf, Tmax, tf_bounds, s_bounds, N, integrator_01domain, taus, augment_Gamma=True,
         weight = 10.0
     )
