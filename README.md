@@ -30,6 +30,8 @@ and to uninstall
 pip uninstall scocp
 ```
 
+Read the full documentation [here](https://yuricst.github.io/scocp/)!
+
 
 ### Overview
 
