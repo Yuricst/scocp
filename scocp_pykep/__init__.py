@@ -16,4 +16,5 @@ if _missing_dependencies:  # pragma: no cover
 del _hard_dependencies, _dependency, _missing_dependencies
 
 # pykep-related functions
-from .scocp_pl2pl import CanonicalScales, PlanetTarget, scocp_pl2pl
+from ._cr3bp_heyoka import get_heyoka_integrator_cr3bp
+from ._scocp_pl2pl import CanonicalScales, PlanetTarget, scocp_pl2pl

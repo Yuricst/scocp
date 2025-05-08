@@ -2,8 +2,6 @@
 
 import copy
 import numpy as np
-from scipy.integrate import solve_ivp
-
 
 class HeyokaIntegrator:
     """Wrapper around heyoka's Taylor adaptive integrator for SCOCP

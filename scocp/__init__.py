@@ -1,7 +1,15 @@
 """scocp: Sequential Convex Optimization Control Problem"""
 
+__copyright__    = 'Copyright (C) 2025 Yuri Shimane'
+__version__      = '0.1.0'
+__license__      = 'GPL-3.0 License'
+__author__       = 'Yuri Shimane'
+__author_email__ = 'yuri.shimane@gatech.edu'
+__url__          = 'https://github.com/Yuricst/scocp'
+
+
 # check for dependencies
-_hard_dependencies = ("cvxpy", "heyoka", "numba", "numpy", "matplotlib", "scipy")
+_hard_dependencies = ("cvxpy", "numba", "numpy", "matplotlib", "scipy")
 _missing_dependencies = []
 for _dependency in _hard_dependencies:
     try:

@@ -1,5 +1,5 @@
 
-name: pytest
+name: test-scocp-pykep
   
 on: [push, pull_request]  
   
@@ -19,10 +19,10 @@ jobs:
           node-version: 20
       - name: Install dependencies  
         run: |
-          pip install wheel cvxpy heyoka matplotlib numba numpy pytest scipy coverage genbadge[all]
+          pip install wheel cvxpy heyoka matplotlib numba numpy pykep pytest scipy coverage genbadge[all]
       - name: Test with pytest  
         run: |  
-          coverage run -m pytest  -v -s tests
+          coverage run -m pytest  -v -s tests_pykep
       - name: Generate Coverage Report  
         run: |  
           coverage report -m
