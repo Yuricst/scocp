@@ -21,9 +21,12 @@
 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Contents:
 
+   installation
+   tutorials
+   examples_astrodynamics
    api
 
 
