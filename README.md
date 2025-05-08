@@ -16,6 +16,22 @@
 \\&     x(t) \in \mathcal{X}(t),\,\, u(t) \in \mathcal{U}(t)
 \end{align}
 ```
+with either fixed or free $t_f$ via sequential convex programming (SCP).
+
+Installing is as easy as 
+
+```
+pip install scocp
+```
+
+and to uninstall
+
+```
+pip uninstall scocp
+```
+
+
+### Overview
 
 with either fixed or free $t_f$ via sequential convex programming (SCP).
 The SCP is solved with the `SCvx*` algorithm, an augmented Lagrangian framework to handle non-convex constraints [1].
