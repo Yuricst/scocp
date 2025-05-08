@@ -580,7 +580,7 @@ class FreeTimeContinuousMovingTargetRdvLogMass(ContinuousControlSCOCP):
         ]
 
         constraints_initial = [xs[0,0:7] == self.x0[0:7]]
-        dg_target = self.target.target_state_jacobian(xbar[-1,7])
+        dg_target = self.target.target_state_derivative(xbar[-1,7])
         constraints_final = [
             xs[-1,0:6] - self.target.target_state(xbar[-1,7]) - dg_target * (xs[-1,7] - xbar[-1,7]) == xis[0:6]
         ]

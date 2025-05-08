@@ -2,6 +2,7 @@
 
 import copy
 import numpy as np
+import time
 
 
 class SCvxStar:
@@ -91,6 +92,7 @@ class SCvxStar:
             verbose (bool): whether to print verbose output
             feasability_norm (str): norm to use for feasibility evaluation
         """
+        tstart = time.time()
         header = f"|  Iter  |     J0      |   Delta J   |   Delta L   |    chi     |     rho     |     r      |   weight   | step acpt. |"
         print_frequency = 10
         delta = 1e16
@@ -209,6 +211,7 @@ class SCvxStar:
                 status_AL = "MaxIter"
 
         # print summary
+        t_algorithm = time.time() - tstart
         if verbose:
             print("\n")
             print(f"    SCvx* algorithm summary:")
@@ -217,6 +220,7 @@ class SCvxStar:
             print(f"        Penalized objective improvement : {scp_summary_dict['DeltaJ'][-1]:1.8e} (tol: {self.tol_opt:1.4e})")
             print(f"        Constraint violation            : {scp_summary_dict['chi'][-1]:1.8e} (tol: {self.tol_feas:1.4e})")
             print(f"        Total iterations                : {k+1}")
+            print(f"        SCvx* algorithm time            : {t_algorithm:1.4f} seconds")
             print("\n")
 
         # update summary dictionary
@@ -226,4 +230,5 @@ class SCvxStar:
         scp_summary_dict["weight"] = self.problem.weight
         scp_summary_dict["trust_region_radius"] = self.problem.trust_region_radius
         scp_summary_dict["rho"] = rho
+        scp_summary_dict["t_algorithm"] = t_algorithm
         return xopt, uopt, gopt, sols, scp_summary_dict

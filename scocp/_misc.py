@@ -80,11 +80,8 @@ class MovingTarget:
         """Get target state at time t"""
         return self.eval_state(t)
     
-    def target_state_jacobian(self, t: float) -> np.ndarray:
-        """Get 6-by-7 Jacobian of target state constraint w.r.t. [r_N, v_N, t_N]"""
-        # dg = np.zeros((6,7))
-        # dg[0:6,0:6] = np.eye(6)
-        # dg[:,6] = self.eval_state_derivative(t)
+    def target_state_derivative(self, t: float) -> np.ndarray:
+        """Get target state derivative w.r.t. time"""
         return self.eval_state_derivative(t)
     
 
