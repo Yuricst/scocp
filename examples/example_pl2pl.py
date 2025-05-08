@@ -95,13 +95,14 @@ def example_pl2pl(get_plot=False):
     tol_feas = 1e-10
     tol_opt = 1e-6
     algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas, rho1=1e-8, r_bounds=[1e-10, 10.0])
-    xopt, uopt, gopt, yopt, sols, summary_dict = algo.solve(
+    solution = algo.solve(
         xbar,
         ubar,
         gbar,
         maxiter = 200,
         verbose = True
     )
+    xopt, uopt, gopt, yopt, sols, summary_dict = solution.x, solution.u, solution.g, solution.y, solution.sols, solution.summary_dict
     assert summary_dict["status"] == "Optimal"
     assert summary_dict["chi"][-1] <= tol_feas
     print(f"Initial guess TOF: {tof_guess*TU2DAY:1.4f}d --> Optimized TOF: {xopt[-1,7]*TU2DAY:1.4f}d (bounds: {tf_bounds[0]*TU2DAY:1.4f}d ~ {tf_bounds[1]*TU2DAY:1.4f}d)")
@@ -128,7 +129,7 @@ def example_pl2pl(get_plot=False):
         for (_ts, _ys) in sols:
             ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], 'b-')
             _us_zoh = scocp.zoh_controls(problem.times, uopt, _ts)
-            ax.quiver(_ys[:,0], _ys[:,1], _ys[:,2], _us_zoh[:,0], _us_zoh[:,1], _us_zoh[:,2], color='r', length=1.0)
+            ax.quiver(_ys[:,0], _ys[:,1], _ys[:,2], _us_zoh[:,0], _us_zoh[:,1], _us_zoh[:,2], color='r', length=5.0)
 
         ax.scatter(x0[0], x0[1], x0[2], marker='x', color='k', label='Initial state')
         ax.scatter(xf[0], xf[1], xf[2], marker='o', color='k', label='Final state')

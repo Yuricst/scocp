@@ -116,13 +116,14 @@ def test_scp_scipy_logmass(get_plot=False):
     tol_feas = 1e-8
     tol_opt = 1e-6
     algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas)
-    xopt, uopt, gopt, yopt, sols, summary_dict = algo.solve(
+    solution = algo.solve(
         xbar,
         ubar,
         gbar,
         maxiter = 250,
         verbose = True
     )
+    xopt, uopt, gopt, yopt, sols, summary_dict = solution.x, solution.u, solution.g, solution.y, solution.sols, solution.summary_dict
     assert summary_dict["status"] == "Optimal"
     assert summary_dict["chi"][-1] <= tol_feas
     print(f"Initial guess TOF: {tf_guess:1.4f} --> Optimized TOF: {xopt[-1,7]:1.4f} (bounds: {tf_bounds[0]:1.4f} ~ {tf_bounds[1]:1.4f})")

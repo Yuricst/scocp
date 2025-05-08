@@ -5,6 +5,35 @@ import numpy as np
 import time
 
 
+class SCPSolution:
+    """Solution structure for SCvx* algorithm
+
+    The solution structure is to the non-convex OCP of the form:
+
+    min_{x,u,g,y} J(x,u,g,y)
+    s.t. 
+        x_{k+1} = x_k + f(x_k,u_k,g_k,y_k)
+        G(x,u,g,y) = 0
+        H(x,u,g,y) <= 0
+    
+    Attributes:
+        x (np.array): optimal state trajectory
+        u (np.array): optimal control trajectory
+        g (np.array): optimal control magnitude terms
+        y (np.array): optimal general variables
+        sols (list): list of solutions
+        summary_dict (dict): summary dictionary
+    """
+    def __init__(self, xopt, uopt, gopt, yopt, sols, summary_dict):
+        self.x = xopt
+        self.u = uopt
+        self.g = gopt
+        self.y = yopt
+        self.sols = sols
+        self.summary_dict = summary_dict
+        return
+
+
 class SCvxStar:
     """SCvx* algorithm for optimal control problems
 
@@ -201,7 +230,7 @@ class SCvxStar:
                     g_nl_bar[:] = g_nl_opt[:]
                 if self.problem.nh > 0:
                     h_nl_bar[:] = h_nl_opt[:]
-                    
+
                 if abs(DeltaJ) < delta:
                     # update multipliers
                     self.problem.lmb_dynamics = self.problem.lmb_dynamics + self.problem.weight * gdyn_nl_opt
@@ -263,7 +292,7 @@ class SCvxStar:
         scp_summary_dict["trust_region_radius"] = self.problem.trust_region_radius
         scp_summary_dict["rho"] = rho
         scp_summary_dict["t_algorithm"] = t_algorithm
-        return xopt, uopt, gopt, yopt,sols, scp_summary_dict
+        return SCPSolution(xopt, uopt, gopt, yopt, sols, scp_summary_dict)
     
     def plot_DeltaJ(self, axis, summary_dict: dict, s = 5):
         """Plot iterations of DeltaJ"""
