@@ -16,7 +16,7 @@ if _missing_dependencies:  # pragma: no cover
 del _hard_dependencies, _dependency, _missing_dependencies
 
 # miscellaneous functions
-from ._misc import zoh_control, zoh_controls
+from ._misc import zoh_control, zoh_controls, MovingTarget
 
 # functions for integrating dynamics
 from .eoms import *
@@ -34,7 +34,15 @@ from ._scocp_continuous import (
     FixedTimeContinuousRendezvousLogMass,
     FreeTimeContinuousRendezvous,
     FreeTimeContinuousRendezvousLogMass,
+    FreeTimeContinuousMovingTargetRendezvousLogMass,
 )
 
 # SCP algorithm
 from ._scvxstar import SCvxStar
+
+# pykep-related functions
+try:
+    from .scocp_pykep import *
+except ImportError:
+    print(f"WARNING: pykep not found, functions within scocp_pykep will not be available")
+    pass

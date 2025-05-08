@@ -1,0 +1,223 @@
+"""Test rendezvous with moving target"""
+
+import cvxpy as cp
+import matplotlib.pyplot as plt
+import numpy as np
+import pykep as pk
+
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+
+import scocp
+
+
+def test_scp_scipy_logmass(get_plot=False):
+    """Test SCP continuous transfer with log-mass dynamics"""
+    # define canonical parameters
+    GM_SUN = 132712000000.44     # Sun GM, km^3/s^-2
+    MSTAR  = 1000.0              # reference spacecraft mass
+    ISP    = 3000.0              # specific impulse, s
+    THRUST = 0.3                 # max thrust, kg.m/s^2
+    G0     = 9.81                # gravity at surface, m/s^2
+
+    DU = 149.6e6                 # length scale set to Sun-Earth distance, km
+    VU = np.sqrt(GM_SUN / DU)    # velocity scale, km/s
+    TU = DU / VU                 # time scale, s
+
+    isp = ISP/TU                                # canonical specific impulse, TU
+    Tmax = THRUST * (1/MSTAR)*(TU**2/(1e3*DU))  # canonical max thrust
+    cex = isp * G0*(TU**2/(1e3*DU))             # canonical exhaust velocity
+
+    mu = 1.0
+    parameters_ode = (mu, cex)
+
+    print(f"\nCanonical isp: {isp:1.4e} TU, cex: {cex:1.4e} DU/TU, tmax: {Tmax:1.4e} MU.DU/TU^2")
+
+    # we create the time-domain integrator for plotting etc.
+    integrator_timedomain = scocp.ScipyIntegrator(
+        nx=6,
+        nu=0,
+        rhs=scocp.rhs_twobody,
+        rhs_stm=scocp.rhs_twobody_stm,
+        args=(mu,),
+        method='DOP853',
+        reltol=1e-12,
+        abstol=1e-12
+    )
+    
+    # this is the non-dimentional time integrator for solving the OCP
+    integrator_01domain = scocp.ScipyIntegrator(
+        nx=8,
+        nu=4,
+        n_gamma=1,
+        rhs=scocp.control_rhs_twobody_logmass_freetf,
+        rhs_stm=scocp.control_rhs_twobody_logmass_freetf_stm,
+        impulsive=False,
+        args=(parameters_ode,[0.0,0.0,0.0,1.0,0.0]),
+        method='DOP853', reltol=1e-12, abstol=1e-12)
+    
+    # propagate uncontrolled and controlled dynamics
+    oe0 = np.array([1., 0.0, np.deg2rad(1), 1.5, 0.0, np.deg2rad(0)])
+    print(f"pk.par2ic(oe0, mu), [np.log(1.0)] = {pk.par2ic(oe0, mu), [np.log(1.0)]}")
+    x0 = np.concatenate((
+        np.concatenate((pk.par2ic(oe0, mu))), [np.log(1.0)]
+    ))
+    period_0 = 2*np.pi*np.sqrt(oe0[0]**3/mu)
+    sol_lpo0 = integrator_timedomain.solve([0, period_0], x0[0:6], get_ODESolution=True)
+
+    oef0 = np.array([1.5, 0.01, np.deg2rad(3), 0.3, 0.0, np.deg2rad(130)])
+    xf0 = np.concatenate((pk.par2ic(oef0, mu)))
+    period_f = 2*np.pi*np.sqrt(oef0[0]**3/mu)
+    sol_lpo1 = integrator_timedomain.solve([0, period_f], xf0[0:6], get_ODESolution=True)
+
+    # transfer problem discretization
+    N = 30
+    tf_bounds = np.array([period_0, 1.3 * period_f])
+    tf_guess = 2*np.pi
+    s_bounds = [0.01*tf_guess, 10*tf_guess]
+    
+    times_guess = np.linspace(0, tf_guess, N)    # initial guess
+    taus = np.linspace(0, 1, N)
+
+    # create target object
+    def eval_target_state(t: float) -> np.ndarray:
+        return np.concatenate(pk.propagate_lagrangian(r0 = xf0[0:3], v0 = xf0[3:6], tof = t, mu = mu))
+    
+    def eval_target_state_derivative(t: float) -> np.ndarray:
+        state = eval_target_state(t)
+        return scocp.rhs_twobody(t, state, mu)
+    
+    target = scocp.MovingTarget(eval_target_state, eval_target_state_derivative)
+
+    # evaluate target state
+    xf_guess = target.eval_state(tf_guess)
+
+    # create subproblem
+    problem = scocp.FreeTimeContinuousMovingTargetRendezvousLogMass(
+        x0, target, Tmax, tf_bounds, s_bounds, N, integrator_01domain, taus, augment_Gamma=True,
+        weight = 10.0
+    )
+
+    # create initial guess
+    print(f"Preparing initial guess...")
+    elements = np.concatenate((
+        np.linspace(oe0[0], oef0[0], N).reshape(-1,1),
+        np.linspace(oe0[1], oef0[1], N).reshape(-1,1),
+        np.linspace(oe0[2], oef0[2], N).reshape(-1,1),
+        np.linspace(oe0[3], oef0[3], N).reshape(-1,1),
+        np.linspace(oe0[4], oef0[4], N).reshape(-1,1),
+        np.linspace(oe0[5], oef0[5], N).reshape(-1,1),
+    ), axis=1)
+    elements[:,5] = np.linspace(oe0[5], oef0[5]+2*np.pi, N)
+    xbar = np.zeros((N,8))
+    xbar[:,0:6] = np.array(
+        [np.concatenate(pk.par2ic(E,mu)) for E in elements]
+    )
+    xbar[:,6]   = np.log(np.linspace(1.0, 0.5, N))  # initial guess for log-mass
+    xbar[0,0:7]   = x0[0:7]          # overwrite initial state
+    xbar[-1,0:6]  = xf_guess[0:6]          # overwrite final state
+    xbar[:,7]   = times_guess        # initial guess for time
+
+    sbar_initial = tf_guess * np.ones((N-1,1))
+    # ubar = np.concatenate((np.divide(np.diff(xbar[:,3:6], axis=0), np.diff(times_guess)[:,None]), sbar_initial), axis=1)
+    ubar = np.concatenate((np.zeros((N-1,3)), sbar_initial), axis=1)
+    gbar = np.sum(ubar[:,0:3], axis=1).reshape(-1,1)
+    geq_nl_ig, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, gbar, steps=5) # evaluate initial guess
+    
+    # solve subproblem
+    print(f"ubar.shape = {ubar.shape}, xbar.shape = {xbar.shape}, gbar.shape = {gbar.shape}")
+    print(f"problem.Phi_A.shape = {problem.Phi_A.shape}, problem.Phi_B.shape = {problem.Phi_B.shape}, problem.Phi_c.shape = {problem.Phi_c.shape}")
+    problem.solve_convex_problem(xbar, ubar, gbar)
+    assert problem.cp_status == "optimal", f"CP status: {problem.cp_status}"
+
+    # setup algorithm & solve
+    tol_feas = 1e-8
+    tol_opt = 1e-6
+    algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas)
+    xopt, uopt, gopt, sols, summary_dict = algo.solve(
+        xbar,
+        ubar,
+        gbar,
+        maxiter = 100,
+        verbose = True
+    )
+    assert summary_dict["status"] == "Optimal"
+    assert summary_dict["chi"][-1] <= tol_feas
+    print(f"Initial guess TOF: {tf_guess:1.4f} --> Optimized TOF: {xopt[-1,7]:1.4f} (bounds: {tf_bounds[0]:1.4f} ~ {tf_bounds[1]:1.4f})")
+    xf = target.eval_state(xopt[-1,7])
+
+    # evaluate nonlinear violations
+    geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, gopt, steps=20)
+    assert np.max(np.abs(geq_nl_opt)) <= tol_feas
+    
+    # evaluate solution
+    if (get_plot is True) and (summary_dict["status"] != "CPFailed"):
+        # plot results
+        fig = plt.figure(figsize=(12,7))
+        ax = fig.add_subplot(2,3,1,projection='3d')
+        ax.set(xlabel="x", ylabel="y", zlabel="z")
+        for (_ts, _ys) in sols_ig:
+            ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], '--', color='grey')
+        for (_ts, _ys) in sols:
+            ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], 'b-')
+
+            # interpolate control
+            _us_zoh = scocp.zoh_controls(taus, uopt, _ts)
+            ax.quiver(_ys[:,0], _ys[:,1], _ys[:,2], _us_zoh[:,0], _us_zoh[:,1], _us_zoh[:,2], color='r', length=1.0)
+
+        ax.scatter(x0[0], x0[1], x0[2], marker='x', color='k', label='Initial state')
+        ax.scatter(xf_guess[0], xf_guess[1], xf_guess[2], marker='^', color='k', label='Final state (guess)')
+        ax.scatter(xf[0], xf[1], xf[2], marker='o', color='k', label='Final state')
+        ax.plot(sol_lpo0.y[0,:], sol_lpo0.y[1,:], sol_lpo0.y[2,:], 'k-', lw=0.3)
+        ax.plot(sol_lpo1.y[0,:], sol_lpo1.y[1,:], sol_lpo1.y[2,:], 'k-', lw=0.3)
+        ax.set_aspect('equal')
+        ax.legend()
+
+        ax_m = fig.add_subplot(2,3,2)
+        ax_m.grid(True, alpha=0.5)
+        for (_ts, _ys) in sols:
+            ax_m.plot(_ys[:,7], np.exp(_ys[:,6]), 'b-')
+        ax_m.axhline(np.exp(sols[-1][1][-1,6]), color='r', linestyle='--')
+        ax_m.text(0.0, 0.01 + np.exp(sols[-1][1][-1,6]), f"m_f = {np.exp(sols[-1][1][-1,6]):1.4f}", color='r')
+        ax_m.set(xlabel="Time", ylabel="Mass")
+        ax_m.legend()
+
+        ax_u = fig.add_subplot(2,3,3)
+        ax_u.grid(True, alpha=0.5)
+        ax_u.step(xopt[:,7], np.concatenate((gopt[:,0], [0.0])), label="Control", where='post', color='k')
+        for idx, (_ts, _ys) in enumerate(sols):
+            ax_u.plot(_ys[:,7], Tmax/np.exp(_ys[:,6]), color='r', linestyle=':', label="Max accel." if idx == 0 else None)
+        ax_u.set(xlabel="Time", ylabel="Acceleration")
+        ax_u.legend()
+
+        ax_DeltaJ = fig.add_subplot(2,3,4)
+        ax_DeltaJ.grid(True, alpha=0.5)
+        ax_DeltaJ.plot(np.abs(summary_dict["DeltaJ"]), marker="o", color="k", ms=3)
+        ax_DeltaJ.axhline(tol_opt, color='r', linestyle='--', label='tol_opt')
+        ax_DeltaJ.set(yscale='log', xlabel='Iter.', ylabel='|DeltaJ|')
+        ax_DeltaJ.legend()
+
+        ax_DeltaL = fig.add_subplot(2,3,5)
+        ax_DeltaL.grid(True, alpha=0.5)
+        ax_DeltaL.plot(summary_dict["chi"], marker="o", color="k", ms=3)
+        ax_DeltaL.axhline(tol_feas, color='r', linestyle='--', label='tol_feas')
+        ax_DeltaL.set(yscale='log', xlabel='Iter.', ylabel='chi')
+        ax_DeltaL.legend()
+
+        ax = fig.add_subplot(2,3,6)
+        for (_ts, _ys) in sols_ig:
+            ax.plot(_ts, _ys[:,7], '--', color='grey')
+        for (_ts, _ys) in sols:
+            ax.plot(_ts, _ys[:,7], marker="o", ms=2, color='k')
+        ax.grid(True, alpha=0.5)
+        ax.set(xlabel="tau", ylabel="time")
+
+        plt.tight_layout()
+        fig.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots/twobody_logmass_freetf_rdv.png"), dpi=300)
+    return
+
+
+if __name__ == "__main__":
+    test_scp_scipy_logmass(get_plot=True)
+    plt.show()

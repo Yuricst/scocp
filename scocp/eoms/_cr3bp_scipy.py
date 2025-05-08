@@ -9,10 +9,8 @@ def gravity_gradient_cr3bp(rvec, mu):
     """Compute gravity gradient matrix for CR3BP in the rotating frame.
 
     Args:
-        mu (float): CR3BP parameter, i.e. scaled mass of secondary body
-        (1-mu) (float): scaled mass of first body to be used
-        mu (float): scaled mass of second body to be used
         rvec (np.array): position vector of spacecraft
+        mu (float): CR3BP parameter, i.e. scaled mass of secondary body
 
     Returns:
         np.array: 3-by-3 gravity gradient matrix

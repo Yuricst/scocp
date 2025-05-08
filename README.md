@@ -2,11 +2,11 @@
 
 ![pytest workflow](https://github.com/Yuricst/scocp/actions/workflows/pytest.yml/badge.svg)
 
-`scocp` is a pythononic framework for solving optimal control problems (OCPs) of the form:
+`scocp` is a pythononic framework for solving general optimal control problems (OCPs) of the form:
 
 ```math
 \begin{align}
-\min_{x,u} \quad& \int_{t_0}^{t_f} \mathcal{L}(x(t),u(t),t) \mathrm{d}t
+\min_{u(t), t_f} \quad& \int_{t_0}^{t_f} \mathcal{L}(x(t),u(t),t) \mathrm{d}t
 \\ \mathrm{s.t.} \quad&     \dot{x}(t) = f(x(t),u(t),t)
 \\&     g(x(t),u(t),t) = 0
 \\&     h(x(t),u(t),t) \leq 0
@@ -87,14 +87,23 @@ In addition, we provide problem classes that can be readily used for typical OCP
 
 2. Setup virtual environment (requirements: `python 3.11`, `cvxpy`, `heyoka`, `numba`, `numpy`, `matplotlib`, `scipy`)
 
+> [!NOTE]  
+> Some methods within `scocp` are written to be compatible/comparable to [`pykep`](https://esa.github.io/pykep/index.html)'s `trajopt` suites. However, `pykep` is not a hard dependency, so users can import `scocp` in an environment without `pykep` - and the imports in `scocp` will skip all functions/methods related to `pykep`.
+
 3. Run test from the root of the repository (requires `pytest`)
 
 ```
 pytest tests
 ```
 
+> [!WARNING]  
+> One of the tests (`tests/test_movingtarget_rdv.py`) also requires [`pykep`](https://esa.github.io/pykep/index.html)
+
+
 
 ## Examples
+
+See example notebooks in `./examples`.
 
 ### Continuous Control
 
@@ -126,6 +135,16 @@ pytest tests
 - Fixed boundary conditions
 
 <img src="tests/plots/scp_scipy_logmass_freetf_transfer.png" width="100%">
+
+
+#### `FreeTimeContinuousMovingTargetRendezvousLogMass`: Free TOF Continuous rendez-vous with mass dynamics & moving target
+
+- State: Cartesian position, velocity + log(mass) + dilated time
+- Controls: acceleration + time dilation factor
+- Free TOF
+- Fixed initial conditions, moving terminal conditions
+
+<img src="tests/plots/twobody_logmass_freetf_rdv.png" width="100%">
 
 
 ### Impulsive Control

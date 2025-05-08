@@ -1,5 +1,6 @@
 """Integrator class"""
 
+from collections.abc import Callable
 import numpy as np
 from scipy.integrate import solve_ivp
 
@@ -18,7 +19,7 @@ class ScipyIntegrator:
         abstol (float): absolute tolerance
         args (tuple): additional arguments for the right-hand side function
     """
-    def __init__(self, nx, nu, rhs, rhs_stm, impulsive=True, n_gamma=0, method='RK45', reltol=1e-12, abstol=1e-12, args=None):
+    def __init__(self, nx, nu, rhs: Callable, rhs_stm: Callable, impulsive=True, n_gamma=0, method='RK45', reltol=1e-12, abstol=1e-12, args=None):
         """Initialize the integrator"""
         self.nx = nx
         self.nu = nu

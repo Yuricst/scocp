@@ -1,5 +1,6 @@
 """Miscellaneous functions"""
 
+from collections.abc import Callable
 import cvxpy as cp
 import numpy as np
 
@@ -52,3 +53,37 @@ def get_augmented_lagrangian_penalty(weight, xi_dyn, lmb_dyn, xi=None, lmb_eq=No
         for i in range(len(lmb_ineq)):
             penalty += lmb_ineq[i] * zeta[i]
     return penalty
+
+
+class MovingTarget:
+    """Define moving target for rendezvous problem
+    
+    We assume the target state equality constraint is of the form
+
+    ```
+    g(r_N,v_N,t_N) = [ r_N - r_ref(t_N)
+                       v_N - v_ref(t_N) ]
+    ```
+
+    where r_ref(t_N) and v_ref(t_N) are the position and velocity of the target at time t_N.
+
+    Args:
+        eval_state (function): function to evaluate target state
+        eval_state_derivative (function): function to evaluate derivative of target state
+    """
+    def __init__(self, eval_state: Callable, eval_state_derivative: Callable):
+        self.eval_state = eval_state
+        self.eval_state_derivative = eval_state_derivative
+        return
+    
+    def target_state(self, t: float) -> np.ndarray:
+        """Get target state at time t"""
+        return self.eval_state(t)
+    
+    def target_state_jacobian(self, t: float) -> np.ndarray:
+        """Get 6-by-7 Jacobian of target state constraint w.r.t. [r_N, v_N, t_N]"""
+        # dg = np.zeros((6,7))
+        # dg[0:6,0:6] = np.eye(6)
+        # dg[:,6] = self.eval_state_derivative(t)
+        return self.eval_state_derivative(t)
+    

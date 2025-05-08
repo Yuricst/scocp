@@ -106,6 +106,10 @@ class SCvxStar:
         # initial constraint violation evaluation
         gdyn_nl_bar, _ = self.problem.evaluate_nonlinear_dynamics(xbar, ubar, gbar)
         g_nl_bar, h_nl_bar = self.problem.evaluate_nonlinear_constraints(xbar, ubar, gbar)
+        assert g_nl_bar.shape == (self.problem.ng,),\
+            f"Shape of equality constraint violations by self.problem.evaluate_nonlinear_constraints does not match (self.problem.ng,)"
+        assert h_nl_bar.shape == (self.problem.nh,),\
+            f"Shape of inequality constraint violations by self.problem.evaluate_nonlinear_constraints does not match (self.problem.nh,)"
 
         # initialize summary dictionary
         scp_summary_dict = {
