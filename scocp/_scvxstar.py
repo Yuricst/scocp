@@ -10,24 +10,25 @@ class SCPSolution:
 
     The solution structure is to the non-convex OCP of the form:
 
-    min_{x,u,g,y} J(x,u,g,y)
+    min_{x,u,v,y} J(x,u,v,y)
     s.t. 
-        x_{k+1} = x_k + f(x_k,u_k,g_k,y_k)
-        G(x,u,g,y) = 0
-        H(x,u,g,y) <= 0
+        x_{k+1} = x_k + f(x_k,u_k,v_k,y_k)
+        ||u_k|| <= v_k
+        g(x,u,v,y) = 0
+        h(x,u,v,y) <= 0
     
     Attributes:
         x (np.array): optimal state trajectory
         u (np.array): optimal control trajectory
-        g (np.array): optimal control magnitude terms
+        v (np.array): optimal control magnitude terms
         y (np.array): optimal general variables
         sols (list): list of solutions
         summary_dict (dict): summary dictionary
     """
-    def __init__(self, xopt, uopt, gopt, yopt, sols, summary_dict):
+    def __init__(self, xopt, uopt, vopt, yopt, sols, summary_dict):
         self.x = xopt
         self.u = uopt
-        self.g = gopt
+        self.v = vopt
         self.y = yopt
         self.sols = sols
         self.summary_dict = summary_dict
@@ -117,7 +118,7 @@ class SCvxStar:
         self,
         xbar,
         ubar,
-        gbar = None,
+        vbar = None,
         ybar = None,
         maxiter: int = 10,
         verbose: bool = True,
@@ -128,7 +129,7 @@ class SCvxStar:
         Args:
             xbar (np.array): N-by-nx array of reference states
             ubar (np.array): N-by-nu array of reference controls
-            gbar (np.array): N-by-1 array of reference constraints
+            vbar (np.array): N-by-1 array of reference constraints
             maxiter (int): maximum number of iterations
             verbose (bool): whether to print verbose output
             feasability_norm (str): norm to use for feasibility evaluation
@@ -143,15 +144,15 @@ class SCvxStar:
         n_min_trust_region = 0
         sols = []
 
-        # initialize gbar if not provided
-        if gbar is None:
-            gbar = np.sum(ubar, axis=1).reshape(-1,1)
+        # initialize vbar if not provided
+        if vbar is None:
+            vbar = np.sum(ubar, axis=1).reshape(-1,1)
         if ybar is None and self.problem.ny > 0:
             ybar = np.zeros((self.problem.ny,))
 
         # initial constraint violation evaluation
-        gdyn_nl_bar, _ = self.problem.evaluate_nonlinear_dynamics(xbar, ubar, gbar)
-        g_nl_bar, h_nl_bar = self.problem.evaluate_nonlinear_constraints(xbar, ubar, gbar, ybar)
+        gdyn_nl_bar, _ = self.problem.evaluate_nonlinear_dynamics(xbar, ubar, vbar)
+        g_nl_bar, h_nl_bar = self.problem.evaluate_nonlinear_constraints(xbar, ubar, vbar, ybar)
         assert g_nl_bar.shape == (self.problem.ng,),\
             f"Shape of equality constraint violations by self.problem.evaluate_nonlinear_constraints does not match (self.problem.ng,)"
         assert h_nl_bar.shape == (self.problem.nh,),\
@@ -173,8 +174,8 @@ class SCvxStar:
 
         for k in range(maxiter):
             # build linear model
-            self.problem.build_linear_model(xbar, ubar, gbar)
-            xopt, uopt, gopt, yopt, xi_dyn_opt, xi_opt, zeta_opt = self.problem.solve_convex_problem(xbar, ubar, gbar, ybar)
+            self.problem.build_linear_model(xbar, ubar, vbar)
+            xopt, uopt, vopt, yopt, xi_dyn_opt, xi_opt, zeta_opt = self.problem.solve_convex_problem(xbar, ubar, vbar, ybar)
             if self.problem.cp_status not in ["optimal", "optimal_inaccurate"]:
                 status_AL = "CPFailed"
                 if verbose:
@@ -182,15 +183,15 @@ class SCvxStar:
                 break
             
             # evaluate nonlinear dynamics
-            gdyn_nl_opt, sols = self.problem.evaluate_nonlinear_dynamics(xopt, uopt, gopt)
+            gdyn_nl_opt, sols = self.problem.evaluate_nonlinear_dynamics(xopt, uopt, vopt)
 
             # evaluate nonlinear constraints
-            g_nl_opt, h_nl_opt = self.problem.evaluate_nonlinear_constraints(xopt, uopt, gopt, yopt)
+            g_nl_opt, h_nl_opt = self.problem.evaluate_nonlinear_constraints(xopt, uopt, vopt, yopt)
             chi = np.linalg.norm(np.concatenate((gdyn_nl_opt.flatten(), g_nl_opt, h_nl_opt)), feasability_norm)
 
             # evaluate penalized objective
-            J0 = self.problem.evaluate_objective(xopt, uopt, gopt)
-            J_bar = self.problem.evaluate_objective(xbar, ubar, gbar) + self.evaluate_penalty(gdyn_nl_bar, g_nl_bar, h_nl_bar)
+            J0 = self.problem.evaluate_objective(xopt, uopt, vopt)
+            J_bar = self.problem.evaluate_objective(xbar, ubar, vbar) + self.evaluate_penalty(gdyn_nl_bar, g_nl_bar, h_nl_bar)
             J_opt = J0                                                + self.evaluate_penalty(gdyn_nl_opt, g_nl_opt, h_nl_opt)
             L_opt = J0                                                + self.evaluate_penalty(xi_dyn_opt, xi_opt, zeta_opt)
 
@@ -222,7 +223,7 @@ class SCvxStar:
             if rho >= self.rho0:
                 xbar[:,:] = xopt[:,:]
                 ubar[:,:] = uopt[:,:]   
-                gbar[:,:] = gopt[:,:]
+                vbar[:,:] = vopt[:,:]
                 if self.problem.ny > 0:
                     ybar[:] = yopt[:]
                 gdyn_nl_bar[:,:] = gdyn_nl_opt[:,:]
@@ -292,7 +293,7 @@ class SCvxStar:
         scp_summary_dict["trust_region_radius"] = self.problem.trust_region_radius
         scp_summary_dict["rho"] = rho
         scp_summary_dict["t_algorithm"] = t_algorithm
-        return SCPSolution(xopt, uopt, gopt, yopt, sols, scp_summary_dict)
+        return SCPSolution(xopt, uopt, vopt, yopt, sols, scp_summary_dict)
     
     def plot_DeltaJ(self, axis, summary_dict: dict, s = 5):
         """Plot iterations of DeltaJ"""

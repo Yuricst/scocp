@@ -13,6 +13,7 @@ class ContinuousControlSCOCP:
         times (np.array): time grid
         ng (int): number of nonlinear equality constraints, excluding dynamics constraints
         nh (int): number of nonlinear inequality constraints
+        ny (int): number of other variables
         augment_Gamma (bool): whether to augment the control with the constraint vector when integrating the dynamics
         weight (float): weight of the objective function
         trust_region_radius (float): trust region radius
@@ -53,8 +54,8 @@ class ContinuousControlSCOCP:
             self.Phi_A = np.zeros((Nseg,self.integrator.nx,self.integrator.nx))
             self.Phi_B = np.zeros((Nseg,self.integrator.nx,self.integrator.nu+1))
             self.Phi_c = np.zeros((Nseg,self.integrator.nx))
-            assert self.integrator.n_gamma >= 1,\
-                "When formulating SCOCP with `augment_Gamma=True`, `integrator.n_gamma` must be set to at least 1"
+            assert self.integrator.nv >= 1,\
+                "When formulating SCOCP with `augment_Gamma=True`, `integrator.nv` must be set to at least 1"
         else:
             self.Phi_A = np.zeros((Nseg,self.integrator.nx,self.integrator.nx))
             self.Phi_B = np.zeros((Nseg,self.integrator.nx,self.integrator.nu))
@@ -66,17 +67,17 @@ class ContinuousControlSCOCP:
         self.lmb_ineq     = np.zeros(self.nh)
         return
     
-    def evaluate_objective(self, xs, us, gs, ys=None):
+    def evaluate_objective(self, xs, us, vs, ys=None):
         """Evaluate the objective function"""
         raise NotImplementedError("Subproblem must be implemented by inherited class!")
     
-    def solve_convex_problem(self, xbar, ubar, gbar, ybar = None):
+    def solve_convex_problem(self, xbar, ubar, vbar, ybar = None):
         """Solve the convex subproblem
         
         Args:
             xbar (np.array): `(N, self.integrator.nx)` array of reference state history
             ubar (np.array): `(N-1, self.integrator.nu)` array of reference control history
-            gbar (np.array): `(N-1, self.integrator.n_gamma)` array of reference constraint history
+            vbar (np.array): `(N-1, self.integrator.nv)` array of reference constraint history
             ybar (np.array): `(self.ny,)` other reference variables
         
         Returns:
@@ -84,29 +85,29 @@ class ContinuousControlSCOCP:
         """
         raise NotImplementedError("Subproblem must be implemented by inherited class!")
     
-    def build_linear_model(self, xbar, ubar, gbar):
+    def build_linear_model(self, xbar, ubar, vbar):
         """Construct linear model for dynamics multiple-shooting constraints within SCP algorithm
         This function computes the Phi_A, Phi_B, and Phi_c matrices and stores them in the class attributes.
 
         Args:
             xbar (np.array): `(N, self.integrator.nx)` array of state history
             ubar (np.array): `(N-1, self.integrator.nu)` array of control history
-            gbar (np.array): `(N-1, self.integrator.n_gamma)` array of constraint history
+            vbar (np.array): `(N-1, self.integrator.nv)` array of constraint history
         """
         assert xbar.shape == (self.N, self.integrator.nx),\
             f"Given incorrect xbar shape {xbar.shape}; should be {(self.N, self.integrator.nx)}"
         assert ubar.shape == (self.N-1, self.integrator.nu),\
             f"Given incorrect ubar shape {ubar.shape}; should be {(self.N-1, self.integrator.nu)}"
-        if self.integrator.n_gamma == 0:
-            assert gbar.shape == (self.N-1,1), f"Given incorrect gbar shape {gbar.shape}; should be {(self.N-1,1)}"
+        if self.integrator.nv == 0:
+            assert vbar.shape == (self.N-1,1), f"Given incorrect vbar shape {vbar.shape}; should be {(self.N-1,1)}"
         else:
-            assert gbar.shape == (self.N-1, self.integrator.n_gamma),\
-                f"Given incorrect gbar shape {gbar.shape}; should be {(self.N-1, self.integrator.n_gamma)}"
+            assert vbar.shape == (self.N-1, self.integrator.nv),\
+                f"Given incorrect vbar shape {vbar.shape}; should be {(self.N-1, self.integrator.nv)}"
         i_PhiA_end = self.integrator.nx + self.integrator.nx * self.integrator.nx
         for i,ti in enumerate(self.times[:-1]):
             _tspan = (ti, self.times[i+1])
             if self.augment_Gamma:
-                _ubar = np.concatenate((ubar[i,:], gbar[i,:]))
+                _ubar = np.concatenate((ubar[i,:], vbar[i,:]))
             else:
                 _ubar = ubar[i,:]
             _, _ys = self.integrator.solve(_tspan, xbar[i,:], u=_ubar, stm=True)
@@ -168,21 +169,21 @@ class FixedTimeContinuousRdv(ContinuousControlSCOCP):
         self.umax = umax
         return
         
-    def evaluate_objective(self, xs, us, gs, ys=None):
+    def evaluate_objective(self, xs, us, vs, ys=None):
         """Evaluate the objective function"""
         dts = np.diff(self.times)
-        return np.sum(gs.T @ dts)
+        return np.sum(vs.T @ dts)
     
-    def solve_convex_problem(self, xbar, ubar, gbar, ybar=None):
+    def solve_convex_problem(self, xbar, ubar, vbar, ybar=None):
         """Solve the convex subproblem
         
         Args:
             xbar (np.array): `(N, self.integrator.nx)` array of reference state history
             ubar (np.array): `(N-1, self.integrator.nu)` array of reference control history
-            gbar (np.array): `(N-1, self.integrator.n_gamma)` array of reference constraint history
+            vbar (np.array): `(N-1, self.integrator.nv)` array of reference constraint history
         
         Returns:
-            (tuple): np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq
+            (tuple): np.array values of xs, us, vs, xi_dyn, xi_eq, zeta_ineq
         """
         N,nx = xbar.shape
         _,nu = ubar.shape
@@ -190,22 +191,22 @@ class FixedTimeContinuousRdv(ContinuousControlSCOCP):
         
         xs = cp.Variable((N, nx), name='state')
         us = cp.Variable((Nseg, nu), name='control')
-        gs = cp.Variable((Nseg, 1), name='Gamma')
-        xis = cp.Variable((Nseg,nx), name='xi')         # slack for dynamics
+        vs = cp.Variable((Nseg, 1), name='Gamma')
+        xis_dyn = cp.Variable((Nseg,nx), name='xi_dyn')         # slack for dynamics
         
-        penalty = get_augmented_lagrangian_penalty(self.weight, xis, self.lmb_dynamics)
+        penalty = get_augmented_lagrangian_penalty(self.weight, xis_dyn, self.lmb_dynamics)
         dts = np.diff(self.times)
-        objective_func = cp.sum(gs.T @ dts) + penalty
-        constraints_objsoc = [cp.SOC(gs[i,0], us[i,:]) for i in range(N-1)]
+        objective_func = cp.sum(vs.T @ dts) + penalty
+        constraints_objsoc = [cp.SOC(vs[i,0], us[i,:]) for i in range(N-1)]
 
         if self.augment_Gamma:
             constraints_dyn = [
-                xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,:] @ np.concatenate([us[i,:], gs[i,:]]) + self.Phi_c[i,:] + xis[i,:]
+                xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,:] @ np.concatenate([us[i,:], vs[i,:]]) + self.Phi_c[i,:] + xis_dyn[i,:]
                 for i in range(Nseg)
             ]
         else:
             constraints_dyn = [
-                xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,:] @ us[i,:] + self.Phi_c[i,:] + xis[i,:]
+                xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,:] @ us[i,:] + self.Phi_c[i,:] + xis_dyn[i,:]
                 for i in range(Nseg)
             ]
 
@@ -220,7 +221,7 @@ class FixedTimeContinuousRdv(ContinuousControlSCOCP):
                                xs[-1,3:6] == self.xf[3:6]]
         
         constraints_control = [
-            gs[i,0] <= self.umax for i in range(Nseg)
+            vs[i,0] <= self.umax for i in range(Nseg)
         ]
 
         convex_problem = cp.Problem(
@@ -228,7 +229,7 @@ class FixedTimeContinuousRdv(ContinuousControlSCOCP):
             constraints_objsoc + constraints_dyn + constraints_trustregion + constraints_initial + constraints_final + constraints_control)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
-        return xs.value, us.value, gs.value, None, xis.value, None, None
+        return xs.value, us.value, vs.value, None, xis_dyn.value, None, None
     
 
 class FixedTimeContinuousRdvLogMass(ContinuousControlSCOCP):
@@ -242,17 +243,17 @@ class FixedTimeContinuousRdvLogMass(ContinuousControlSCOCP):
         self.Tmax = Tmax
         return
         
-    def evaluate_objective(self, xs, us, gs, ys=None):
+    def evaluate_objective(self, xs, us, vs, ys=None):
         """Evaluate the objective function"""
         return -xs[-1,6]
     
-    def solve_convex_problem(self, xbar, ubar, gbar, ybar=None):
+    def solve_convex_problem(self, xbar, ubar, vbar, ybar=None):
         """Solve the convex subproblem
         
         Args:
             xbar (np.array): `(N, self.integrator.nx)` array of reference state history
             ubar (np.array): `(N-1, self.integrator.nu)` array of reference control history
-            gbar (np.array): `(N-1, self.integrator.n_gamma)` array of reference constraint history
+            vbar (np.array): `(N-1, self.integrator.nv)` array of reference constraint history
         
         Returns:
             (tuple): np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq
@@ -263,16 +264,16 @@ class FixedTimeContinuousRdvLogMass(ContinuousControlSCOCP):
         
         xs = cp.Variable((N, nx), name='state')
         us = cp.Variable((Nseg, nu), name='control')
-        gs = cp.Variable((Nseg, 1), name='Gamma')
-        xis = cp.Variable((Nseg,nx), name='xi')         # slack for dynamics
+        vs = cp.Variable((Nseg, 1), name='Gamma')
+        xis_dyn = cp.Variable((Nseg,nx), name='xi_dyn')         # slack for dynamics
         zetas = cp.Variable((Nseg,), name='zeta')     # slack for non-convex inequality
         
-        penalty = get_augmented_lagrangian_penalty(self.weight, xis, self.lmb_dynamics, zeta=zetas, lmb_ineq=self.lmb_ineq)
-        objective_func = cp.sum(gs) + penalty
-        constraints_objsoc = [cp.SOC(gs[i,0], us[i,:]) for i in range(N-1)]
+        penalty = get_augmented_lagrangian_penalty(self.weight, xis_dyn, self.lmb_dynamics, zeta=zetas, lmb_ineq=self.lmb_ineq)
+        objective_func = cp.sum(vs) + penalty
+        constraints_objsoc = [cp.SOC(vs[i,0], us[i,:]) for i in range(N-1)]
 
         constraints_dyn = [
-            xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,0:3] @ us[i,:] + self.Phi_B[i,:,3] * gs[i,:] + self.Phi_c[i,:] + xis[i,:]
+            xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,0:3] @ us[i,:] + self.Phi_B[i,:,3] * vs[i,:] + self.Phi_c[i,:] + xis_dyn[i,:]
             for i in range(Nseg)
         ]
 
@@ -287,7 +288,7 @@ class FixedTimeContinuousRdvLogMass(ContinuousControlSCOCP):
                                xs[-1,3:6] == self.xf[3:6]]
         
         constraints_control = [
-            gs[i,0] - self.Tmax * np.exp(-xbar[i,6]) * (1 - (xs[i,6] - xbar[i,6])) <= zetas[i]
+            vs[i,0] - self.Tmax * np.exp(-xbar[i,6]) * (1 - (xs[i,6] - xbar[i,6])) <= zetas[i]
             for i in range(Nseg)
         ]
 
@@ -296,16 +297,16 @@ class FixedTimeContinuousRdvLogMass(ContinuousControlSCOCP):
             constraints_objsoc + constraints_dyn + constraints_trustregion + constraints_initial + constraints_final + constraints_control)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
-        return xs.value, us.value, gs.value, None, xis.value, None, zetas.value
+        return xs.value, us.value, vs.value, None, xis_dyn.value, None, zetas.value
     
-    def evaluate_nonlinear_constraints(self, xs, us, gs, ys=None):
+    def evaluate_nonlinear_constraints(self, xs, us, vs, ys=None):
         """Evaluate nonlinear constraints
         
         Returns:
             (tuple): tuple of 1D arrays of nonlinear equality and inequality constraints
         """
         h_ineq = np.array([
-            max(gs[i,0] - self.Tmax * np.exp(-xs[i,6]), 0.0) for i in range(self.N-1)
+            max(vs[i,0] - self.Tmax * np.exp(-xs[i,6]), 0.0) for i in range(self.N-1)
         ])
         return np.zeros(self.ng), h_ineq
 
@@ -337,18 +338,18 @@ class FreeTimeContinuousRdv(ContinuousControlSCOCP):
         self.s_bounds = s_bounds
         return
         
-    def evaluate_objective(self, xs, us, gs, ys=None):
+    def evaluate_objective(self, xs, us, vs, ys=None):
         """Evaluate the objective function"""
         dts = np.diff(self.times)
-        return np.sum(gs.T @ dts)
+        return np.sum(vs.T @ dts)
     
-    def solve_convex_problem(self, xbar, ubar, gbar, ybar=None):
+    def solve_convex_problem(self, xbar, ubar, vbar, ybar=None):
         """Solve the convex subproblem
         
         Args:
             xbar (np.array): `(N, self.integrator.nx)` array of reference state history
             ubar (np.array): `(N-1, self.integrator.nu)` array of reference control history
-            gbar (np.array): `(N-1, self.integrator.n_gamma)` array of reference constraint history
+            vbar (np.array): `(N-1, self.integrator.nv)` array of reference constraint history
         
         Returns:
             (tuple): np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq
@@ -361,22 +362,22 @@ class FreeTimeContinuousRdv(ContinuousControlSCOCP):
         
         xs = cp.Variable((N, nx), name='state')
         us = cp.Variable((Nseg, nu), name='control')
-        gs = cp.Variable((Nseg, 1), name='Gamma')
-        xis = cp.Variable((Nseg,nx), name='xi')         # slack for dynamics
+        vs = cp.Variable((Nseg, 1), name='Gamma')
+        xis_dyn = cp.Variable((Nseg,nx), name='xi_dyn')         # slack for dynamics
         
-        penalty = get_augmented_lagrangian_penalty(self.weight, xis, self.lmb_dynamics)
+        penalty = get_augmented_lagrangian_penalty(self.weight, xis_dyn, self.lmb_dynamics)
         dts = np.diff(self.times)
-        objective_func = cp.sum(gs.T @ dts) + penalty
-        constraints_objsoc = [cp.SOC(gs[i,0], us[i,0:3]) for i in range(N-1)]
+        objective_func = cp.sum(vs.T @ dts) + penalty
+        constraints_objsoc = [cp.SOC(vs[i,0], us[i,0:3]) for i in range(N-1)]
 
         if self.augment_Gamma:
             constraints_dyn = [
-                xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,:] @ np.concatenate([us[i,:], gs[i,:]]) + self.Phi_c[i,:] + xis[i,:]
+                xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,:] @ np.concatenate([us[i,:], vs[i,:]]) + self.Phi_c[i,:] + xis_dyn[i,:]
                 for i in range(Nseg)
             ]
         else:
             constraints_dyn = [
-                xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,:] @ us[i,:] + self.Phi_c[i,:] + xis[i,:]
+                xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,:] @ us[i,:] + self.Phi_c[i,:] + xis_dyn[i,:]
                 for i in range(Nseg)
             ]
 
@@ -396,7 +397,7 @@ class FreeTimeContinuousRdv(ContinuousControlSCOCP):
         constraints_s       = [self.s_bounds[0] <= us[i,3] for i in range(Nseg)] + [us[i,3] <= self.s_bounds[1] for i in range(Nseg)]
 
         constraints_control = [
-            gs[i,0] <= self.umax for i in range(Nseg)
+            vs[i,0] <= self.umax for i in range(Nseg)
         ]
 
         convex_problem = cp.Problem(
@@ -407,7 +408,7 @@ class FreeTimeContinuousRdv(ContinuousControlSCOCP):
         )
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
-        return xs.value, us.value, gs.value, None, xis.value, None, None
+        return xs.value, us.value, vs.value, None, xis_dyn.value, None, None
 
 
 class FreeTimeContinuousRdvLogMass(ContinuousControlSCOCP):
@@ -434,17 +435,17 @@ class FreeTimeContinuousRdvLogMass(ContinuousControlSCOCP):
         self.s_bounds = s_bounds
         return
         
-    def evaluate_objective(self, xs, us, gs, ys=None):
+    def evaluate_objective(self, xs, us, vs, ys=None):
         """Evaluate the objective function"""
         return -xs[-1,6]
     
-    def solve_convex_problem(self, xbar, ubar, gbar, ybar=None):
+    def solve_convex_problem(self, xbar, ubar, vbar, ybar=None):
         """Solve the convex subproblem
         
         Args:
             xbar (np.array): `(N, self.integrator.nx)` array of reference state history
             ubar (np.array): `(N-1, self.integrator.nu)` array of reference control history
-            gbar (np.array): `(N-1, self.integrator.n_gamma)` array of reference constraint history
+            vbar (np.array): `(N-1, self.integrator.nv)` array of reference constraint history
         
         Returns:
             (tuple): np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq
@@ -455,16 +456,16 @@ class FreeTimeContinuousRdvLogMass(ContinuousControlSCOCP):
         
         xs = cp.Variable((N, nx), name='state')
         us = cp.Variable((Nseg, nu), name='control')
-        gs = cp.Variable((Nseg, 1), name='Gamma')
-        xis = cp.Variable((Nseg,nx), name='xi')         # slack for dynamics
+        vs = cp.Variable((Nseg, 1), name='Gamma')
+        xis_dyn = cp.Variable((Nseg,nx), name='xi_dyn')         # slack for dynamics
         zetas = cp.Variable((Nseg,), name='zeta')     # slack for non-convex inequality
         
-        penalty = get_augmented_lagrangian_penalty(self.weight, xis, self.lmb_dynamics, zeta=zetas, lmb_ineq=self.lmb_ineq)
+        penalty = get_augmented_lagrangian_penalty(self.weight, xis_dyn, self.lmb_dynamics, zeta=zetas, lmb_ineq=self.lmb_ineq)
         objective_func = -xs[-1,6] + penalty
-        constraints_objsoc = [cp.SOC(gs[i,0], us[i,0:3]) for i in range(N-1)]
+        constraints_objsoc = [cp.SOC(vs[i,0], us[i,0:3]) for i in range(N-1)]
         
         constraints_dyn = [
-            xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,0:4] @ us[i,:] + self.Phi_B[i,:,4] * gs[i,:] + self.Phi_c[i,:] + xis[i,:]
+            xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,0:4] @ us[i,:] + self.Phi_B[i,:,4] * vs[i,:] + self.Phi_c[i,:] + xis_dyn[i,:]
             for i in range(Nseg)
         ]
 
@@ -485,7 +486,7 @@ class FreeTimeContinuousRdvLogMass(ContinuousControlSCOCP):
 
         
         constraints_control = [
-            gs[i,0] - self.Tmax * np.exp(-xbar[i,6]) * (1 - (xs[i,6] - xbar[i,6])) <= zetas[i]
+            vs[i,0] - self.Tmax * np.exp(-xbar[i,6]) * (1 - (xs[i,6] - xbar[i,6])) <= zetas[i]
             for i in range(Nseg)
         ]
 
@@ -496,7 +497,7 @@ class FreeTimeContinuousRdvLogMass(ContinuousControlSCOCP):
             constraint_t0 + constraints_tf + constraints_s)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
-        return xs.value, us.value, gs.value, None, xis.value, None, zetas.value
+        return xs.value, us.value, vs.value, None, xis_dyn.value, None, zetas.value
     
     def evaluate_nonlinear_constraints(self, xs, us, gs, ys=None):
         """Evaluate nonlinear constraints
@@ -533,17 +534,17 @@ class FreeTimeContinuousMovingTargetRdvLogMass(ContinuousControlSCOCP):
         self.s_bounds = s_bounds
         return
         
-    def evaluate_objective(self, xs, us, gs, ys=None):
+    def evaluate_objective(self, xs, us, vs, ys=None):
         """Evaluate the objective function"""
         return -xs[-1,6]
     
-    def solve_convex_problem(self, xbar, ubar, gbar, ybar=None):
+    def solve_convex_problem(self, xbar, ubar, vbar, ybar=None):
         """Solve the convex subproblem
         
         Args:
             xbar (np.array): `(N, self.integrator.nx)` array of reference state history
             ubar (np.array): `(N-1, self.integrator.nu)` array of reference control history
-            gbar (np.array): `(N-1, self.integrator.n_gamma)` array of reference constraint history
+            vbar (np.array): `(N-1, self.integrator.nv)` array of reference constraint history
         
         Returns:
             (tuple): np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq
@@ -554,7 +555,7 @@ class FreeTimeContinuousMovingTargetRdvLogMass(ContinuousControlSCOCP):
         
         xs      = cp.Variable((N, nx), name='state')
         us      = cp.Variable((Nseg, nu), name='control')
-        gs      = cp.Variable((Nseg, 1), name='Gamma')
+        vs      = cp.Variable((Nseg, 1), name='Gamma')
         xis_dyn = cp.Variable((Nseg,nx), name='xi_dyn')         # slack for dynamics
         xis     = cp.Variable((self.ng,), name='xi')         # slack for target state
         zetas   = cp.Variable((Nseg,), name='zeta')     # slack for non-convex inequality
@@ -569,10 +570,10 @@ class FreeTimeContinuousMovingTargetRdvLogMass(ContinuousControlSCOCP):
             lmb_ineq=self.lmb_ineq
         )
         objective_func = -xs[-1,6] + penalty
-        constraints_objsoc = [cp.SOC(gs[i,0], us[i,0:3]) for i in range(N-1)]
+        constraints_objsoc = [cp.SOC(vs[i,0], us[i,0:3]) for i in range(N-1)]
         
         constraints_dyn = [
-            xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,0:4] @ us[i,:] + self.Phi_B[i,:,4] * gs[i,:] + self.Phi_c[i,:] + xis_dyn[i,:]
+            xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,0:4] @ us[i,:] + self.Phi_B[i,:,4] * vs[i,:] + self.Phi_c[i,:] + xis_dyn[i,:]
             for i in range(Nseg)
         ]
 
@@ -594,7 +595,7 @@ class FreeTimeContinuousMovingTargetRdvLogMass(ContinuousControlSCOCP):
         constraints_s = [self.s_bounds[0] <= us[i,3] for i in range(Nseg)] + [us[i,3] <= self.s_bounds[1] for i in range(Nseg)]
         
         constraints_control = [
-            gs[i,0] - self.Tmax * np.exp(-xbar[i,6]) * (1 - (xs[i,6] - xbar[i,6])) <= zetas[i]
+            vs[i,0] - self.Tmax * np.exp(-xbar[i,6]) * (1 - (xs[i,6] - xbar[i,6])) <= zetas[i]
             for i in range(Nseg)
         ]
 
@@ -605,9 +606,9 @@ class FreeTimeContinuousMovingTargetRdvLogMass(ContinuousControlSCOCP):
             constraint_t0 + constraints_tf + constraints_s)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
-        return xs.value, us.value, gs.value, None, xis_dyn.value, xis.value, zetas.value
+        return xs.value, us.value, vs.value, None, xis_dyn.value, xis.value, zetas.value
     
-    def evaluate_nonlinear_constraints(self, xs, us, gs, ys=None):
+    def evaluate_nonlinear_constraints(self, xs, us, vs, ys=None):
         """Evaluate nonlinear constraints
         
         Returns:
@@ -615,6 +616,6 @@ class FreeTimeContinuousMovingTargetRdvLogMass(ContinuousControlSCOCP):
         """
         g_eq = xs[-1,0:6] - self.target.target_state(xs[-1,7])
         h_ineq = np.array([
-            max(gs[i,0] - self.Tmax * np.exp(-xs[i,6]), 0.0) for i in range(self.N-1)
+            max(vs[i,0] - self.Tmax * np.exp(-xs[i,6]), 0.0) for i in range(self.N-1)
         ])
         return g_eq, h_ineq

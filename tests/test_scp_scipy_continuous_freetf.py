@@ -136,11 +136,11 @@ def test_scp_scipy_freetf(get_plot=False):
     
     sbar_initial = tf_guess * np.ones((N-1,1))
     ubar = np.concatenate((np.zeros((N-1,3)), sbar_initial), axis=1)
-    gbar = np.sum(ubar[:,0:3], axis=1).reshape(-1,1)
+    vbar = np.sum(ubar[:,0:3], axis=1).reshape(-1,1)
 
     # check initial guess
-    _, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, gbar, steps=5)
-    # geq_nl_initial, sols_initial = problem.evaluate_nonlinear_dynamics(xbar, ubar, gbar)
+    _, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, vbar, steps=5)
+    # geq_nl_initial, sols_initial = problem.evaluate_nonlinear_dynamics(xbar, ubar, vbar)
     # fig = plt.figure(figsize=(10,5))
     # ax = fig.add_subplot(1,2,1,projection='3d')
     # for (_ts, _ys) in sols_initial:
@@ -157,7 +157,7 @@ def test_scp_scipy_freetf(get_plot=False):
     # ax.grid(True, alpha=0.5)
 
     # solve subproblem
-    problem.solve_convex_problem(xbar, ubar, gbar)
+    problem.solve_convex_problem(xbar, ubar, vbar)
     assert problem.cp_status == "optimal"
 
     # setup algorithm & solve
@@ -167,17 +167,17 @@ def test_scp_scipy_freetf(get_plot=False):
     solution = algo.solve(
         xbar,
         ubar,
-        gbar,
+        vbar,
         maxiter = 100,
         verbose = True
     )
-    xopt, uopt, gopt, yopt, sols, summary_dict = solution.x, solution.u, solution.g, solution.y, solution.sols, solution.summary_dict
+    xopt, uopt, vopt, yopt, sols, summary_dict = solution.x, solution.u, solution.v, solution.y, solution.sols, solution.summary_dict
     assert summary_dict["status"] == "Optimal"
     assert summary_dict["chi"][-1] <= tol_feas
     print(f"Initial guess TOF: {tf_guess:1.4f} --> Optimized TOF: {xopt[-1,6]:1.4f} (bounds: {tf_bounds[0]:1.4f} ~ {tf_bounds[1]:1.4f})")
 
     # evaluate nonlinear violations
-    geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, gopt, steps=20)
+    geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, vopt, steps=20)
     
     # evaluate solution
     if (get_plot is True) and (summary_dict["status"] != "CPFailed"):    
@@ -202,7 +202,7 @@ def test_scp_scipy_freetf(get_plot=False):
 
         ax_u = fig.add_subplot(2,3,2)
         ax_u.grid(True, alpha=0.5)
-        ax_u.step(xopt[:,6], np.concatenate((gopt[:,0], [0.0])), label="Gamma", where='post', color='k')
+        ax_u.step(xopt[:,6], np.concatenate((vopt[:,0], [0.0])), label="Gamma", where='post', color='k')
         ax_u.set(xlabel="Time", ylabel="Control")
         ax_u.legend()
 

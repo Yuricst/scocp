@@ -55,7 +55,7 @@ def test_scp_scipy_logmass(get_plot=False):
     integrator_01domain = scocp.ScipyIntegrator(
         nx=8,
         nu=4,
-        n_gamma=1,
+        nv=1,
         rhs=scocp.control_rhs_twobody_logmass_freetf,
         rhs_stm=scocp.control_rhs_twobody_logmass_freetf_stm,
         impulsive=False,
@@ -111,9 +111,9 @@ def test_scp_scipy_logmass(get_plot=False):
     sbar_initial = tf_guess * np.ones((N-1,1))
     # ubar = np.concatenate((np.divide(np.diff(xbar[:,3:6], axis=0), np.diff(times_guess)[:,None]), sbar_initial), axis=1)
     ubar = np.concatenate((np.zeros((N-1,3)), sbar_initial), axis=1)
-    gbar = np.sum(ubar[:,0:3], axis=1).reshape(-1,1)
+    vbar = np.sum(ubar[:,0:3], axis=1).reshape(-1,1)
 
-    geq_nl_ig, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, gbar, steps=5)
+    geq_nl_ig, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, vbar, steps=5)
     print(f"max(geq_nl_ig) = {np.max(np.abs(geq_nl_ig))}")
     print(f"elements[0] = {elements[0]}")
 
@@ -129,19 +129,19 @@ def test_scp_scipy_logmass(get_plot=False):
     # ax.set_aspect('equal')
     
     # solve subproblem
-    print(f"ubar.shape = {ubar.shape}, xbar.shape = {xbar.shape}, gbar.shape = {gbar.shape}")
+    print(f"ubar.shape = {ubar.shape}, xbar.shape = {xbar.shape}, vbar.shape = {vbar.shape}")
     print(f"problem.Phi_A.shape = {problem.Phi_A.shape}, problem.Phi_B.shape = {problem.Phi_B.shape}, problem.Phi_c.shape = {problem.Phi_c.shape}")
-    problem.solve_convex_problem(xbar, ubar, gbar)
+    problem.solve_convex_problem(xbar, ubar, vbar)
     assert problem.cp_status == "optimal", f"CP status: {problem.cp_status}"
 
     # setup algorithm & solve
     tol_feas = 1e-8
     tol_opt = 1e-6
     algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas)
-    xopt, uopt, gopt, yopt, sols, summary_dict = algo.solve(
+    xopt, uopt, vopt, yopt, sols, summary_dict = algo.solve(
         xbar,
         ubar,
-        gbar,
+        vbar,
         maxiter = 200,
         verbose = True
     )
@@ -150,7 +150,7 @@ def test_scp_scipy_logmass(get_plot=False):
     print(f"Initial guess TOF: {tf_guess:1.4f} --> Optimized TOF: {xopt[-1,7]:1.4f} (bounds: {tf_bounds[0]:1.4f} ~ {tf_bounds[1]:1.4f})")
     
     # evaluate nonlinear violations
-    geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, gopt, steps=20)
+    geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, vopt, steps=20)
     #assert np.max(np.abs(geq_nl_opt)) <= tol_feas
     
     # evaluate solution
@@ -185,7 +185,7 @@ def test_scp_scipy_logmass(get_plot=False):
 
         ax_u = fig.add_subplot(2,3,3)
         ax_u.grid(True, alpha=0.5)
-        ax_u.step(xopt[:,7], np.concatenate((gopt[:,0], [0.0])), label="Control", where='post', color='k')
+        ax_u.step(xopt[:,7], np.concatenate((vopt[:,0], [0.0])), label="Control", where='post', color='k')
         for idx, (_ts, _ys) in enumerate(sols):
             ax_u.plot(_ys[:,7], Tmax/np.exp(_ys[:,6]), color='r', linestyle=':', label="Max accel." if idx == 0 else None)
         ax_u.set(xlabel="Time", ylabel="Acceleration")

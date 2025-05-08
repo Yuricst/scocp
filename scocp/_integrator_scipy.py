@@ -13,17 +13,17 @@ class ScipyIntegrator:
         rhs (function): right-hand side function
         rhs_stm (function): right-hand side function for state transition matrix
         impulsive (bool): whether the dynamics are impulsive
-        n_gamma (int): dimensions corresponding to control norms to be augmented 
+        nv (int): dimensions corresponding to control norms to be augmented 
         method (str): integration method
         reltol (float): relative tolerance
         abstol (float): absolute tolerance
         args (tuple): additional arguments for the right-hand side function
     """
-    def __init__(self, nx, nu, rhs: Callable, rhs_stm: Callable, impulsive=True, n_gamma=0, method='RK45', reltol=1e-12, abstol=1e-12, args=None):
+    def __init__(self, nx, nu, rhs: Callable, rhs_stm: Callable, impulsive=True, nv=0, method='RK45', reltol=1e-12, abstol=1e-12, args=None):
         """Initialize the integrator"""
         self.nx = nx
         self.nu = nu
-        self.n_gamma = n_gamma
+        self.nv = nv
         self.rhs = rhs
         self.rhs_stm = rhs_stm
         self.impulsive = impulsive
@@ -32,8 +32,8 @@ class ScipyIntegrator:
         self.abstol = abstol
         self.args = args
         if impulsive is False:
-            assert len(self.args[-1]) == self.nu + self.n_gamma,\
-                f"last argument must be a place-holder for control with length {self.nu + self.n_gamma}, but got {len(self.args[-1])}"
+            assert len(self.args[-1]) == self.nu + self.nv,\
+                f"last argument must be a place-holder for control with length {self.nu + self.nv}, but got {len(self.args[-1])}"
         return
 
     def solve(self, tspan, x0, u=None, stm=False, t_eval=None, args=None, get_ODESolution=False):
@@ -65,7 +65,7 @@ class ScipyIntegrator:
             if self.impulsive is True:
                 x0_stm = np.concatenate((x0, np.eye(self.nx).flatten()))
             else:
-                x0_stm = np.concatenate((x0, np.eye(self.nx).flatten(), np.zeros(self.nx*(self.nu+self.n_gamma))))
+                x0_stm = np.concatenate((x0, np.eye(self.nx).flatten(), np.zeros(self.nx*(self.nu+self.nv))))
             sol = solve_ivp(self.rhs_stm, tspan, x0_stm, t_eval=t_eval, method=self.method, rtol=self.reltol, atol=self.abstol, args=args)
         if get_ODESolution is True:
             return sol

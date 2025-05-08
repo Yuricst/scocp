@@ -58,8 +58,8 @@ def test_scp_scipy_impulsive(get_plot=False):
     ubar = np.zeros((N,3))
 
     # solve subproblem
-    gbar = np.sum(ubar, axis=1).reshape(-1,1)
-    problem.solve_convex_problem(xbar, ubar, gbar)
+    vbar = np.sum(ubar, axis=1).reshape(-1,1)
+    problem.solve_convex_problem(xbar, ubar, vbar)
     assert problem.cp_status == "optimal"
 
     # setup algorithm & solve
@@ -69,11 +69,11 @@ def test_scp_scipy_impulsive(get_plot=False):
     solution = algo.solve(
         xbar,
         ubar,
-        gbar,
+        vbar,
         maxiter = 100,
         verbose = True
     )
-    xopt, uopt, gopt, yopt, sols, summary_dict = solution.x, solution.u, solution.g, solution.y, solution.sols, solution.summary_dict
+    xopt, uopt, vopt, yopt, sols, summary_dict = solution.x, solution.u, solution.v, solution.y, solution.sols, solution.summary_dict
     assert summary_dict["status"] == "Optimal"
     assert summary_dict["chi"][-1] <= tol_feas
 
@@ -102,7 +102,7 @@ def test_scp_scipy_impulsive(get_plot=False):
 
         ax_u = fig.add_subplot(2,2,2)
         ax_u.grid(True, alpha=0.5)
-        ax_u.stem(times, gopt, markerfmt='D', label="Gamma")
+        ax_u.stem(times, vopt, markerfmt='D', label="Gamma")
         ax_u.set(xlabel="Time", ylabel="Control")
         ax_u.legend()
 

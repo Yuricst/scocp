@@ -25,11 +25,11 @@ A custom integrator class should look like:
 
 ```python
 class MyIntegrator:
-    def __init__(self, nx, nu, impulsive: bool, n_gamma, *args):
+    def __init__(self, nx, nu, impulsive: bool, nv, *args):
         self.nx = nx                  # dimension of states
         self.nu = nu                  # dimension of controls
         self.impulsive = impulsive    # whether to consider impulsive or continuous control
-        self.n_gamma = n_gamma        # dimension of control magnitudes to be augmented in the linearized map
+        self.nv = nv        # dimension of control magnitudes to be augmented in the linearized map
         # (whatever other stuff you want to do with the integrator)
 
     def solve(self, tspan, x0, u=None, stm=False):
@@ -54,7 +54,7 @@ class MyOptimalControlProblem(scocp.ContinuousControlSCOCP):
         # (compute objective)
         return objective
     
-    def solve_convex_problem(self, xbar, ubar, gbar, ybar):
+    def solve_convex_problem(self, xbar, ubar, vbar, ybar):
         N,nx = xbar.shape
         xs = cp.Variable((N, nx), name='state')
         us = cp.Variable((N, nu), name='control')

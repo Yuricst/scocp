@@ -14,14 +14,14 @@ class HeyokaIntegrator:
         ta (obj): heyoka taylor adaptive object for dynamics
         ta_stm (obj): heyoka taylor adaptive object for state transition matrix
         impulsive (bool): whether the dynamics are impulsive
-        n_gamma (int): dimensions corresponding to control norms to be augmented 
+        nv (int): dimensions corresponding to control norms to be augmented 
     """
-    def __init__(self, nx, nu, ta, ta_stm, impulsive=True, n_gamma=0):
+    def __init__(self, nx, nu, ta, ta_stm, impulsive=True, nv=0):
         self.nx = nx
         self.nu = nu
         self.ta = ta
         self.ta_stm = ta_stm
-        self.n_gamma = n_gamma
+        self.nv = nv
         self.impulsive = impulsive
         return
     
@@ -56,6 +56,6 @@ class HeyokaIntegrator:
             else:
                 if u is not None:
                     self.ta_stm.pars[:] = u[:]
-                self.ta_stm.state[:] = np.concatenate((x0, np.eye(self.nx).flatten(), np.zeros(self.nx*(self.nu+self.n_gamma))))
+                self.ta_stm.state[:] = np.concatenate((x0, np.eye(self.nx).flatten(), np.zeros(self.nx*(self.nu+self.nv))))
             out = self.ta_stm.propagate_grid(grid=t_eval)
         return t_eval, out[5]

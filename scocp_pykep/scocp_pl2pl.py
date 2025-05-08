@@ -257,20 +257,20 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         sbar_initial = (tf_guess - t0_guess) * np.ones((self.N-1,1))
         # ubar = np.concatenate((np.divide(np.diff(xbar[:,3:6], axis=0), np.diff(times_guess)[:,None]), sbar_initial), axis=1)
         ubar = np.concatenate((np.zeros((self.N-1,3)), sbar_initial), axis=1)
-        gbar = np.sum(ubar[:,0:3], axis=1).reshape(-1,1)
-        return xbar, ubar, gbar
+        vbar = np.sum(ubar[:,0:3], axis=1).reshape(-1,1)
+        return xbar, ubar, vbar
     
     def evaluate_objective(self, xs, us, gs, ys=None):
         """Evaluate the objective function"""
         return -xs[-1,6]
     
-    def solve_convex_problem(self, xbar, ubar, gbar, ybar=None):
+    def solve_convex_problem(self, xbar, ubar, vbar, ybar=None):
         """Solve the convex subproblem
         
         Args:
             xbar (np.array): `(N, self.integrator.nx)` array of reference state history
             ubar (np.array): `(N-1, self.integrator.nu)` array of reference control history
-            gbar (np.array): `(N-1, self.integrator.n_gamma)` array of reference constraint history
+            vbar (np.array): `(N-1, self.integrator.nv)` array of reference constraint history
             ybar (np.array): `(N, self.integrator.ny)` array of reference v-infinity vectors
 
         Returns:
