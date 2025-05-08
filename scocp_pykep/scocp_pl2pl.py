@@ -218,12 +218,12 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             states[i,0:3], states[i,3:6] = pk.propagate_lagrangian(xf0[0:3], xf0[3:6], t, mu=self.canonical_scales.mu)
         return t_eval, states
     
-    def get_initial_guess(self, t0_guess: float, tof_guess: float):
+    def get_initial_guess(self, t0_guess: float, tf_guess: float):
         """Construct initial guess based on linear interpolation along orbital elements
         
         Args:
             t0_guess (float): guess for loiter time
-            tof_guess (float): guess for time of flight
+            tf_guess (float): guess for final arrival time
         
         Returns:
             (tuple): tuple of `(N,8)` array of state history, `(N-1,4)` array of control history, and `(N-1,1)` array of constraint history
@@ -233,7 +233,7 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         oe0 = pk.ic2par(x0[0:3], x0[3:6], self.canonical_scales.mu)
 
         # final orbital elements
-        xf_guess = self.target_final.target_state(tof_guess)
+        xf_guess = self.target_final.target_state(tf_guess)
         oef = pk.ic2par(xf_guess[0:3], xf_guess[3:6], self.canonical_scales.mu)
 
         elements = np.concatenate((
@@ -252,9 +252,9 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         xbar[0,0:6]  = x0[0:6]                # overwrite initial state
         xbar[0,6]    = np.log(self.mass0)
         xbar[-1,0:6] = xf_guess[0:6]          # overwrite final state
-        xbar[:,7]    = np.linspace(0, tof_guess, self.N)        # initial guess for time
+        xbar[:,7]    = np.linspace(t0_guess, tf_guess, self.N)        # initial guess for time
 
-        sbar_initial = tof_guess * np.ones((self.N-1,1))
+        sbar_initial = (tf_guess - t0_guess) * np.ones((self.N-1,1))
         # ubar = np.concatenate((np.divide(np.diff(xbar[:,3:6], axis=0), np.diff(times_guess)[:,None]), sbar_initial), axis=1)
         ubar = np.concatenate((np.zeros((self.N-1,3)), sbar_initial), axis=1)
         gbar = np.sum(ubar[:,0:3], axis=1).reshape(-1,1)

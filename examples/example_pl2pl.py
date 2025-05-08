@@ -1,6 +1,5 @@
 """Test rendezvous with moving target"""
 
-import cvxpy as cp
 import matplotlib.pyplot as plt
 import numpy as np
 import pykep as pk
@@ -41,6 +40,17 @@ def example_pl2pl(get_plot=False):
     t0_mjd2000_bounds = [1100.0, 1200.0]    # initial epoch in mjd2000
     TU2DAY = TU / 86400.0  # convert non-dimensional time to elapsed time in days
 
+    # define transfer problem discretization
+    tf_bounds = np.array([100.0, 500.0]) / TU2DAY
+    t0_guess = 0.0
+    tf_guess = 250.0 / TU2DAY
+    N = 30
+    s_bounds = [0.01*tf_guess, 10*tf_guess]
+
+    # max v-infinity vector magnitudes
+    vinf_dep = 1e3 / VU     # 1000 m/s
+    vinf_arr = 500 / VU     # 500 m/s
+
     # this is the non-dimentional time integrator for solving the OCP
     integrator_01domain = scocp.ScipyIntegrator(
         nx=8,
@@ -52,17 +62,6 @@ def example_pl2pl(get_plot=False):
         args=((canonical_scales.mu, cex), [0.0,0.0,0.0,1.0,0.0]),
         method='DOP853', reltol=1e-12, abstol=1e-12
     )
-
-    # define transfer problem discretization
-    tf_bounds = np.array([100.0, 500.0]) / TU2DAY
-    t0_guess = 0.0
-    tof_guess = 250.0 / TU2DAY
-    N = 30
-    s_bounds = [0.01*tof_guess, 10*tof_guess]
-
-    # max v-infinity vector magnitudes
-    vinf_dep = 1e3 / VU     # 1000 m/s
-    vinf_arr = 500 / VU     # 500 m/s
 
     # create problem
     problem = scocp_pykep.scocp_pl2pl(
@@ -84,12 +83,8 @@ def example_pl2pl(get_plot=False):
 
     # create initial guess
     print(f"Preparing initial guess...")
-    xbar, ubar, gbar = problem.get_initial_guess(t0_guess, tof_guess)
+    xbar, ubar, gbar = problem.get_initial_guess(t0_guess, tf_guess)
     geq_nl_ig, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, gbar, steps=5) # evaluate initial guess
-    
-    # plot initial and final orbits
-    initial_orbit_states = problem.get_initial_orbit()
-    final_orbit_states = problem.get_final_orbit()
 
     # setup algorithm & solve
     tol_feas = 1e-10
@@ -105,7 +100,7 @@ def example_pl2pl(get_plot=False):
     xopt, uopt, gopt, yopt, sols, summary_dict = solution.x, solution.u, solution.g, solution.y, solution.sols, solution.summary_dict
     assert summary_dict["status"] == "Optimal"
     assert summary_dict["chi"][-1] <= tol_feas
-    print(f"Initial guess TOF: {tof_guess*TU2DAY:1.4f}d --> Optimized TOF: {xopt[-1,7]*TU2DAY:1.4f}d (bounds: {tf_bounds[0]*TU2DAY:1.4f}d ~ {tf_bounds[1]*TU2DAY:1.4f}d)")
+    print(f"Initial guess TOF: {tf_guess*TU2DAY:1.4f}d --> Optimized TOF: {xopt[-1,7]*TU2DAY:1.4f}d (bounds: {tf_bounds[0]*TU2DAY:1.4f}d ~ {tf_bounds[1]*TU2DAY:1.4f}d)")
     x0 = problem.target_initial.target_state(xopt[0,7])
     xf = problem.target_final.target_state(xopt[-1,7])
 
@@ -120,6 +115,10 @@ def example_pl2pl(get_plot=False):
     
     # evaluate solution
     if (get_plot is True) and (summary_dict["status"] != "CPFailed"):
+        # initial and final orbits
+        initial_orbit_states = problem.get_initial_orbit()
+        final_orbit_states = problem.get_final_orbit()
+
         # plot results
         fig = plt.figure(figsize=(12,7))
         ax = fig.add_subplot(2,3,1,projection='3d')
@@ -154,7 +153,7 @@ def example_pl2pl(get_plot=False):
             ax_u.plot(_ys[:,7]*canonical_scales.TU2DAY, Tmax/np.exp(_ys[:,6]), color='r', linestyle=':', label="Max accel." if idx == 0 else None)
         ax_u.set(xlabel="Time, days", ylabel="Acceleration")
         ax_u.legend()
-        
+
         ax_DeltaJ = fig.add_subplot(2,3,4)
         ax_DeltaJ.grid(True, alpha=0.5)
         algo.plot_DeltaJ(ax_DeltaJ, summary_dict)

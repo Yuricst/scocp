@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-`scocp`: Sequential Convexified Optimal Control Problem solver in Python
+scocp: Sequential Convexified Optimal Control Problem solver in Python
 ============================================================================
 
 `scocp` is a pythononic framework for solving general optimal control problems (OCPs) of the form:
@@ -27,6 +27,7 @@
    installation
    tutorials
    examples_astrodynamics
+   examples_pykep
    api
 
 
