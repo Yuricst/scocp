@@ -96,10 +96,6 @@ In addition, we provide problem classes that can be readily used for typical OCP
 pytest tests
 ```
 
-> [!WARNING]  
-> One of the tests (`tests/test_movingtarget_rdv.py`) also requires [`pykep`](https://esa.github.io/pykep/index.html)
-
-
 
 ## Examples
 

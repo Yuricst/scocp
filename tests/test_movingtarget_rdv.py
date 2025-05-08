@@ -3,7 +3,6 @@
 import cvxpy as cp
 import matplotlib.pyplot as plt
 import numpy as np
-import pykep as pk
 
 import os
 import sys
@@ -59,20 +58,17 @@ def test_scp_scipy_logmass(get_plot=False):
     
     # propagate uncontrolled and controlled dynamics
     oe0 = np.array([1., 0.0, np.deg2rad(1), 1.5, 0.0, np.deg2rad(0)])
-    print(f"pk.par2ic(oe0, mu), [np.log(1.0)] = {pk.par2ic(oe0, mu), [np.log(1.0)]}")
-    x0 = np.concatenate((
-        np.concatenate((pk.par2ic(oe0, mu))), [np.log(1.0)]
-    ))
+    x0 = np.concatenate((scocp.kep2rv(oe0, mu), [np.log(1.0)]))
     period_0 = 2*np.pi*np.sqrt(oe0[0]**3/mu)
     sol_lpo0 = integrator_timedomain.solve([0, period_0], x0[0:6], get_ODESolution=True)
 
     oef0 = np.array([1.5, 0.01, np.deg2rad(3), 0.3, 0.0, np.deg2rad(130)])
-    xf0 = np.concatenate((pk.par2ic(oef0, mu)))
+    xf0 = scocp.kep2rv(oef0, mu)
     period_f = 2*np.pi*np.sqrt(oef0[0]**3/mu)
     sol_lpo1 = integrator_timedomain.solve([0, period_f], xf0[0:6], get_ODESolution=True)
 
     # transfer problem discretization
-    N = 30
+    N = 40
     tf_bounds = np.array([period_0, 1.3 * period_f])
     tf_guess = 2*np.pi
     s_bounds = [0.01*tf_guess, 10*tf_guess]
@@ -82,7 +78,7 @@ def test_scp_scipy_logmass(get_plot=False):
 
     # create target object
     def eval_target_state(t: float) -> np.ndarray:
-        return np.concatenate(pk.propagate_lagrangian(r0 = xf0[0:3], v0 = xf0[3:6], tof = t, mu = mu))
+        return scocp.keplerder_nostm(mu, xf0, 0.0, t, tol=1e-12, maxiter=10)
     
     def eval_target_state_derivative(t: float) -> np.ndarray:
         state = eval_target_state(t)
@@ -111,9 +107,7 @@ def test_scp_scipy_logmass(get_plot=False):
     ), axis=1)
     elements[:,5] = np.linspace(oe0[5], oef0[5]+2*np.pi, N)
     xbar = np.zeros((N,8))
-    xbar[:,0:6] = np.array(
-        [np.concatenate(pk.par2ic(E,mu)) for E in elements]
-    )
+    xbar[:,0:6] = np.array([scocp.kep2rv(E,mu) for E in elements])
     xbar[:,6]   = np.log(np.linspace(1.0, 0.5, N))  # initial guess for log-mass
     xbar[0,0:7]   = x0[0:7]          # overwrite initial state
     xbar[-1,0:6]  = xf_guess[0:6]          # overwrite final state

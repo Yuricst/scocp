@@ -16,7 +16,8 @@ if _missing_dependencies:  # pragma: no cover
 del _hard_dependencies, _dependency, _missing_dependencies
 
 # miscellaneous functions
-from ._misc import zoh_control, zoh_controls, MovingTarget
+from ._misc import zoh_control, zoh_controls, MovingTarget, kep2rv, rv2kep
+from ._keplerder import keplerder, keplerder_nostm
 
 # functions for integrating dynamics
 from .eoms import *
