@@ -155,7 +155,7 @@ We can now define the continuous control two-body dynamics integrator for the au
 integrator_01domain = scocp.ScipyIntegrator(
     nx=8,
     nu=4,
-    n_gamma=1,
+    nv=1,
     rhs=scocp.control_rhs_twobody_logmass_freetf,
     rhs_stm=scocp.control_rhs_twobody_logmass_freetf_stm,
     impulsive=False,
@@ -204,7 +204,7 @@ The SCvx* algorithm needs an initial guess.
 One way to supply an initial guess is to linearly interpolate the initial and final orbital elements (i.e. at the planets)
 
 ```python
-xbar, ubar, gbar = problem.get_initial_guess(t0_guess, tf_guess)
+xbar, ubar, vbar = problem.get_initial_guess(t0_guess, tf_guess)
 ```
 
 We can now setup the SCvx* algorithm and solve our problem
@@ -216,7 +216,7 @@ algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas, rho1=1e-8, r_
 solution = algo.solve(
     xbar,
     ubar,
-    gbar,
+    vbar,
     maxiter = 200,
     verbose = True
 )
@@ -252,7 +252,7 @@ solution = algo.solve(
 Let's check that it has been solved correctly
 
 ```python
-xopt, uopt, gopt, yopt, sols, summary_dict = solution.x, solution.u, solution.g, solution.y, solution.sols, solution.summary_dict
+xopt, uopt, vopt, yopt, sols, summary_dict = solution.x, solution.u, solution.v, solution.y, solution.sols, solution.summary_dict
 assert summary_dict["status"] == "Optimal"
 assert summary_dict["chi"][-1] <= tol_feas
 print(f"Initial guess TOF: {tf_guess*TU2DAY:1.4f}d --> Optimized TOF: {xopt[-1,7]*TU2DAY:1.4f}d (bounds: {tf_bounds[0]*TU2DAY:1.4f}d ~ {tf_bounds[1]*TU2DAY:1.4f}d)")
@@ -264,7 +264,7 @@ vinf_dep_vec, vinf_arr_vec = yopt[0:3], yopt[3:6]
 print(f"||vinf_dep|| = {np.linalg.norm(vinf_dep_vec)*VU:1.4f} m/s (max: {vinf_dep*VU:1.4f} m/s), ||vinf_arr|| = {np.linalg.norm(vinf_arr_vec)*VU:1.4f} m/s (max: {vinf_arr*VU:1.4f} m/s)")
 
 # evaluate nonlinear violations
-geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, gopt, steps=20)
+geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, vopt, steps=20)
 print(f"Max dynamics constraint violation: {np.max(np.abs(geq_nl_opt)):1.4e}")
 assert np.max(np.abs(geq_nl_opt)) <= tol_feas
 ```
@@ -310,7 +310,7 @@ ax_m.set(xlabel="Time, days", ylabel="Mass")
 
 ax_u = fig.add_subplot(2,3,3)
 ax_u.grid(True, alpha=0.5)
-ax_u.step(xopt[:,7]*canonical_scales.TU2DAY, np.concatenate((gopt[:,0], [0.0])), label="Control", where='post', color='k')
+ax_u.step(xopt[:,7]*canonical_scales.TU2DAY, np.concatenate((vopt[:,0], [0.0])), label="Control", where='post', color='k')
 for idx, (_ts, _ys) in enumerate(sols):
     ax_u.plot(_ys[:,7]*canonical_scales.TU2DAY, Tmax/np.exp(_ys[:,6]), color='r', linestyle=':', label="Max accel." if idx == 0 else None)
 ax_u.set(xlabel="Time, days", ylabel="Acceleration")
@@ -338,4 +338,4 @@ ax.set(xlabel="tau", ylabel="Time, days")
 plt.tight_layout()
 ```
 
-![Earth-Mars transfer](figs/example_pl2pl.png)
+![Earth-Mars rendezvous](figs/example_pl2pl.png)
