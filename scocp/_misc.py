@@ -59,10 +59,8 @@ class MovingTarget:
     
     We assume the target state equality constraint is of the form
 
-    ```
     g(r_N,v_N,t_N) = [ r_N - r_ref(t_N)
                        v_N - v_ref(t_N) ]
-    ```
 
     where r_ref(t_N) and v_ref(t_N) are the position and velocity of the target at time t_N.
 
