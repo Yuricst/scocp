@@ -295,27 +295,25 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         objective_func = -xs[-1,6] + penalty
         constraints_objsoc = [cp.SOC(gs[i,0], us[i,0:3]) for i in range(N-1)]
         
-        Bvinf = np.zeros((8,3))
-        Bvinf[3:6,0:3] = np.eye(3)
+        # constraints on dynamics for state and control
         constraints_dyn = [
             xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,0:4] @ us[i,:] + self.Phi_B[i,:,4] * gs[i,:] + self.Phi_c[i,:] + xis_dyn[i,:]
             for i in range(Nseg)
         ]
+        constraints_control = [gs[i,0] - self.Tmax * np.exp(-xbar[i,6]) * (1 - (xs[i,6] - xbar[i,6])) <= zetas[i] for i in range(Nseg)]
 
+        # trust region constraints 
         constraints_trustregion = [
-            #xs[i,:] - xbar[i,:] <= self.trust_region_radius for i in range(N)
             xs[i,0:7] - xbar[i,0:7] <= self.trust_region_radius for i in range(N)
         ] + [
-            #xs[i,:] - xbar[i,:] >= -self.trust_region_radius for i in range(N)
             xs[i,0:7] - xbar[i,0:7] >= -self.trust_region_radius for i in range(N)
         ]
 
-        constraints_initial = [
+        # boundary conditions
+        constraints_boundary = [
             xs[0,0:6] - np.concatenate((np.zeros((3,3)), np.eye(3))) @ ys[0:3] \
                 - self.target_initial.target_state(xbar[0,7]) - self.target_initial.target_state_derivative(xbar[0,7]) * (xs[0,7] - xbar[0,7]) == xis[0:6],
             xs[0,6] == np.log(self.mass0),
-        ]
-        constraints_final = [
             xs[-1,0:6] - np.concatenate((np.zeros((3,3)), np.eye(3))) @ ys[3:6] \
                 - self.target_final.target_state(xbar[-1,7]) - self.target_final.target_state_derivative(xbar[-1,7]) * (xs[-1,7] - xbar[-1,7]) == xis[6:12]
         ]
@@ -333,13 +331,11 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         constraints_tf = [self.tf_bounds[0] <= xs[-1,7],
                           xs[-1,7] <= self.tf_bounds[1]]
         constraints_s = [self.s_bounds[0] <= us[i,3] for i in range(Nseg)] + [us[i,3] <= self.s_bounds[1] for i in range(Nseg)]
-        
-        constraints_control = [gs[i,0] - self.Tmax * np.exp(-xbar[i,6]) * (1 - (xs[i,6] - xbar[i,6])) <= zetas[i] for i in range(Nseg)]
 
         convex_problem = cp.Problem(
             cp.Minimize(objective_func),
             constraints_objsoc + constraints_dyn + constraints_trustregion +\
-            constraints_initial + constraints_final + constraints_vinf_mag + constraints_control +\
+            constraints_boundary + constraints_vinf_mag + constraints_control +\
             constraints_t0 + constraints_tf + constraints_s)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
