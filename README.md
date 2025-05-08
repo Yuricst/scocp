@@ -1,4 +1,4 @@
-# `scocp`: **Sequential Convexified Optimal Control Problem (scocp) solver in Python**
+# `scocp`: **Sequential Convexified Optimal Control Problem solver in Python**
 
 ![pytest workflow](https://github.com/Yuricst/scocp/actions/workflows/pytest.yml/badge.svg)
 
