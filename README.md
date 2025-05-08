@@ -88,10 +88,11 @@ In addition, we provide problem classes that can be readily used for typical OCP
 
 2. Setup virtual environment (requirements: `python 3.11`, `cvxpy`, `heyoka`, `numba`, `numpy`, `matplotlib`, `scipy`)
 
-> [!NOTE]  
-> Some methods within `scocp` are written to be compatible/comparable to [`pykep`](https://esa.github.io/pykep/index.html)'s `trajopt` suites. However, `pykep` is not a hard dependency, so users can import `scocp` in an environment without `pykep` - and the imports in `scocp` will skip all functions/methods related to `pykep`.
-
 3. Run test from the root of the repository (requires `pytest`)
+
+
+> [!NOTE]  
+> Additional methods compatible with the [`pykep`](https://esa.github.io/pykep/index.html) infrastructure are provided in `scocp_pykep`.
 
 ```
 pytest tests

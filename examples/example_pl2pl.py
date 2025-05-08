@@ -10,7 +10,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 import scocp
-
+import scocp_pykep
 
 def example_pl2pl(get_plot=False):
     """Test SCP continuous transfer with log-mass dynamics"""
@@ -25,7 +25,7 @@ def example_pl2pl(get_plot=False):
     VU = np.sqrt(GM_SUN / DU)    # velocity scale, m/s
     TU = DU / VU                 # time scale, s
 
-    canonical_scales = scocp.CanonicalScales(MSTAR, GM_SUN, DU)
+    canonical_scales = scocp_pykep.CanonicalScales(MSTAR, GM_SUN, DU)
 
     # define canonical spacecraft parameters
     m0 = 1.0                                                     # initial mass, in MU
@@ -65,7 +65,7 @@ def example_pl2pl(get_plot=False):
     vinf_arr = 500 / VU     # 500 m/s
 
     # create problem
-    problem = scocp.scocp_pl2pl(
+    problem = scocp_pykep.scocp_pl2pl(
         integrator_01domain,
         canonical_scales,
         pl0,

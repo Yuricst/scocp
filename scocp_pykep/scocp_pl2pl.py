@@ -4,10 +4,15 @@ import cvxpy as cp
 import numpy as np
 import pykep as pk
 
-from .._misc import get_augmented_lagrangian_penalty
-from .._scocp_continuous import ContinuousControlSCOCP
-from ..eoms import rhs_twobody, control_rhs_twobody_logmass_freetf, control_rhs_twobody_logmass_freetf_stm
-from .._integrator_scipy import ScipyIntegrator
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+
+from scocp import (
+    get_augmented_lagrangian_penalty,
+    ContinuousControlSCOCP,
+    rhs_twobody,
+)
 
 class CanonicalScales:
     """Canonical scales for the problem
