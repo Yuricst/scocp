@@ -77,7 +77,7 @@ class PlanetTarget:
         Returns:
             (np.array): Cartesian state derivative of the target planet at time `epoch`
         """
-        state = self.target_final_state(t)
+        state = self.target_state(t)
         return rhs_twobody(t, state, self.mu)
     
 
@@ -99,8 +99,10 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         cex (float): exhaust velocity in canonical units
         nseg (int): number of segments (s.t. `N = nseg + 1`)
         t0_mjd2000 (float): initial epoch in mjd2000
-        tof_bounds (tuple[float, float]): time of flight bounds
+        tf_bounds (tuple[float, float]): bounds on final time in days
         s_bounds (tuple[float, float]): control dilation factor bounds
+        vinf_dep (float): max v-infinity vector magnitude at departure, in canonical units
+        vinf_arr (float): max v-infinity vector magnitude at arrival, in canonical units
     """
     def __init__(
         self,
@@ -112,8 +114,8 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         thrust,
         cex,
         nseg: int,
-        t0_mjd2000: float,
-        tof_bounds: tuple[float, float],
+        t0_mjd2000_bounds: tuple[float, float],
+        tf_bounds: tuple[float, float],
         s_bounds: tuple[float, float],
         vinf_dep: float = 0.0,
         vinf_arr: float = 0.0,
@@ -122,7 +124,7 @@ class scocp_pl2pl(ContinuousControlSCOCP):
     ):
         # define problem parameters and inherit parent class
         N = nseg + 1
-        ng = 6
+        ng = 12
         nh = N - 1
         augment_Gamma = True
         times = np.linspace(0, 1, N)
@@ -135,8 +137,9 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         self.mass0 = mass
         self.Tmax = thrust
         self.cex = cex
-        self.t0_mjd2000 = t0_mjd2000
-        self.tof_bounds = tof_bounds
+        self.t0_mjd2000 = t0_mjd2000_bounds[0]
+        self.t0_bounds = [t0_mjd2000_bounds[0] - self.t0_mjd2000, t0_mjd2000_bounds[1] - self.t0_mjd2000]
+        self.tf_bounds = tf_bounds
         self.s_bounds = s_bounds
         self.vinf_dep = vinf_dep
         self.vinf_arr = vinf_arr
@@ -178,8 +181,9 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         Returns:
             (tuple): tuple of 1D array of time and `(steps,6)` array ofstate history
         """
-        oe0 = pk.ic2par(self.x0[0:3], self.x0[3:6], 1.0)
-        period = 2*np.pi*np.sqrt(oe0[0]**3/1.0)
+        x0 = self.target_initial.target_state(0.0)
+        oe0 = pk.ic2par(x0[0:3], x0[3:6], self.canonical_scales.mu)
+        period = 2*np.pi*np.sqrt(oe0[0]**3 / self.canonical_scales.mu)
         t_eval = np.linspace(0, period, steps)
         states = np.zeros((steps, 6))
         for i, t in enumerate(t_eval):
@@ -196,8 +200,8 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             (tuple): tuple of 1D array of time and `(steps,6)` array of state history
         """
         xf0 = self.target_final.target_state(0.0)
-        oef = pk.ic2par(xf0[0:3], xf0[3:6], 1.0)
-        period = 2*np.pi*np.sqrt(oef[0]**3/1.0)
+        oef = pk.ic2par(xf0[0:3], xf0[3:6], self.canonical_scales.mu)
+        period = 2*np.pi*np.sqrt(oef[0]**3 / self.canonical_scales.mu)
         t_eval = np.linspace(0, period, steps)
         states = np.zeros((steps, 6))
         for i, t in enumerate(t_eval):
@@ -214,21 +218,23 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             (tuple): tuple of `(3,)` array of v-infinity vectors at departure and arrival
         """
         assert xs.shape == (self.N, 8), f"xs must be a `(N,8)` array, but given {xs.shape}"
-        vinf_dep = xs[0,3:6] - self.x0[3:6]
+        vinf_dep = xs[0,3:6]  - self.target_initial.target_state(xs[0,7])[3:6]
         vinf_arr = xs[-1,3:6] - self.target_final.target_state(xs[-1,7])[3:6]
         return vinf_dep, vinf_arr
     
-    def get_initial_guess(self, tof_guess: float):
+    def get_initial_guess(self, t0_guess: float, tof_guess: float):
         """Construct initial guess based on linear interpolation along orbital elements
         
         Args:
+            t0_guess (float): guess for loiter time
             tof_guess (float): guess for time of flight
         
         Returns:
             (tuple): tuple of `(N,8)` array of state history, `(N-1,4)` array of control history, and `(N-1,1)` array of constraint history
         """
         # initial orbital elements
-        oe0 = pk.ic2par(self.x0[0:3], self.x0[3:6], self.canonical_scales.mu)
+        x0 = self.target_initial.target_state(t0_guess)
+        oe0 = pk.ic2par(x0[0:3], x0[3:6], self.canonical_scales.mu)
 
         # final orbital elements
         xf_guess = self.target_final.target_state(tof_guess)
@@ -247,7 +253,8 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         xbar = np.zeros((self.N,8))
         xbar[:,0:6]  = np.array([np.concatenate(pk.par2ic(E,self.canonical_scales.mu)) for E in elements])
         xbar[:,6]    = np.log(np.linspace(1.0, 0.5, self.N))  # initial guess for log-mass
-        xbar[0,0:7]  = self.x0[0:7]          # overwrite initial state
+        xbar[0,0:6]  = x0[0:6]                # overwrite initial state
+        xbar[0,6]    = np.log(self.mass0)
         xbar[-1,0:6] = xf_guess[0:6]          # overwrite final state
         xbar[:,7]    = np.linspace(0, tof_guess, self.N)        # initial guess for time
 
@@ -313,13 +320,14 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         ]
 
         constraints_initial = [
-            xs[0,0:3]                   == self.x0[0:3],
-            xs[0,3:6] + vinf_dep_vec[:] == self.x0[3:6],
-            xs[0,6]                     == self.x0[6],
+            xs[0,0:6] - np.concatenate((np.zeros((3,3)), np.eye(3))) @ vinf_dep_vec[:] \
+                - self.target_initial.target_state(xbar[0,7]) - self.target_initial.target_state_derivative(xbar[0,7]) * (xs[0,7] - xbar[0,7]) == xis[0:6],
+            xs[0,6] == np.log(self.mass0),
         ]
         constraints_final = [
-            xs[-1,0:6] - self.target_final.target_state(xbar[-1,7]) - self.target_final.target_state_derivative(xbar[-1,7]) * (xs[-1,7] - xbar[-1,7]) == xis[0:6]
-        ]
+            xs[-1,0:6] - np.concatenate((np.zeros((3,3)), np.eye(3))) @ vinf_arr_vec[:] \
+                - self.target_final.target_state(xbar[-1,7]) - self.target_final.target_state_derivative(xbar[-1,7]) * (xs[-1,7] - xbar[-1,7]) == xis[6:12]
+        ]  
         constraints_vinf_mag = [
             cp.SOC(vinf_dep_mag[0], vinf_dep_vec[:]),       # connect v-infinity vector to magnitude
             vinf_dep_mag[0] <= self.vinf_dep,               # magnitude upper-bounded
@@ -327,9 +335,14 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             vinf_arr_mag[0] <= self.vinf_arr,               # magnitude upper-bounded
         ]
         
-        constraint_t0 = [xs[0,7] == 0.0]
-        constraints_tf = [self.tof_bounds[0] <= xs[-1,7],
-                          xs[-1,7] <= self.tof_bounds[1]]
+        # constraints on times
+        if abs(self.t0_bounds[1] - self.t0_bounds[0]) < 1e-12:
+            constraints_t0 = [xs[0,7] == self.t0_bounds[0]]
+        else:
+            constraints_t0 = [self.t0_bounds[0] <= xs[0,7],
+                              xs[0,7] <= self.t0_bounds[1]]
+        constraints_tf = [self.tf_bounds[0] <= xs[-1,7],
+                          xs[-1,7] <= self.tf_bounds[1]]
         constraints_s = [self.s_bounds[0] <= us[i,3] for i in range(Nseg)] + [us[i,3] <= self.s_bounds[1] for i in range(Nseg)]
         
         constraints_control = [
@@ -341,7 +354,7 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             cp.Minimize(objective_func),
             constraints_objsoc + constraints_dyn + constraints_trustregion +\
             constraints_initial + constraints_final + constraints_vinf_mag +constraints_control +\
-            constraint_t0 + constraints_tf + constraints_s)
+            constraints_t0 + constraints_tf + constraints_s)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
         return xs.value, us.value, gs.value, xis_dyn.value, xis.value, zetas.value
@@ -352,7 +365,10 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         Returns:
             (tuple): tuple of 1D arrays of nonlinear equality and inequality constraints
         """
-        g_eq = xs[-1,0:6] - self.target_final.target_state(xs[-1,7])
+        g_eq = np.concatenate((
+            xs[0,0:6] - self.target_initial.target_state(xs[0,7]),
+            xs[-1,0:6] - self.target_final.target_state(xs[-1,7]),
+        ))
         h_ineq = np.array([
             max(gs[i,0] - self.Tmax * np.exp(-xs[i,6]), 0.0) for i in range(self.N-1)
         ])

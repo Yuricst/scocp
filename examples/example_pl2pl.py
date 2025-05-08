@@ -38,7 +38,7 @@ def example_pl2pl(get_plot=False):
     pl0 = pk.planet.jpl_lp('earth')
     plf = pk.planet.jpl_lp('mars')
 
-    t0_mjd2000 = 1100.0    # initial epoch in mjd2000
+    t0_mjd2000_bounds = [1100.0, 1100.0]    # initial epoch in mjd2000
     TU2DAY = TU / 86400.0  # convert non-dimensional time to elapsed time in days
 
     # this is the non-dimentional time integrator for solving the OCP
@@ -50,13 +50,19 @@ def example_pl2pl(get_plot=False):
         rhs_stm=scocp.control_rhs_twobody_logmass_freetf_stm,
         impulsive=False,
         args=((canonical_scales.mu, cex), [0.0,0.0,0.0,1.0,0.0]),
-        method='DOP853', reltol=1e-12, abstol=1e-12)
+        method='DOP853', reltol=1e-12, abstol=1e-12
+    )
 
     # define transfer problem discretization
-    tof_bounds = np.array([100.0, 800.0]) / TU2DAY
+    tf_bounds = np.array([100.0, 800.0]) / TU2DAY
+    t0_guess = 0.0
     tof_guess = 250.0 / TU2DAY
-    N = 60
+    N = 30
     s_bounds = [0.1*tof_guess, 10*tof_guess]
+
+    # max v-infinity vector magnitudes
+    vinf_dep = 0.0 #1e3 / VU
+    vinf_arr = 0.0
 
     # create problem
     problem = scocp.scocp_pl2pl(
@@ -68,15 +74,17 @@ def example_pl2pl(get_plot=False):
         Tmax,
         cex,
         N,
-        t0_mjd2000,
-        tof_bounds,
+        t0_mjd2000_bounds,
+        tf_bounds,
         s_bounds,
+        vinf_dep,
+        vinf_arr,
         weight = 1.0,
     )
 
     # create initial guess
     print(f"Preparing initial guess...")
-    xbar, ubar, gbar = problem.get_initial_guess(tof_guess)
+    xbar, ubar, gbar = problem.get_initial_guess(t0_guess, tof_guess)
     geq_nl_ig, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, gbar, steps=5) # evaluate initial guess
     
     # plot initial and final orbits
@@ -114,12 +122,12 @@ def example_pl2pl(get_plot=False):
     )
     assert summary_dict["status"] == "Optimal"
     assert summary_dict["chi"][-1] <= tol_feas
-    print(f"Initial guess TOF: {tof_guess*TU2DAY:1.4f}d --> Optimized TOF: {xopt[-1,7]*TU2DAY:1.4f}d (bounds: {tof_bounds[0]*TU2DAY:1.4f}d ~ {tof_bounds[1]*TU2DAY:1.4f}d)")
-    xf = problem.target.target_state(xopt[-1,7])
+    print(f"Initial guess TOF: {tof_guess*TU2DAY:1.4f}d --> Optimized TOF: {xopt[-1,7]*TU2DAY:1.4f}d (bounds: {tf_bounds[0]*TU2DAY:1.4f}d ~ {tf_bounds[1]*TU2DAY:1.4f}d)")
+    xf = problem.target_final.target_state(xopt[-1,7])
 
     # evaluate v-infinity vectors
-    vinf_dep, vinf_arr = problem.get_vinf(xopt)
-    print(f"vinf_dep = {vinf_dep}, vinf_arr = {vinf_arr}")
+    vinf_dep_vec, vinf_arr_vec = problem.get_vinf(xopt)
+    print(f"|vinf_dep| = {np.linalg.norm(vinf_dep_vec)*VU:1.4f} m/s, |vinf_arr| = {np.linalg.norm(vinf_arr_vec)*VU:1.4f} m/s")
 
     # evaluate nonlinear violations
     geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, gopt, steps=20)
@@ -150,7 +158,7 @@ def example_pl2pl(get_plot=False):
         for (_ts, _ys) in sols:
             ax_m.plot(_ys[:,7]*canonical_scales.TU2DAY, np.exp(_ys[:,6]), 'b-')
         ax_m.axhline(np.exp(sols[-1][1][-1,6]), color='r', linestyle='--')
-        ax_m.text(0.0, 0.01 + np.exp(sols[-1][1][-1,6]), f"m_f = {np.exp(sols[-1][1][-1,6]):1.4f}", color='r')
+        ax_m.text(xopt[0,7]*canonical_scales.TU2DAY, 0.01 + np.exp(sols[-1][1][-1,6]), f"m_f = {np.exp(sols[-1][1][-1,6]):1.4f}", color='r')
         ax_m.set(xlabel="Time, days", ylabel="Mass")
         #ax_m.legend()
 
