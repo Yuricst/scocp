@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath('./../..'))
 project = 'scocp'
 copyright = '2025, Yuri Shimane'
 author = 'Yuri Shimane'
-release = '0.1.0'
+release = '0.1.2'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
