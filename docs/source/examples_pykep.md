@@ -96,10 +96,7 @@ import scocp
 import scocp_pykep
 ```
 
-Let's now define our physical constants, spacecraft parameters, and canonical scales. We then define the maximum thrust `Tmax` and exhaust velocity `cex` in terms of canonical scale.
-
-> [!CAUTION]
-> While `pykep` internally handles all quantities in SI units (i.e. meters and meters/second etc.), it's particularly important to scale quantities to similar orders of magnitude within the SCP. Thus, care is required with the units of the inputs to the various functions.
+Let's now define our physical constants, spacecraft parameters, and canonical scales. 
 
 ```python
 # define canonical parameters
@@ -107,24 +104,21 @@ GM_SUN = pk.MU_SUN           # Sun GM, m^3/s^-2
 MSTAR  = 800.0               # reference spacecraft mass
 ISP    = 3000.0              # specific impulse, s
 THRUST = 0.2                 # max thrust, kg.m/s^2
-G0     = 9.81                # gravity at surface, m/s^2
+G0     = pk.G0               # gravity at surface, m/s^2
 
 DU = pk.AU                   # length scale set to Sun-Earth distance, m
 VU = np.sqrt(GM_SUN / DU)    # velocity scale, m/s
 TU = DU / VU                 # time scale, s
 
-canonical_scales = scocp_pykep.CanonicalScales(MSTAR, GM_SUN, DU)
+t0_mjd2000_bounds = [1100.0, 1200.0]    # initial epoch in mjd2000
+TU2DAY = TU / 86400.0                   # convert non-dimensional time to elapsed time in days
 
-# define canonical spacecraft parameters
-m0 = 1.0                                                # initial mass, in MU
-isp = canonical_scales.isp_si2canonical(ISP)            # canonical specific impulse, TU
-Tmax = canonical_scales.thrust_si2canonical(THRUST)     # canonical max thrust
-cex = isp * G0*(TU**2/DU)                               # canonical exhaust velocity
-print(f"Canonical isp: {isp:1.4e} TU, cex: {cex:1.4e} DU/TU, tmax: {Tmax:1.4e} MU.DU/TU^2")
-```
-
-```console
-Canonical isp: 5.9730e-04 TU, cex: 9.8809e-01 DU/TU, tmax: 4.2158e-02 MU.DU/TU^2
+# define transfer problem discretization
+tf_bounds = [100.0, 500.0]
+t0_guess = 0.0
+tf_guess = 250.0
+N = 30
+s_bounds = [0.01*tf_guess, 10*tf_guess]
 ```
 
 We now define boundary conditions-related quantities for our problem, namely: the initial and final `pykep.plane` objects, the launch window bounds, final time bounds, and maximum departure/arrival v-infinities
@@ -138,15 +132,15 @@ t0_mjd2000_bounds = [1100.0, 1200.0]    # initial epoch in mjd2000
 TU2DAY = TU / 86400.0                   # convert non-dimensional time to elapsed time in days
 
 # define transfer problem discretization
-tf_bounds = np.array([100.0, 500.0]) / TU2DAY
-t0_guess = 0.0                          # initial guess for elapsed time at departure
-tf_guess = 250.0 / TU2DAY
+tf_bounds = [100.0, 500.0]
+t0_guess = 0.0
+tf_guess = 250.0
 N = 30
 s_bounds = [0.01*tf_guess, 10*tf_guess]
 
-# max v-infinity vector magnitudes
-vinf_dep = 1e3 / VU     # 1000 m/s
-vinf_arr = 500 / VU     # 500 m/s
+# max v-infinity vector magnitudes in km/s
+vinf_dep = 1.0
+vinf_arr = 0.5
 ```
 
 We can now define the continuous control two-body dynamics integrator for the augmented state with dilated time (i.e. in {math}`\tau \in [0,1]` space) and in canonical scales
@@ -159,7 +153,11 @@ integrator_01domain = scocp.ScipyIntegrator(
     rhs=scocp.control_rhs_twobody_logmass_freetf,
     rhs_stm=scocp.control_rhs_twobody_logmass_freetf_stm,
     impulsive=False,
-    args=((canonical_scales.mu, cex), [0.0,0.0,0.0,1.0,0.0]),
+    args=((
+        GM_SUN / (VU**2 * DU),          # canonical gravitational constant
+        ISP * G0 * (TU/DU)),            # canonical exhaust velocity of thruster
+        [0.0,0.0,0.0,1.0,0.0]           # place-holder for control vector: [ax,ay,az,s,v]
+    ),
     method='DOP853', reltol=1e-12, abstol=1e-12
 )
 ```
@@ -167,38 +165,50 @@ integrator_01domain = scocp.ScipyIntegrator(
 We can now define the SCOCP via the function `scocp_pykep.scocp_pl2pl`. Note we need the following inputs:
 
 - `integrator_01domain` class, as defined above
-- `canonical_scales` class, as defined above
 - `pl0` is the initial `pykep.planet`
 - `plf` is the final `pykep.planet`
-- `m0` is the initial mass (wet mass), **in canonical mass unit MU**
-- `Tmax` is the maximum thrust, **in canonical units MU.DU/TU^2**
-- `cex` is the exhaust velocity, **in canonical units DU/TU**
-- `N` is the number of segments
+- `mass` is the initial mass (wet mass), in kg
+- `mu_SI` is the central gravitational constant, in SI
+- `max_thrust` is the maximum thrust, in SI
+- `isp` is the Isp, in SI
+- `nseg` is the number of segments
 - `t0_mjd2000_bounds` is the bounds for the departure epoch, **in MJD2000 (days)**
-- `tf_bounds` is the bounds on the final time, **in canonical unit TU**
-- `s_bounds` is the bounds on the dilation factor, **in canonical unit TU**
-- `vinf_dep` is the max departure v-infinity magnitude, **in canonical units DU/TU**
-- `vinf_arr` is the max arrival v-infinity magnitude, **in canonical units DU/TU**
+- `tf_bounds` is the bounds on the final time, in days
+- `s_bounds` is the bounds on the dilation factor, in days
+- `vinf_dep` is the max departure v-infinity magnitude, **in km/s**
+- `vinf_arr` is the max arrival v-infinity magnitude, **in km/s**
 - `weight` parameter is the initial penalty on constraint violations (default is 100).
 
 ```python
 problem = scocp_pykep.scocp_pl2pl(
     integrator_01domain,
-    canonical_scales,
     pl0,
     plf,
-    m0,
-    Tmax,
-    cex,
-    N,
-    t0_mjd2000_bounds,
-    tf_bounds,
-    s_bounds,
-    vinf_dep,
-    vinf_arr,
+    mass = MSTAR,
+    mu_SI = pk.MU_SUN,
+    max_thrust = THRUST,
+    isp = ISP,
+    nseg = N,
+    t0_mjd2000_bounds = t0_mjd2000_bounds,
+    tf_bounds = tf_bounds,
+    s_bounds = s_bounds,
+    vinf_dep = vinf_dep,
+    vinf_arr = vinf_arr,
+    r_scaling = pk.AU,
+    v_scaling = pk.EARTH_VELOCITY,
     weight = 100.0,
 )
 ```
+
+**Note: there is no explicit check that ensures the canonical gravitational constant and canonical exhaust thrust used inside `scocp_pl2pl` matches that of the integrator!** The user is responsible for setting those to be the same.
+In fact, inside `scocp_pl2pl`, the canonical gravitational constant and canonical exhaust velocity are exactly computed by
+
+```python
+self.mu = mu_SI / (self.v_scaling**2 * self.r_scaling)
+self.cex = isp * pk.G0 * (self.t_scaling/self.r_scaling)
+```
+
+which is the same as what is done in the integrator argument above.
 
 The SCvx* algorithm needs an initial guess.
 One way to supply an initial guess is to linearly interpolate the initial and final orbital elements (i.e. at the planets)

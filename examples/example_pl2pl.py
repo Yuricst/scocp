@@ -54,7 +54,7 @@ def example_pl2pl(get_plot=False):
         args=((
             GM_SUN / (VU**2 * DU),          # canonical gravitational constant
             ISP * G0 * (TU/DU)),            # canonical exhaust velocity of thruster
-            [0.0,0.0,0.0,tf_guess,0.0]           # place-holder for control vector: [ax,ay,az,s,v]
+            [0.0,0.0,0.0,1.0,0.0]           # place-holder for control vector: [ax,ay,az,s,v]
         ),
         method='DOP853', reltol=1e-12, abstol=1e-12
     )
