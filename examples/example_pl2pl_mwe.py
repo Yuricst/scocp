@@ -16,9 +16,7 @@ def example_pl2pl(get_plot=False):
     """Test SCP continuous transfer with log-mass dynamics"""
     # define canonical parameters
     GM_SUN = pk.MU_SUN           # Sun GM, m^3/s^-2
-    MSTAR  = 800.0               # reference spacecraft mass
     ISP    = 3000.0              # specific impulse, s
-    THRUST = 0.2                 # max thrust, kg.m/s^2
     G0     = pk.G0               # gravity at surface, m/s^2
 
     DU = pk.AU                   # length scale set to Sun-Earth distance, m
@@ -28,20 +26,6 @@ def example_pl2pl(get_plot=False):
     # define initial and final planets
     pl0 = pk.planet.jpl_lp('earth')
     plf = pk.planet.jpl_lp('mars')
-
-    t0_mjd2000_bounds = [1100.0, 1200.0]    # initial epoch in mjd2000
-    TU2DAY = TU / 86400.0                   # convert non-dimensional time to elapsed time in days
-
-    # define transfer problem discretization
-    tf_bounds = [100.0, 500.0]
-    t0_guess = 0.0
-    tf_guess = 250.0
-    N = 30
-    s_bounds = [0.01*tf_guess, 10*tf_guess]
-
-    # max v-infinity vector magnitudes
-    vinf_dep = 1e3/1e3     # 1000 m/s
-    vinf_arr = 500/1e3     # 500 m/s
 
     # this is the non-dimentional time integrator for solving the OCP
     integrator_01domain = scocp.ScipyIntegrator(
@@ -54,56 +38,39 @@ def example_pl2pl(get_plot=False):
         args=((
             GM_SUN / (VU**2 * DU),          # canonical gravitational constant
             ISP * G0 * (TU/DU)),            # canonical exhaust velocity of thruster
-            [0.0,0.0,0.0,tf_guess,0.0]           # place-holder for control vector: [ax,ay,az,s,v]
+            [0.0,0.0,0.0,1.0,0.0]           # place-holder for control vector: [ax,ay,az,s,v]
         ),
         method='DOP853', reltol=1e-12, abstol=1e-12
     )
-
+    
     # create problem
     problem = scocp_pykep.scocp_pl2pl(
         integrator_01domain,
         pl0,
         plf,
-        MSTAR,
-        pk.MU_SUN,
-        THRUST,
-        ISP,
-        N,
-        t0_mjd2000_bounds,
-        tf_bounds,
-        s_bounds,
-        vinf_dep,
-        vinf_arr,
-        r_scaling = pk.AU,
-        v_scaling = pk.EARTH_VELOCITY,
-        weight = 100.0,
     )
+    
     # create initial guess
     print(f"Preparing initial guess...")
-    xbar, ubar, vbar = problem.get_initial_guess(t0_guess, tf_guess)
+    xbar, ubar, vbar = problem.get_initial_guess(t0_guess=0.0, tf_guess=250.0)
     geq_nl_ig, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, vbar, steps=5)   # evaluate initial guess
 
     # setup algorithm & solve
     tol_feas = 1e-10
     tol_opt = 1e-6
-    algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas, rho1=1e-8, r_bounds=[1e-10, 10.0])
+    algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas, rho1=1e-8)#, alpha2=1.5)
     solution = algo.solve(
         xbar,
         ubar,
         vbar,
-        maxiter = 200,
+        maxiter = 150,
         verbose = True
     )
     xopt, uopt, vopt, yopt, sols, summary_dict = solution.x, solution.u, solution.v, solution.y, solution.sols, solution.summary_dict
     assert summary_dict["status"] == "Optimal"
     assert summary_dict["chi"][-1] <= tol_feas
-    print(f"Initial guess TOF: {tf_guess*TU2DAY:1.4f}d --> Optimized TOF: {xopt[-1,7]*TU2DAY:1.4f}d (bounds: {tf_bounds[0]*TU2DAY:1.4f}d ~ {tf_bounds[1]*TU2DAY:1.4f}d)")
     x0 = problem.target_initial.target_state(xopt[0,7])
     xf = problem.target_final.target_state(xopt[-1,7])
-
-    # evaluate v-infinity vectors
-    vinf_dep_vec, vinf_arr_vec = yopt[0:3], yopt[3:6]
-    print(f"||vinf_dep|| = {np.linalg.norm(vinf_dep_vec)*VU:1.4f} m/s (max: {vinf_dep*VU:1.4f} m/s), ||vinf_arr|| = {np.linalg.norm(vinf_arr_vec)*VU:1.4f} m/s (max: {vinf_arr*VU:1.4f} m/s)")
 
     # evaluate nonlinear violations
     geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, vopt, steps=20)
@@ -147,7 +114,8 @@ def example_pl2pl(get_plot=False):
         ax_u.grid(True, alpha=0.5)
         ax_u.step(xopt[:,7]*problem.TU2DAY, np.concatenate((vopt[:,0], [0.0]))*VU/TU, label="Control", where='post', color='k')
         for idx, (_ts, _ys) in enumerate(sols):
-            ax_u.plot(_ys[:,7]*problem.TU2DAY, THRUST/(MSTAR*np.exp(_ys[:,6])), color='r', linestyle=':', label="Max accel." if idx == 0 else None)
+            ax_u.plot(_ys[:,7]*problem.TU2DAY, problem.max_thrust/(problem.mass_scaling*np.exp(_ys[:,6])),
+                      color='r', linestyle=':', label="Max accel." if idx == 0 else None)
         ax_u.set(xlabel="Time, days", ylabel="Acceleration, m/s^2")
         ax_u.legend()
 
@@ -162,11 +130,7 @@ def example_pl2pl(get_plot=False):
         algo.plot_chi(ax_DeltaL, summary_dict)
         ax_DeltaL.axhline(tol_feas, color='k', linestyle='--', label='tol_feas')
         ax_DeltaL.legend()
-
-        # ax_J0 = fig.add_subplot(2,3,6)
-        # ax_J0.grid(True, alpha=0.5)
-        # algo.plot_J0(ax_J0, summary_dict)
-        # ax_J0.legend()
+        
         ax = fig.add_subplot(2,3,6)
         for (_ts, _ys) in sols_ig:
             ax.plot(_ts, _ys[:,7]*problem.TU2DAY, '--', color='grey')
@@ -176,7 +140,6 @@ def example_pl2pl(get_plot=False):
         ax.set(xlabel="tau", ylabel="Time, days")
 
         plt.tight_layout()
-        fig.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots/example_pl2pl.png"), dpi=300)
     return
 
 

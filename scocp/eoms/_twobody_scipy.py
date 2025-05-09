@@ -40,6 +40,7 @@ def rhs_twobody(t, state, mu):
     return deriv
 
 
+@njit(float64[:](float64, float64[:], float64), cache=True)
 def rhs_twobody_stm(t, state, mu):
     """Equation of motion in R2BP in the rotating frame with STM.
     This function is written for `scipy.integrate.solve=ivp()` and is compatible with njit.
@@ -52,7 +53,9 @@ def rhs_twobody_stm(t, state, mu):
     A = np.zeros((6,6))
     A[0:3,3:6] = np.eye(3)
     A[3:6,0:3] = gravity_gradient_twobody(state[0:3], mu)
-    deriv[6:12] = np.dot(A, state[6:].reshape(6,6)).reshape(6,)
+    # Create a contiguous copy of the STM part before reshaping
+    stm = np.copy(state[6:])
+    deriv[6:] = np.dot(A, stm.reshape(6,6)).reshape(36,)
     return deriv
 
 

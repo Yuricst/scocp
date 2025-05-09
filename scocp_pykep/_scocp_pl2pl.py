@@ -1,5 +1,6 @@
 """Planet-to-planet optimal control problem"""
 
+import copy
 import cvxpy as cp
 import numpy as np
 import pykep as pk
@@ -13,33 +14,6 @@ from scocp import (
     ContinuousControlSCOCP,
     rhs_twobody,
 )
-
-class CanonicalScales:
-    """Canonical scales for the problem
-    
-    Args:
-        MU (float): mass unit in kg
-        GM (float): gravitational parameter in m^3/s^2
-        DU (float): distance unit in m
-        G0 (float): gravitational acceleration in m/s^2
-    """
-    def __init__(self, MU: float, GM: float=pk.MU_SUN, DU: float=pk.AU, G0: float = 9.81):
-        self.MU = MU
-        self.GM = GM
-        self.DU = DU
-        self.VU = np.sqrt(self.GM/self.DU)
-        self.TU = self.DU / self.VU
-        self.TU2DAY = self.TU / 86400.0
-        self.mu = 1.0
-        self.G0 = G0
-        return
-    
-    def thrust_si2canonical(self, THRUST: float):
-        """Convert thrust in SI units (kg.m/s^2) to canonical units (MU.DU/TU^2)"""
-        return THRUST * (1/self.MU)*(self.TU**2/self.DU)  # canonical max thrust
-    
-    def isp_si2canonical(self, ISP: float):
-        return ISP/self.TU
 
 
 class PlanetTarget:
@@ -96,34 +70,40 @@ class scocp_pl2pl(ContinuousControlSCOCP):
     
     Args:
         integrator (scocp.ScipyIntegrator or scocp.HeyokaIntegrator): integrator object
-        canonical_scales (scocp.CanonicalScales): canonical scales object
         p0 (pykep.planet.planet): initial planet object
         pf (pykep.planet.planet): final planet object
-        mass (float): initial mass in canonical mass unit
-        thrust (float): thrust magnitude in canonical units
-        cex (float): exhaust velocity in canonical units
+        mass (float): initial mass in kg
+        max_thrust (float): thrust magnitude in Newtons
+        isp (float): specific impulse in seconds
         nseg (int): number of segments (s.t. `N = nseg + 1`)
         t0_mjd2000 (float): initial epoch in mjd2000
         tf_bounds (tuple[float, float]): bounds on final time in days
-        s_bounds (tuple[float, float]): control dilation factor bounds
-        vinf_dep (float): max v-infinity vector magnitude at departure, in canonical units
-        vinf_arr (float): max v-infinity vector magnitude at arrival, in canonical units
+        s_bounds (tuple[float, float]): control dilation factor bounds in days
+        vinf_dep (float): max v-infinity vector magnitude at departure, in km/s
+        vinf_arr (float): max v-infinity vector magnitude at arrival, in km/s
+        mass_scaling (float): scaling factor for mass, in kg. If `None`, then `mass_scaling = mass`.
+        r_scaling (float): scaling factor for distance, in m
+        v_scaling (float): scaling factor for velocity, in m/s
     """
     def __init__(
         self,
         integrator,
-        canonical_scales,
         p0: pk.planet.planet,
         pf: pk.planet.planet,
-        mass,
-        thrust,
-        cex,
-        nseg: int,
-        t0_mjd2000_bounds: tuple[float, float],
-        tf_bounds: tuple[float, float],
-        s_bounds: tuple[float, float],
-        vinf_dep: float = 0.0,
+        mass = 1500.0,
+        mu_SI = pk.MU_SUN,
+        max_thrust = 0.45,
+        isp = 3000.0,
+        nseg: int = 30,
+        t0_mjd2000_bounds: tuple[float, float] = [6700.0, 6800.0],
+        tf_bounds: tuple[float, float] = [100.0, 500.0],
+        s_bounds: tuple[float, float] = [1.0, 5e3],
+        vinf_dep: float = 3.0,
         vinf_arr: float = 0.0,
+        mass_scaling = None,
+        r_scaling = pk.AU,
+        v_scaling = pk.EARTH_VELOCITY,
+        g0 = pk.G0,
         *args,
         **kwargs
     ):
@@ -136,45 +116,55 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         times = np.linspace(0, 1, N)
         super().__init__(integrator, times, ng=ng, nh=nh, ny=ny, augment_Gamma=augment_Gamma, *args, **kwargs)
 
+        # scaling parameters
+        if mass_scaling is None:
+            self.mass_scaling = 1.0 * mass
+        else:
+            self.mass_scaling = 1.0 * mass_scaling
+        self.r_scaling    = r_scaling
+        self.v_scaling    = v_scaling
+        self.t_scaling    = r_scaling / v_scaling
+        self.TU2DAY       = self.t_scaling / 86400.0
+        self.mu           = mu_SI / (self.v_scaling**2 * self.r_scaling)
+
         # define additional attributes
-        self.canonical_scales = canonical_scales
-        self.p0 = p0
-        self.pf = pf
-        self.mass0 = mass
-        self.Tmax = thrust
-        self.cex = cex
+        self.p0         = p0
+        self.pf         = pf
+        self.mass0      = mass / self.mass_scaling
+        self.max_thrust = max_thrust * (1/self.mass_scaling)*(self.t_scaling**2/self.r_scaling)
+        self.cex        = isp * g0 * (self.t_scaling/self.r_scaling)
         self.t0_mjd2000 = t0_mjd2000_bounds[0]
-        self.t0_bounds = [t0_mjd2000_bounds[0] - self.t0_mjd2000, t0_mjd2000_bounds[1] - self.t0_mjd2000]
-        self.tf_bounds = tf_bounds
-        self.s_bounds = s_bounds
-        self.vinf_dep = vinf_dep
-        self.vinf_arr = vinf_arr
+        self.t0_bounds  = [t0_mjd2000_bounds[0] - self.t0_mjd2000, t0_mjd2000_bounds[1] - self.t0_mjd2000]
+        self.tf_bounds  = np.array(tf_bounds) / self.TU2DAY
+        self.s_bounds   = np.array(s_bounds) / self.TU2DAY
+        self.vinf_dep   = vinf_dep * 1e3 / self.v_scaling
+        self.vinf_arr   = vinf_arr * 1e3 / self.v_scaling
 
         # set initial state based on initial planet state
         r0_dim, v0_dim = self.p0.eph(self.t0_mjd2000)
         self.x0 = np.zeros(7)
-        self.x0[0:3] = np.array(r0_dim)/self.canonical_scales.DU
-        self.x0[3:6] = np.array(v0_dim)/self.canonical_scales.VU
+        self.x0[0:3] = np.array(r0_dim)/self.r_scaling
+        self.x0[3:6] = np.array(v0_dim)/self.v_scaling
         self.x0[6] = np.log(self.mass0)
 
         # construct initial target object
         self.target_initial = PlanetTarget(
             p0,
             t0_mjd2000 = self.t0_mjd2000,
-            TU2DAY = self.canonical_scales.TU2DAY,
-            DU = self.canonical_scales.DU,
-            VU = self.canonical_scales.VU,
-            mu = self.canonical_scales.mu,
+            TU2DAY = self.TU2DAY,
+            DU = self.r_scaling,
+            VU = self.v_scaling,
+            mu = self.mu,
         )
 
         # construct final target object
         self.target_final = PlanetTarget(
             pf,
             t0_mjd2000 = self.t0_mjd2000,
-            TU2DAY = self.canonical_scales.TU2DAY,
-            DU = self.canonical_scales.DU,
-            VU = self.canonical_scales.VU,
-            mu = self.canonical_scales.mu,
+            TU2DAY = self.TU2DAY,
+            DU = self.r_scaling,
+            VU = self.v_scaling,
+            mu = self.mu,
         )
 
         # setup storage for v-infinity vectors
@@ -192,12 +182,12 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             (tuple): tuple of 1D array of time and `(steps,6)` array ofstate history
         """
         x0 = self.target_initial.target_state(0.0)
-        oe0 = pk.ic2par(x0[0:3], x0[3:6], self.canonical_scales.mu)
-        period = 2*np.pi*np.sqrt(oe0[0]**3 / self.canonical_scales.mu)
+        oe0 = pk.ic2par(x0[0:3], x0[3:6], self.mu)
+        period = 2*np.pi*np.sqrt(oe0[0]**3 / self.mu)
         t_eval = np.linspace(0, period, steps)
         states = np.zeros((steps, 6))
         for i, t in enumerate(t_eval):
-            states[i,0:3], states[i,3:6] = pk.propagate_lagrangian(self.x0[0:3], self.x0[3:6], t, mu=self.canonical_scales.mu)
+            states[i,0:3], states[i,3:6] = pk.propagate_lagrangian(self.x0[0:3], self.x0[3:6], t, mu=self.mu)
         return t_eval, states
     
     def get_final_orbit(self, steps: int=100):
@@ -210,31 +200,35 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             (tuple): tuple of 1D array of time and `(steps,6)` array of state history
         """
         xf0 = self.target_final.target_state(0.0)
-        oef = pk.ic2par(xf0[0:3], xf0[3:6], self.canonical_scales.mu)
-        period = 2*np.pi*np.sqrt(oef[0]**3 / self.canonical_scales.mu)
+        oef = pk.ic2par(xf0[0:3], xf0[3:6], self.mu)
+        period = 2*np.pi*np.sqrt(oef[0]**3 / self.mu)
         t_eval = np.linspace(0, period, steps)
         states = np.zeros((steps, 6))
         for i, t in enumerate(t_eval):
-            states[i,0:3], states[i,3:6] = pk.propagate_lagrangian(xf0[0:3], xf0[3:6], t, mu=self.canonical_scales.mu)
+            states[i,0:3], states[i,3:6] = pk.propagate_lagrangian(xf0[0:3], xf0[3:6], t, mu=self.mu)
         return t_eval, states
     
     def get_initial_guess(self, t0_guess: float, tf_guess: float):
         """Construct initial guess based on linear interpolation along orbital elements
         
         Args:
-            t0_guess (float): guess for loiter time
-            tf_guess (float): guess for final arrival time
+            t0_guess_si (float): guess for loiter time
+            tf_guess_si (float): guess for final arrival time
         
         Returns:
             (tuple): tuple of `(N,8)` array of state history, `(N-1,4)` array of control history, and `(N-1,1)` array of constraint history
         """
+        # re-scale time
+        t0_guess = t0_guess / self.TU2DAY
+        tf_guess = tf_guess / self.TU2DAY
+
         # initial orbital elements
         x0 = self.target_initial.target_state(t0_guess)
-        oe0 = pk.ic2par(x0[0:3], x0[3:6], self.canonical_scales.mu)
+        oe0 = pk.ic2par(x0[0:3], x0[3:6], self.mu)
 
         # final orbital elements
         xf_guess = self.target_final.target_state(tf_guess)
-        oef = pk.ic2par(xf_guess[0:3], xf_guess[3:6], self.canonical_scales.mu)
+        oef = pk.ic2par(xf_guess[0:3], xf_guess[3:6], self.mu)
 
         elements = np.concatenate((
             np.linspace(oe0[0], oef[0], self.N).reshape(-1,1),
@@ -247,7 +241,7 @@ class scocp_pl2pl(ContinuousControlSCOCP):
 
         elements[:,5] = np.linspace(oe0[5], oef[5]+2*np.pi, self.N)
         xbar = np.zeros((self.N,8))
-        xbar[:,0:6]  = np.array([np.concatenate(pk.par2ic(E,self.canonical_scales.mu)) for E in elements])
+        xbar[:,0:6]  = np.array([np.concatenate(pk.par2ic(E,self.mu)) for E in elements])
         xbar[:,6]    = np.log(np.linspace(1.0, 0.5, self.N))  # initial guess for log-mass
         xbar[0,0:6]  = x0[0:6]                # overwrite initial state
         xbar[0,6]    = np.log(self.mass0)
@@ -305,7 +299,7 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,0:4] @ us[i,:] + self.Phi_B[i,:,4] * gs[i,:] + self.Phi_c[i,:] + xis_dyn[i,:]
             for i in range(Nseg)
         ]
-        constraints_control = [gs[i,0] - self.Tmax * np.exp(-xbar[i,6]) * (1 - (xs[i,6] - xbar[i,6])) <= zetas[i] for i in range(Nseg)]
+        constraints_control = [gs[i,0] - self.max_thrust * np.exp(-xbar[i,6]) * (1 - (xs[i,6] - xbar[i,6])) <= zetas[i] for i in range(Nseg)]
 
         # trust region constraints 
         constraints_trustregion = [
@@ -359,6 +353,6 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             xs[-1,3:6] - ys[3:6] - self.target_final.target_state(xs[-1,7])[3:6],
         ))
         h_ineq = np.array([
-            max(gs[i,0] - self.Tmax * np.exp(-xs[i,6]), 0.0) for i in range(self.N-1)
+            max(gs[i,0] - self.max_thrust * np.exp(-xs[i,6]), 0.0) for i in range(self.N-1)
         ])
         return g_eq, h_ineq
