@@ -6,6 +6,8 @@ from ._twobody_scipy import (
     rhs_twobody_stm,
     control_rhs_twobody_logmass_freetf,
     control_rhs_twobody_logmass_freetf_stm,
+    control_rhs_twobody_mass_freetf,
+    control_rhs_twobody_mass_freetf_stm,
 )
 
 from ._cr3bp_scipy import (
