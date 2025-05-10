@@ -172,6 +172,16 @@ See example notebooks in `./examples`.
 <img src="tests/plots/twobody_logmass_freetf_rdv.png" width="100%">
 
 
+#### `FreeTimeContinuousMovingTargetRdvMass`: Free TOF Continuous rendez-vous with mass dynamics & moving target
+
+- State: Cartesian position, velocity + mass + dilated time
+- Controls: acceleration + time dilation factor
+- Free TOF
+- Fixed initial conditions, moving terminal conditions
+
+<img src="tests/plots/twobody_mass_freetf_rdv.png" width="100%">
+
+
 ### Impulsive Control
 
 #### `FixedTimeImpulsiveRdv`:Fixed TOF impulsive control rendez-vous

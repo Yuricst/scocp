@@ -70,7 +70,7 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
             args=((mu, c1, c2),                # canonical gravitational constant & exhaust velocity
                 [0.0,0.0,0.0,1.0,0.0]          # place-holder for control vector: [ux,uy,uz,s,v]
             ),
-            method='DOP853', reltol=1e-12, abstol=1e-12
+            method='DOP853', reltol=1e-14, abstol=1e-14
         )
 
     # create problem
@@ -99,7 +99,7 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
     geq_nl_ig, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, vbar, steps=5)   # evaluate initial guess
 
     # setup algorithm & solve
-    tol_feas = 1e-10
+    tol_feas = 1e-12
     tol_opt = 1e-6
     algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas, rho1=1e-8, r_bounds=[1e-10, 10.0])
     solution = algo.solve(
