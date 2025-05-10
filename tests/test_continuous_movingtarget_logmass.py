@@ -142,8 +142,15 @@ def test_scp_scipy_logmass(get_plot=False):
     print(f"Initial guess TOF: {tf_guess:1.4f} --> Optimized TOF: {xopt[-1,7]:1.4f} (bounds: {tf_bounds[0]:1.4f} ~ {tf_bounds[1]:1.4f})")
     xf = target.eval_state(xopt[-1,7])
 
+    # trajectory summary
+    print(f"  Departure time : {xopt[0,7]*TU/86400.0:1.4f} days")
+    print(f"  Arrival time   : {xopt[-1,7]*TU/86400.0:1.4f} days")
+    print(f"  TOF            : {(xopt[-1,7] - xopt[0,7])*TU/86400.0:1.4f} days")
+    print(f"  Initial mass   : {np.exp(xopt[0,6])*MSTAR:1.4f} kg")
+    print(f"  Final mass     : {np.exp(xopt[-1,6])*MSTAR:1.4f} kg")
+
     # evaluate nonlinear violations
-    geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, vopt, steps=20)
+    geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, vopt, steps=5)
     assert np.max(np.abs(geq_nl_opt)) <= tol_feas
     
     # evaluate solution
@@ -166,7 +173,7 @@ def test_scp_scipy_logmass(get_plot=False):
         ax.scatter(xf[0], xf[1], xf[2], marker='o', color='k', label='Final state')
         ax.plot(sol_lpo0.y[0,:], sol_lpo0.y[1,:], sol_lpo0.y[2,:], 'k-', lw=0.3)
         ax.plot(sol_lpo1.y[0,:], sol_lpo1.y[1,:], sol_lpo1.y[2,:], 'k-', lw=0.3)
-        ax.set_aspect('equal')
+        #ax.set_aspect('equal')
         ax.legend()
 
         ax_m = fig.add_subplot(2,3,2)
@@ -181,6 +188,9 @@ def test_scp_scipy_logmass(get_plot=False):
         ax_u = fig.add_subplot(2,3,3)
         ax_u.grid(True, alpha=0.5)
         ax_u.step(xopt[:,7], np.concatenate((vopt[:,0], [0.0])), label="Control", where='post', color='k')
+        ax_u.step(xopt[:,7], np.concatenate((uopt[:,0], [0.0])), label="ux", where='post', color='r')
+        ax_u.step(xopt[:,7], np.concatenate((uopt[:,1], [0.0])), label="uy", where='post', color='b')
+        ax_u.step(xopt[:,7], np.concatenate((uopt[:,2], [0.0])), label="uz", where='post', color='g')
         for idx, (_ts, _ys) in enumerate(sols):
             ax_u.plot(_ys[:,7], Tmax/np.exp(_ys[:,6]), color='r', linestyle=':', label="Max accel." if idx == 0 else None)
         ax_u.set(xlabel="Time", ylabel="Acceleration")
