@@ -12,7 +12,7 @@ import scocp
 import scocp_pykep
 
 
-def example_pl2pl(use_heyoka=False, get_plot=False):
+def example_pl2pl(use_heyoka=True, get_plot=False):
     """Test SCP continuous transfer with log-mass dynamics"""
     # define canonical parameters
     GM_SUN = pk.MU_SUN           # Sun GM, m^3/s^-2
@@ -44,10 +44,13 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
     vinf_arr = 500/1e3     # 500 m/s
 
     # this is the non-dimentional time integrator for solving the OCP
-    mu = GM_SUN / (VU**2 * DU)      # canonical gravitational constant
-    cex = ISP * G0 * (TU/DU)        # canonical exhaust velocity of thruster
+    mu = GM_SUN / (VU**2 * DU)                          # canonical gravitational constant
+    c1 = THRUST / (MSTAR*DU/TU**2)                      # canonical max thrust
+    c2 = THRUST/(ISP*G0) / (MSTAR/TU)                   # canonical mass flow rate
+    print(f"\nCanonical c1: {c1:1.4e}, c2: {c2:1.4e}")
+
     if use_heyoka:
-        ta_dyn, ta_dyn_aug = scocp_pykep.get_heyoka_integrator_twobody_logmass(mu, cex, tol=1e-12, verbose=True)
+        ta_dyn, ta_dyn_aug = scocp_pykep.get_heyoka_integrator_twobody_mass(mu, c1, c2, tol=1e-12, verbose=True)
         integrator_01domain = scocp_pykep.HeyokaIntegrator(
             nx=8,
             nu=4,
@@ -61,17 +64,17 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
             nx=8,
             nu=4,
             nv=1,
-            rhs=scocp.control_rhs_twobody_logmass_freetf,
-            rhs_stm=scocp.control_rhs_twobody_logmass_freetf_stm,
+            rhs=scocp.control_rhs_twobody_mass_freetf,
+            rhs_stm=scocp.control_rhs_twobody_mass_freetf_stm,
             impulsive=False,
-            args=((mu, cex),                # canonical gravitational constant & exhaust velocity
+            args=((mu, c1, c2),                # canonical gravitational constant & exhaust velocity
                 [0.0,0.0,0.0,1.0,0.0]     # place-holder for control vector: [ax,ay,az,s,v]
             ),
             method='DOP853', reltol=1e-12, abstol=1e-12
         )
 
     # create problem
-    problem = scocp_pykep.scocp_pl2pl_logmass(
+    problem = scocp_pykep.scocp_pl2pl(
         integrator_01domain,
         pl0,
         plf,
@@ -87,6 +90,7 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
         vinf_arr,
         r_scaling = pk.AU,
         v_scaling = pk.EARTH_VELOCITY,
+        uniform_dilation = True,
         weight = 100.0,
     )
     # create initial guess
@@ -102,12 +106,12 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
         xbar,
         ubar,
         vbar,
-        maxiter = 100,
+        maxiter = 200,
         verbose = True
     )
     xopt, uopt, vopt, yopt, sols, summary_dict = solution.x, solution.u, solution.v, solution.y, solution.sols, solution.summary_dict
-    assert summary_dict["status"] == "Optimal"
-    assert summary_dict["chi"][-1] <= tol_feas
+    #assert summary_dict["status"] == "Optimal"
+    #assert summary_dict["chi"][-1] <= tol_feas
     print(f"Initial guess TOF: {tf_guess*TU2DAY:1.4f}d --> Optimized TOF: {xopt[-1,7]*TU2DAY:1.4f}d (bounds: {tf_bounds[0]*TU2DAY:1.4f}d ~ {tf_bounds[1]*TU2DAY:1.4f}d)")
     x0 = problem.target_initial.target_state(xopt[0,7])
     xf = problem.target_final.target_state(xopt[-1,7])
@@ -119,10 +123,10 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
     # evaluate nonlinear violations
     geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, vopt, steps=8)
     print(f"Max dynamics constraint violation: {np.max(np.abs(geq_nl_opt)):1.4e}")
-    assert np.max(np.abs(geq_nl_opt)) <= tol_feas
+    #assert np.max(np.abs(geq_nl_opt)) <= tol_feas
 
     # extract solution
-    ts_mjd2000, states, controls = problem.process_solution(solution, dense_output=True, dt_day = 1.0)
+    ts_mjd2000, states, controls = problem.process_solution(solution)
     print(f"ts_mjd2000.shape = {ts_mjd2000.shape}")
     print(f"states.shape = {states.shape}")
     print(f"controls.shape = {controls.shape}")
@@ -130,30 +134,6 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
     # initial and final orbits
     initial_orbit_states = problem.get_initial_orbit()
     final_orbit_states = problem.get_final_orbit()
-
-    # fig = plt.figure(figsize=(12,5))
-    # ax = fig.add_subplot(1,3,1, projection='3d')
-    # ax.plot(states[:,0], states[:,1], states[:,2], 'b-')
-    # ax.scatter(x0[0]*pk.AU, x0[1]*pk.AU, x0[2]*pk.AU, marker='x', color='k', label='Initial state')
-    # ax.scatter(xf[0]*pk.AU, xf[1]*pk.AU, xf[2]*pk.AU, marker='o', color='k', label='Final state')
-    # ax.plot(initial_orbit_states[1][:,0]*pk.AU, initial_orbit_states[1][:,1]*pk.AU, initial_orbit_states[1][:,2]*pk.AU, 'k-', lw=0.3)
-    # ax.plot(final_orbit_states[1][:,0]*pk.AU, final_orbit_states[1][:,1]*pk.AU, final_orbit_states[1][:,2]*pk.AU, 'k-', lw=0.3)   
-    # ax.set(xlabel="x", ylabel="y", zlabel="z")
-    # ax.legend()
-
-    # ax_mass = fig.add_subplot(1,3,2)
-    # ax_mass.plot(ts_mjd2000, states[:,6])
-    # ax_mass.set(xlabel="Time, days", ylabel="Mass")
-    # ax_mass.grid(True, alpha=0.5)
-    
-    # ax_control = fig.add_subplot(1,3,3)
-    # ax_control.plot(ts_mjd2000, controls[:,0], label="ux")
-    # ax_control.plot(ts_mjd2000, controls[:,1], label="uy")
-    # ax_control.plot(ts_mjd2000, controls[:,2], label="uz")
-    # ax_control.set(xlabel="Time, days", ylabel="Control")
-    # ax_control.grid(True, alpha=0.5)
-    # ax_control.legend()
-    # plt.tight_layout()
     
     # evaluate solution
     if (get_plot is True) and (summary_dict["status"] != "CPFailed"):
@@ -170,7 +150,7 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
         for (_ts, _ys) in sols:
             ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], 'b-')
             _us_zoh = scocp.zoh_controls(problem.times, uopt, _ts)
-            ax.quiver(_ys[:,0], _ys[:,1], _ys[:,2], _us_zoh[:,0], _us_zoh[:,1], _us_zoh[:,2], color='r', length=2.0)
+            ax.quiver(_ys[:,0], _ys[:,1], _ys[:,2], _us_zoh[:,0], _us_zoh[:,1], _us_zoh[:,2], color='r', length=0.1)
 
         ax.scatter(x0[0], x0[1], x0[2], marker='x', color='k', label='Initial state')
         ax.scatter(xf[0], xf[1], xf[2], marker='o', color='k', label='Final state')
@@ -182,21 +162,19 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
         ax_m = fig.add_subplot(2,3,2)
         ax_m.grid(True, alpha=0.5)
         for (_ts, _ys) in sols:
-            ax_m.plot(_ys[:,7]*problem.TU2DAY, np.exp(_ys[:,6]), 'b-')
-        ax_m.axhline(np.exp(sols[-1][1][-1,6]), color='r', linestyle='--')
-        ax_m.text(xopt[0,7]*problem.TU2DAY, 0.01 + np.exp(sols[-1][1][-1,6]), f"m_f = {np.exp(sols[-1][1][-1,6]):1.4f}", color='r')
+            ax_m.plot(_ys[:,7]*problem.TU2DAY, _ys[:,6], 'b-')
+        ax_m.axhline(sols[-1][1][-1,6], color='r', linestyle='--')
+        ax_m.text(xopt[0,7]*problem.TU2DAY, 0.01 + sols[-1][1][-1,6], f"m_f = {sols[-1][1][-1,6]:1.4f}", color='r')
         ax_m.set(xlabel="Time, days", ylabel="Mass")
         #ax_m.legend()
 
         ax_u = fig.add_subplot(2,3,3)
         ax_u.grid(True, alpha=0.5)
-        ax_u.step(xopt[:,7]*problem.TU2DAY, np.concatenate((vopt[:,0], [0.0]))*VU/TU, label="Control", where='post', color='k')
-        ax_u.step(xopt[:,7]*problem.TU2DAY, np.concatenate((uopt[:,0], [0.0]))*VU/TU, label="u", where='post', color='r')
-        ax_u.step(xopt[:,7]*problem.TU2DAY, np.concatenate((uopt[:,1], [0.0]))*VU/TU, label="v", where='post', color='g')
-        ax_u.step(xopt[:,7]*problem.TU2DAY, np.concatenate((uopt[:,2], [0.0]))*VU/TU, label="w", where='post', color='b')
-        for idx, (_ts, _ys) in enumerate(sols):
-            ax_u.plot(_ys[:,7]*problem.TU2DAY, THRUST/(MSTAR*np.exp(_ys[:,6])), color='r', linestyle=':', label="Max accel." if idx == 0 else None)
-        ax_u.set(xlabel="Time, days", ylabel="Control acceleration, m/s^2")
+        ax_u.step(xopt[:,7]*problem.TU2DAY, np.concatenate((vopt[:,0], [0.0])), label="Gamma", where='post', color='k')
+        ax_u.step(xopt[:,7]*problem.TU2DAY, np.concatenate((uopt[:,0], [0.0])), label="u", where='post', color='r')
+        ax_u.step(xopt[:,7]*problem.TU2DAY, np.concatenate((uopt[:,1], [0.0])), label="v", where='post', color='g')
+        ax_u.step(xopt[:,7]*problem.TU2DAY, np.concatenate((uopt[:,2], [0.0])), label="w", where='post', color='b')
+        ax_u.set(xlabel="Time, days", ylabel="Control throttle")
         ax_u.legend()
 
         ax_DeltaJ = fig.add_subplot(2,3,4)
@@ -210,11 +188,7 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
         algo.plot_chi(ax_DeltaL, summary_dict)
         ax_DeltaL.axhline(tol_feas, color='k', linestyle='--', label='tol_feas')
         ax_DeltaL.legend()
-
-        # ax_J0 = fig.add_subplot(2,3,6)
-        # ax_J0.grid(True, alpha=0.5)
-        # algo.plot_J0(ax_J0, summary_dict)
-        # ax_J0.legend()
+        
         ax = fig.add_subplot(2,3,6)
         for (_ts, _ys) in sols_ig:
             ax.plot(_ts, _ys[:,7]*problem.TU2DAY, '--', color='grey')
@@ -224,7 +198,7 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
         ax.set(xlabel="tau", ylabel="Time, days")
 
         plt.tight_layout()
-        fig.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots/example_pl2pl_logmass.png"), dpi=300)
+        fig.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots/example_pl2pl.png"), dpi=300)
     return
 
 

@@ -392,6 +392,7 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
             dense_output (bool): if `True`, then return dense output, defaults to `False`
             dt_day (float): if `dense_output` is `True`, then this is the time step in days for sampling the solution, defaults to `None`
             return_acceleration_control (bool): if `True`, then return acceleration control, otherwise return thrust controls
+            
         Returns:
             (tuple): tuple of 1D array of times, `(N,7)` array of states, and `(N-1,3)` array of controls
         """
@@ -752,12 +753,8 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         r_scaling = None,
         v_scaling = None,
         t_scaling = None,
-        a_scaling = None,
         mass_scaling = None,
         convert_t_to_mjd2000 = True,
-        dense_output = False,
-        dt_day = None,
-        return_acceleration_control = False,
     ):
         """Get times, states, and controls from solution object
         
@@ -766,12 +763,9 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             r_scaling (float): scaling factor for distance, defaults to `self.r_scaling`
             v_scaling (float): scaling factor for velocity, defaults to `self.v_scaling`
             t_scaling (float): scaling factor for time, defaults to `self.t_scaling`
-            a_scaling (float): scaling factor for acceleration, defaults to `r_scaling/t_scaling**2`
             mass_scaling (float): scaling factor for mass, defaults to `self.mass_scaling`
             convert_t_to_mjd2000 (bool): if `True`, then convert times to mjd2000, defaults to `True`
-            dense_output (bool): if `True`, then return dense output, defaults to `False`
-            dt_day (float): if `dense_output` is `True`, then this is the time step in days for sampling the solution, defaults to `None`
-            return_acceleration_control (bool): if `True`, then return acceleration control, otherwise return thrust controls
+
         Returns:
             (tuple): tuple of 1D array of times, `(N,7)` array of states, and `(N-1,3)` array of controls
         """
@@ -783,48 +777,16 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             t_scaling = self.t_scaling
         if mass_scaling is None:
             mass_scaling = self.mass_scaling
-        if a_scaling is None:
-            a_scaling = r_scaling/t_scaling**2
 
-        if dense_output is False:
-            if convert_t_to_mjd2000:
-                times = solution.x[:,7] * t_scaling + self.t0_mjd2000
-            else:
-                times = solution.x[:,7] * t_scaling
-
-            states = np.concatenate((
-                solution.x[:,0:3] * r_scaling,
-                solution.x[:,3:6] * v_scaling,
-                np.exp(solution.x[:,6]).reshape(-1,1) * mass_scaling,
-            ), axis=1)
-            if return_acceleration_control:
-                controls = solution.u[:,0:3] * a_scaling       # acceleration control
-            else:
-                controls = np.divide(solution.u[:,0:3] * a_scaling, states[:,6].reshape(-1,1))
-
+        if convert_t_to_mjd2000:
+            times = solution.x[:,7] * t_scaling + self.t0_mjd2000
         else:
-            if dt_day is None:
-                steps = None
-            else:
-                dt_node_min = np.min(np.diff(solution.x[:,7]))
-                steps = 100 #int(np.ceil(dt_node_min*self.TU2DAY / dt_day*86400))
-            _, sols = self.evaluate_nonlinear_dynamics(solution.x, solution.u, solution.v, steps=steps)
-            times = []
-            states = []
-            controls = []
-            for (idx, (_ts, _ys)) in enumerate(sols):
-                _states = np.concatenate((
-                    _ys[:,0:3] * r_scaling,
-                    _ys[:,3:6] * v_scaling,
-                    np.exp(_ys[:,6]).reshape(-1,1) * mass_scaling,
-                ), axis=1)
-                times.append(np.array(_ts) * t_scaling)
-                states.append(_states)
-                if return_acceleration_control:
-                    controls.append(np.tile(solution.u[idx,0:3] * a_scaling, (len(_ts), 1)))
-                else:
-                    controls.append(np.tile(solution.u[idx,0:3] * a_scaling, (len(_ts), 1)) / _states[:,6].reshape(-1,1))
-            times = np.concatenate(times)
-            states = np.concatenate(states)
-            controls = np.concatenate(controls)
+            times = solution.x[:,7] * t_scaling
+
+        states = np.concatenate((
+            solution.x[:,0:3] * r_scaling,
+            solution.x[:,3:6] * v_scaling,
+            np.exp(solution.x[:,6]).reshape(-1,1) * mass_scaling,
+        ), axis=1)
+        controls = solution.u[:,0:3]
         return times, states, controls

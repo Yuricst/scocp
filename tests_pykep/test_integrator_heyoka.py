@@ -71,7 +71,7 @@ def test_heyoka_integrator_twobody():
     mu = GM_SUN / (VU**2 * DU)
     cex = ISP * G0 * (TU/DU)
     
-    ta_dyn, ta_dyn_aug = scocp_pykep.get_heyoka_integrator_twobody(mu, cex, tol=1e-12, verbose=True)
+    ta_dyn, ta_dyn_aug = scocp_pykep.get_heyoka_integrator_twobody_logmass(mu, cex, tol=1e-12, verbose=True)
 
     itg_heyoka = scocp_pykep.HeyokaIntegrator(
         nx=8,

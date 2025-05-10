@@ -25,27 +25,6 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
     VU = np.sqrt(GM_SUN / DU)    # velocity scale, m/s
     TU = DU / VU                 # time scale, s
 
-
-    # # define canonical parameters
-    # GM_SUN = 132712000000.44     # Sun GM, km^3/s^-2
-    # MSTAR  = 1000.0              # reference spacecraft mass
-    # ISP    = 3000.0              # specific impulse, s
-    # THRUST = 0.3                 # max thrust, kg.m/s^2
-    # G0     = 9.81                # gravity at surface, m/s^2
-
-    # DU = 149.6e6                 # length scale set to Sun-Earth distance, km
-    # VU = np.sqrt(GM_SUN / DU)    # velocity scale, km/s
-    # TU = DU / VU                 # time scale, s
-
-    # isp = ISP/TU                                # canonical specific impulse, TU
-    # c1 = THRUST * (1/MSTAR)*(TU**2/(1e3*DU))  # canonical max thrust
-    # c2 = c1/(isp * G0*(TU**2/(1e3*DU)) )
-
-    # mu = 1.0
-    # parameters_ode = (mu, c1, c2)
-    # print(f"\nCanonical c1: {c1:1.4e}, c2: {c2:1.4e}")
-
-
     # define initial and final planets
     pl0 = pk.planet.jpl_lp('earth')
     plf = pk.planet.jpl_lp('mars')
@@ -71,8 +50,7 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
     print(f"\nCanonical c1: {c1:1.4e}, c2: {c2:1.4e}")
 
     if use_heyoka:
-        raise NotImplementedError("Heyoka integrator not implemented for mass dynamics")
-        ta_dyn, ta_dyn_aug = scocp_pykep.get_heyoka_integrator_twobody(mu, c1, tol=1e-12, verbose=True)
+        ta_dyn, ta_dyn_aug = scocp_pykep.get_heyoka_integrator_twobody_mass(mu, c1, c2, tol=1e-12, verbose=True)
         integrator_01domain = scocp_pykep.HeyokaIntegrator(
             nx=8,
             nu=4,
@@ -148,7 +126,7 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
     #assert np.max(np.abs(geq_nl_opt)) <= tol_feas
 
     # extract solution
-    ts_mjd2000, states, controls = problem.process_solution(solution, dense_output=True, dt_day = 1.0)
+    ts_mjd2000, states, controls = problem.process_solution(solution)
     print(f"ts_mjd2000.shape = {ts_mjd2000.shape}")
     print(f"states.shape = {states.shape}")
     print(f"controls.shape = {controls.shape}")
@@ -156,30 +134,6 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
     # initial and final orbits
     initial_orbit_states = problem.get_initial_orbit()
     final_orbit_states = problem.get_final_orbit()
-
-    # fig = plt.figure(figsize=(12,5))
-    # ax = fig.add_subplot(1,3,1, projection='3d')
-    # ax.plot(states[:,0], states[:,1], states[:,2], 'b-')
-    # ax.scatter(x0[0]*pk.AU, x0[1]*pk.AU, x0[2]*pk.AU, marker='x', color='k', label='Initial state')
-    # ax.scatter(xf[0]*pk.AU, xf[1]*pk.AU, xf[2]*pk.AU, marker='o', color='k', label='Final state')
-    # ax.plot(initial_orbit_states[1][:,0]*pk.AU, initial_orbit_states[1][:,1]*pk.AU, initial_orbit_states[1][:,2]*pk.AU, 'k-', lw=0.3)
-    # ax.plot(final_orbit_states[1][:,0]*pk.AU, final_orbit_states[1][:,1]*pk.AU, final_orbit_states[1][:,2]*pk.AU, 'k-', lw=0.3)   
-    # ax.set(xlabel="x", ylabel="y", zlabel="z")
-    # ax.legend()
-
-    # ax_mass = fig.add_subplot(1,3,2)
-    # ax_mass.plot(ts_mjd2000, states[:,6])
-    # ax_mass.set(xlabel="Time, days", ylabel="Mass")
-    # ax_mass.grid(True, alpha=0.5)
-    
-    # ax_control = fig.add_subplot(1,3,3)
-    # ax_control.plot(ts_mjd2000, controls[:,0], label="ux")
-    # ax_control.plot(ts_mjd2000, controls[:,1], label="uy")
-    # ax_control.plot(ts_mjd2000, controls[:,2], label="uz")
-    # ax_control.set(xlabel="Time, days", ylabel="Control")
-    # ax_control.grid(True, alpha=0.5)
-    # ax_control.legend()
-    # plt.tight_layout()
     
     # evaluate solution
     if (get_plot is True) and (summary_dict["status"] != "CPFailed"):
