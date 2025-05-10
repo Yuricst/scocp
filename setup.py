@@ -42,7 +42,7 @@ with open('README.md', encoding='utf-8') as f:
 
 setup(
     name=package_name,
-    packages=["scocp", "scocp.eoms"],
+    packages=["scocp", "scocp.eoms", "scocp.scocp_continuous", "scocp.scocp_impulsive"],
     version=version,
     license=license,
     install_requires=requires,
