@@ -68,7 +68,7 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
             rhs_stm=scocp.control_rhs_twobody_mass_freetf_stm,
             impulsive=False,
             args=((mu, c1, c2),                # canonical gravitational constant & exhaust velocity
-                [0.0,0.0,0.0,1.0,0.0]     # place-holder for control vector: [ax,ay,az,s,v]
+                [0.0,0.0,0.0,1.0,0.0]          # place-holder for control vector: [ux,uy,uz,s,v]
             ),
             method='DOP853', reltol=1e-12, abstol=1e-12
         )
