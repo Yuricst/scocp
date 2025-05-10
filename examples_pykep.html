@@ -1,0 +1,752 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Pykep Compatible Problems &#8212; scocp 0.1.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=0deb7d70"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples_pykep';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API" href="api.html" />
+    <link rel="prev" title="Astrodynamics Problems" href="examples_astrodynamics.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">scocp 0.1.2 documentation</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples_astrodynamics.html">Astrodynamics Problems</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Pykep Compatible Problems</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/examples_pykep.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Pykep Compatible Problems</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#planet-to-planet-rendez-vous">Planet-to-planet rendez-vous</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mathematical-model">Mathematical model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#code">Code</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="pykep-compatible-problems">
+<h1>Pykep Compatible Problems<a class="headerlink" href="#pykep-compatible-problems" title="Link to this heading">#</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">scocp_pykep</span></code> extension provides OCP classes that are made to be compatible with <code class="docutils literal notranslate"><span class="pre">pykep</span></code>’s <code class="docutils literal notranslate"><span class="pre">planet</span></code> module to define initial/final rendez-vous conditions.</p>
+<blockquote>
+<div><p>[!NOTE]
+Using the classes defined hereafter requires installing <code class="docutils literal notranslate"><span class="pre">scocp_pykep</span></code> as well as <code class="docutils literal notranslate"><span class="pre">scocp</span></code>. In fact, <code class="docutils literal notranslate"><span class="pre">scocp_pykep</span></code> has <code class="docutils literal notranslate"><span class="pre">scocp</span></code> as one of its dependencies.</p>
+</div></blockquote>
+<section id="planet-to-planet-rendez-vous">
+<h2>Planet-to-planet rendez-vous<a class="headerlink" href="#planet-to-planet-rendez-vous" title="Link to this heading">#</a></h2>
+<p>We consider a problem where:</p>
+<ul class="simple">
+<li><p>the initial and final conditions are to rendez-vous with planets following Keplerian motion around the central body (a star);</p></li>
+<li><p>the initial mass (wet mass) is fixed, and the objective is to maximize the final mass;</p></li>
+<li><p>at departure and arrival, a v-infinity vector with a user-defined upper-bound on magnitude may be used;</p></li>
+<li><p>the departure time from the initial planet and the arrival time are free and bounded;</p></li>
+</ul>
+<p>This is analogous to <a class="reference external" href="https://esa.github.io/pykep/documentation/trajopt.html#pykep.trajopt.direct_pl2pl"><code class="docutils literal notranslate"><span class="pre">pykep.trajopt.direct_pl2pl</span></code></a>.</p>
+<section id="mathematical-model">
+<h3>Mathematical model<a class="headerlink" href="#mathematical-model" title="Link to this heading">#</a></h3>
+<p>Mathematically, the problem is given by</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+\min_{\boldsymbol{x},\boldsymbol{u},t_0,t_N,\Delta\boldsymbol{v}_{\infty,0},\Delta\boldsymbol{v}_{\infty,N}} \quad&amp; m_N
+\\ \text{s.t.}\quad&amp;
+    \boldsymbol{x}_{k+1} = \boldsymbol{f}(\boldsymbol{x}_k, \boldsymbol{u}_k, t_k, t_{k+1}) \quad k=1,\ldots,N-1
+\\&amp;
+    \boldsymbol{x}_1 = \boldsymbol{x}_{\mathrm{ref},0} + \begin{bmatrix} \boldsymbol{0}_{3\times3} \\ \boldsymbol{I}_3 \end{bmatrix} \Delta\boldsymbol{v}_{\infty,0}
+\\&amp;
+    \boldsymbol{x}_N = \boldsymbol{x}_{\mathrm{ref},N} + \begin{bmatrix} \boldsymbol{0}_{3\times3} \\ \boldsymbol{I}_3 \end{bmatrix} \Delta\boldsymbol{v}_{\infty,N}
+\\&amp;
+    \| \boldsymbol{u}_k \|_2 \leq \dfrac{T_{\max}}{m_k} \quad k=1,\ldots,N
+\\&amp;
+    t_{0,\min} \leq t_0 \leq t_{0,\max}
+\\&amp;
+    t_{N,\min} \leq t_N \leq t_{N,\max}
+\end{aligned}\end{split}\]</div>
+<p>Internally, to solve this problem, we define the augmented state and control</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\boldsymbol{x}^{\mathrm{aug}} (\tau) = \begin{bmatrix}
+    x \\ y \\ z \\ v_x \\ v_y \\ v_z \\ \log{m} \\ t
+\end{bmatrix}
+,\quad
+\boldsymbol{u}^{\mathrm{aug}} (\tau) = \begin{bmatrix}
+    \boldsymbol{u} \\ s
+\end{bmatrix}
+,\quad
+\boldsymbol{u} (\tau) = \begin{bmatrix}
+    a_x \\ a_y \\ a_z
+\end{bmatrix}\end{split}\]</div>
+<p>with augmented dynamics</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\dfrac{d \boldsymbol{x}^{\mathrm{aug}}}{d \tau}
+= 
+\begin{bmatrix}
+    \boldsymbol{v} \\
+    -\dfrac{\mu}{r^3}\boldsymbol{r} \\
+    \boldsymbol{0}_{2\times 1}
+\end{bmatrix}
++
+\begin{bmatrix}
+    s B\boldsymbol{u} &amp; 0_{6 \times 1} &amp; 0_{6 \times 1} \\
+    0_{1\times 3} &amp; 0 &amp; -s/c_{\rm ex} \\
+    0_{1\times 3} &amp; 1 &amp; 0
+\end{bmatrix}
+\begin{bmatrix}
+    \boldsymbol{u} \\ s \\ \Gamma
+\end{bmatrix}
+,\quad \Gamma = \| \boldsymbol{u} \|_2\end{split}\]</div>
+</section>
+<section id="code">
+<h3>Code<a class="headerlink" href="#code" title="Link to this heading">#</a></h3>
+<p>We start with the usual imports</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cvxpy</span> <span class="k">as</span> <span class="nn">cp</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pykep</span> <span class="k">as</span> <span class="nn">pk</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="c1"># path to scocp and scocp_pykep</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)),</span> <span class="s2">&quot;..&quot;</span><span class="p">))</span>
+
+<span class="kn">import</span> <span class="nn">scocp</span>
+<span class="kn">import</span> <span class="nn">scocp_pykep</span>
+</pre></div>
+</div>
+<p>Let’s now define our physical constants, spacecraft parameters, and canonical scales.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># define canonical parameters</span>
+<span class="n">GM_SUN</span> <span class="o">=</span> <span class="n">pk</span><span class="o">.</span><span class="n">MU_SUN</span>           <span class="c1"># Sun GM, m^3/s^-2</span>
+<span class="n">MSTAR</span>  <span class="o">=</span> <span class="mf">800.0</span>               <span class="c1"># reference spacecraft mass</span>
+<span class="n">ISP</span>    <span class="o">=</span> <span class="mf">3000.0</span>              <span class="c1"># specific impulse, s</span>
+<span class="n">THRUST</span> <span class="o">=</span> <span class="mf">0.2</span>                 <span class="c1"># max thrust, kg.m/s^2</span>
+<span class="n">G0</span>     <span class="o">=</span> <span class="n">pk</span><span class="o">.</span><span class="n">G0</span>               <span class="c1"># gravity at surface, m/s^2</span>
+
+<span class="n">DU</span> <span class="o">=</span> <span class="n">pk</span><span class="o">.</span><span class="n">AU</span>                   <span class="c1"># length scale set to Sun-Earth distance, m</span>
+<span class="n">VU</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">GM_SUN</span> <span class="o">/</span> <span class="n">DU</span><span class="p">)</span>    <span class="c1"># velocity scale, m/s</span>
+<span class="n">TU</span> <span class="o">=</span> <span class="n">DU</span> <span class="o">/</span> <span class="n">VU</span>                 <span class="c1"># time scale, s</span>
+
+<span class="n">t0_mjd2000_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1100.0</span><span class="p">,</span> <span class="mf">1200.0</span><span class="p">]</span>    <span class="c1"># initial epoch in mjd2000</span>
+<span class="n">TU2DAY</span> <span class="o">=</span> <span class="n">TU</span> <span class="o">/</span> <span class="mf">86400.0</span>                   <span class="c1"># convert non-dimensional time to elapsed time in days</span>
+
+<span class="c1"># define transfer problem discretization</span>
+<span class="n">tf_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">500.0</span><span class="p">]</span>
+<span class="n">t0_guess</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">tf_guess</span> <span class="o">=</span> <span class="mf">250.0</span>
+<span class="n">N</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">s_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.01</span><span class="o">*</span><span class="n">tf_guess</span><span class="p">,</span> <span class="mi">10</span><span class="o">*</span><span class="n">tf_guess</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>We now define boundary conditions-related quantities for our problem, namely: the initial and final <code class="docutils literal notranslate"><span class="pre">pykep.plane</span></code> objects, the launch window bounds, final time bounds, and maximum departure/arrival v-infinities</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># define initial and final planets</span>
+<span class="n">pl0</span> <span class="o">=</span> <span class="n">pk</span><span class="o">.</span><span class="n">planet</span><span class="o">.</span><span class="n">jpl_lp</span><span class="p">(</span><span class="s1">&#39;earth&#39;</span><span class="p">)</span>
+<span class="n">plf</span> <span class="o">=</span> <span class="n">pk</span><span class="o">.</span><span class="n">planet</span><span class="o">.</span><span class="n">jpl_lp</span><span class="p">(</span><span class="s1">&#39;mars&#39;</span><span class="p">)</span>
+
+<span class="n">t0_mjd2000_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1100.0</span><span class="p">,</span> <span class="mf">1200.0</span><span class="p">]</span>    <span class="c1"># initial epoch in mjd2000</span>
+<span class="n">TU2DAY</span> <span class="o">=</span> <span class="n">TU</span> <span class="o">/</span> <span class="mf">86400.0</span>                   <span class="c1"># convert non-dimensional time to elapsed time in days</span>
+
+<span class="c1"># define transfer problem discretization</span>
+<span class="n">tf_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">500.0</span><span class="p">]</span>
+<span class="n">t0_guess</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">tf_guess</span> <span class="o">=</span> <span class="mf">250.0</span>
+<span class="n">N</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">s_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.01</span><span class="o">*</span><span class="n">tf_guess</span><span class="p">,</span> <span class="mi">10</span><span class="o">*</span><span class="n">tf_guess</span><span class="p">]</span>
+
+<span class="c1"># max v-infinity vector magnitudes in km/s</span>
+<span class="n">vinf_dep</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">vinf_arr</span> <span class="o">=</span> <span class="mf">0.5</span>
+</pre></div>
+</div>
+<p>We can now define the continuous control two-body dynamics integrator for the augmented state with dilated time (i.e. in <span class="math notranslate nohighlight">\(\tau \in [0,1]\)</span> space) and in canonical scales</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">integrator_01domain</span> <span class="o">=</span> <span class="n">scocp</span><span class="o">.</span><span class="n">ScipyIntegrator</span><span class="p">(</span>
+    <span class="n">nx</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">nu</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">nv</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">rhs</span><span class="o">=</span><span class="n">scocp</span><span class="o">.</span><span class="n">control_rhs_twobody_logmass_freetf</span><span class="p">,</span>
+    <span class="n">rhs_stm</span><span class="o">=</span><span class="n">scocp</span><span class="o">.</span><span class="n">control_rhs_twobody_logmass_freetf_stm</span><span class="p">,</span>
+    <span class="n">impulsive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">args</span><span class="o">=</span><span class="p">((</span>
+        <span class="n">GM_SUN</span> <span class="o">/</span> <span class="p">(</span><span class="n">VU</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">DU</span><span class="p">),</span>          <span class="c1"># canonical gravitational constant</span>
+        <span class="n">ISP</span> <span class="o">*</span> <span class="n">G0</span> <span class="o">*</span> <span class="p">(</span><span class="n">TU</span><span class="o">/</span><span class="n">DU</span><span class="p">)),</span>            <span class="c1"># canonical exhaust velocity of thruster</span>
+        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]</span>           <span class="c1"># place-holder for control vector: [ax,ay,az,s,v]</span>
+    <span class="p">),</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;DOP853&#39;</span><span class="p">,</span> <span class="n">reltol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">,</span> <span class="n">abstol</span><span class="o">=</span><span class="mf">1e-12</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>We can now define the SCOCP via the function <code class="docutils literal notranslate"><span class="pre">scocp_pykep.scocp_pl2pl</span></code>. Note we need the following inputs:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">integrator_01domain</span></code> class, as defined above</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pl0</span></code> is the initial <code class="docutils literal notranslate"><span class="pre">pykep.planet</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plf</span></code> is the final <code class="docutils literal notranslate"><span class="pre">pykep.planet</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mass</span></code> is the initial mass (wet mass), in kg</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mu_SI</span></code> is the central gravitational constant, in SI</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_thrust</span></code> is the maximum thrust, in SI</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">isp</span></code> is the Isp, in SI</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nseg</span></code> is the number of segments</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">t0_mjd2000_bounds</span></code> is the bounds for the departure epoch, <strong>in MJD2000 (days)</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tf_bounds</span></code> is the bounds on the final time, in days</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">s_bounds</span></code> is the bounds on the dilation factor, in days</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vinf_dep</span></code> is the max departure v-infinity magnitude, <strong>in km/s</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vinf_arr</span></code> is the max arrival v-infinity magnitude, <strong>in km/s</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">weight</span></code> parameter is the initial penalty on constraint violations (default is 100).</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span> <span class="o">=</span> <span class="n">scocp_pykep</span><span class="o">.</span><span class="n">scocp_pl2pl</span><span class="p">(</span>
+    <span class="n">integrator_01domain</span><span class="p">,</span>
+    <span class="n">pl0</span><span class="p">,</span>
+    <span class="n">plf</span><span class="p">,</span>
+    <span class="n">mass</span> <span class="o">=</span> <span class="n">MSTAR</span><span class="p">,</span>
+    <span class="n">mu_SI</span> <span class="o">=</span> <span class="n">pk</span><span class="o">.</span><span class="n">MU_SUN</span><span class="p">,</span>
+    <span class="n">max_thrust</span> <span class="o">=</span> <span class="n">THRUST</span><span class="p">,</span>
+    <span class="n">isp</span> <span class="o">=</span> <span class="n">ISP</span><span class="p">,</span>
+    <span class="n">nseg</span> <span class="o">=</span> <span class="n">N</span><span class="p">,</span>
+    <span class="n">t0_mjd2000_bounds</span> <span class="o">=</span> <span class="n">t0_mjd2000_bounds</span><span class="p">,</span>
+    <span class="n">tf_bounds</span> <span class="o">=</span> <span class="n">tf_bounds</span><span class="p">,</span>
+    <span class="n">s_bounds</span> <span class="o">=</span> <span class="n">s_bounds</span><span class="p">,</span>
+    <span class="n">vinf_dep</span> <span class="o">=</span> <span class="n">vinf_dep</span><span class="p">,</span>
+    <span class="n">vinf_arr</span> <span class="o">=</span> <span class="n">vinf_arr</span><span class="p">,</span>
+    <span class="n">r_scaling</span> <span class="o">=</span> <span class="n">pk</span><span class="o">.</span><span class="n">AU</span><span class="p">,</span>
+    <span class="n">v_scaling</span> <span class="o">=</span> <span class="n">pk</span><span class="o">.</span><span class="n">EARTH_VELOCITY</span><span class="p">,</span>
+    <span class="n">weight</span> <span class="o">=</span> <span class="mf">100.0</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Note: there is no explicit check that ensures the canonical gravitational constant and canonical exhaust thrust used inside <code class="docutils literal notranslate"><span class="pre">scocp_pl2pl</span></code> matches that of the integrator!</strong> The user is responsible for setting those to be the same.
+In fact, inside <code class="docutils literal notranslate"><span class="pre">scocp_pl2pl</span></code>, the canonical gravitational constant and canonical exhaust velocity are exactly computed by</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">mu_SI</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v_scaling</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_scaling</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">cex</span> <span class="o">=</span> <span class="n">isp</span> <span class="o">*</span> <span class="n">pk</span><span class="o">.</span><span class="n">G0</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_scaling</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">r_scaling</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which is the same as what is done in the integrator argument above.</p>
+<p>The SCvx* algorithm needs an initial guess.
+One way to supply an initial guess is to linearly interpolate the initial and final orbital elements (i.e. at the planets)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">xbar</span><span class="p">,</span> <span class="n">ubar</span><span class="p">,</span> <span class="n">vbar</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_initial_guess</span><span class="p">(</span><span class="n">t0_guess</span><span class="p">,</span> <span class="n">tf_guess</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can now setup the SCvx* algorithm and solve our problem</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tol_feas</span> <span class="o">=</span> <span class="mf">1e-10</span>
+<span class="n">tol_opt</span> <span class="o">=</span> <span class="mf">1e-6</span>
+<span class="n">algo</span> <span class="o">=</span> <span class="n">scocp</span><span class="o">.</span><span class="n">SCvxStar</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">tol_opt</span><span class="o">=</span><span class="n">tol_opt</span><span class="p">,</span> <span class="n">tol_feas</span><span class="o">=</span><span class="n">tol_feas</span><span class="p">,</span> <span class="n">rho1</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">r_bounds</span><span class="o">=</span><span class="p">[</span><span class="mf">1e-10</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">])</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">algo</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span>
+    <span class="n">xbar</span><span class="p">,</span>
+    <span class="n">ubar</span><span class="p">,</span>
+    <span class="n">vbar</span><span class="p">,</span>
+    <span class="n">maxiter</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">|  Iter  |     J0      |   Delta J   |   Delta L   |    chi     |     rho     |     r      |   weight   | step acpt. |</span>
+<span class="go">     1   |  5.9315e-01 |  6.3606e+00 |  6.3908e+00 | 3.4605e-02 |  9.9528e-01 | 1.0000e-01 | 1.0000e+02 |    yes     |</span>
+<span class="go">     2   |  2.9315e-01 |  1.6428e-01 |  4.5551e+00 | 9.8267e-02 |  3.6066e-02 | 3.0000e-01 | 2.0000e+02 |    yes     |</span>
+<span class="go">     3   | -6.8528e-03 |  6.9916e+00 |  2.0730e+01 | 7.7104e-02 |  3.3727e-01 | 3.0000e-01 | 4.0000e+02 |    yes     |</span>
+<span class="go">     4   | -6.5069e-02 | -4.6447e+00 |  1.3725e+01 | 1.8512e-01 | -3.3841e-01 | 3.0000e-01 | 4.0000e+02 |    no      |</span>
+<span class="go">     5   | -7.7595e-03 |  1.2637e+01 |  1.3582e+01 | 5.0969e-02 |  9.3047e-01 | 1.5000e-01 | 4.0000e+02 |    yes     |</span>
+<span class="go">     6   | -5.3940e-02 | -6.9003e+01 |  1.1423e+00 | 2.9570e-01 | -6.0406e+01 | 4.5000e-01 | 4.0000e+02 |    no      |</span>
+<span class="go">     7   | -4.1661e-04 | -2.2868e+00 |  1.0405e+00 | 5.4044e-02 | -2.1978e+00 | 2.2500e-01 | 4.0000e+02 |    no      |</span>
+<span class="go">     </span>
+<span class="go">     ...</span>
+<span class="go">     </span>
+<span class="go">    97   |  1.9111e-01 | -1.5384e-07 |  3.5754e-07 | 9.8609e-13 | -4.3026e-01 | 6.1938e-07 | 3.5184e+15 |    no      |</span>
+<span class="go">    98   |  1.9111e-01 | -4.1361e-08 |  3.2091e-07 | 5.7877e-12 | -1.2889e-01 | 3.0969e-07 | 3.5184e+15 |    no      |</span>
+<span class="go">    99   |  1.9111e-01 | -3.3555e-07 |  2.9558e-07 | 1.2339e-11 | -1.1352e+00 | 1.5484e-07 | 3.5184e+15 |    no      |</span>
+<span class="go">   100   |  1.9111e-01 |  2.6663e-07 |  2.8595e-07 | 9.3903e-12 |  9.3241e-01 | 7.7422e-08 | 3.5184e+15 |    yes     |</span>
+
+
+<span class="go">    SCvx* algorithm summary:</span>
+<span class="go">        Status                          : Optimal</span>
+<span class="go">        Objective value                 : 1.91111361e-01</span>
+<span class="go">        Penalized objective improvement : 2.66627415e-07 (tol: 1.0000e-06)</span>
+<span class="go">        Constraint violation            : 9.39026634e-12 (tol: 1.0000e-10)</span>
+<span class="go">        Total iterations                : 100</span>
+<span class="go">        SCvx* algorithm time            : 15.2741 seconds</span>
+</pre></div>
+</div>
+<p>Let’s check that it has been solved correctly</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">xopt</span><span class="p">,</span> <span class="n">uopt</span><span class="p">,</span> <span class="n">vopt</span><span class="p">,</span> <span class="n">yopt</span><span class="p">,</span> <span class="n">sols</span><span class="p">,</span> <span class="n">summary_dict</span> <span class="o">=</span> <span class="n">solution</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">solution</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="n">solution</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="n">solution</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">solution</span><span class="o">.</span><span class="n">sols</span><span class="p">,</span> <span class="n">solution</span><span class="o">.</span><span class="n">summary_dict</span>
+<span class="k">assert</span> <span class="n">summary_dict</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Optimal&quot;</span>
+<span class="k">assert</span> <span class="n">summary_dict</span><span class="p">[</span><span class="s2">&quot;chi&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">tol_feas</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Initial guess TOF: </span><span class="si">{</span><span class="n">tf_guess</span><span class="o">*</span><span class="n">TU2DAY</span><span class="si">:</span><span class="s2">1.4f</span><span class="si">}</span><span class="s2">d --&gt; Optimized TOF: </span><span class="si">{</span><span class="n">xopt</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">7</span><span class="p">]</span><span class="o">*</span><span class="n">TU2DAY</span><span class="si">:</span><span class="s2">1.4f</span><span class="si">}</span><span class="s2">d (bounds: </span><span class="si">{</span><span class="n">tf_bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">TU2DAY</span><span class="si">:</span><span class="s2">1.4f</span><span class="si">}</span><span class="s2">d ~ </span><span class="si">{</span><span class="n">tf_bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">TU2DAY</span><span class="si">:</span><span class="s2">1.4f</span><span class="si">}</span><span class="s2">d)&quot;</span><span class="p">)</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">target_initial</span><span class="o">.</span><span class="n">target_state</span><span class="p">(</span><span class="n">xopt</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
+<span class="n">xf</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">target_final</span><span class="o">.</span><span class="n">target_state</span><span class="p">(</span><span class="n">xopt</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
+
+<span class="c1"># evaluate v-infinity vectors</span>
+<span class="n">vinf_dep_vec</span><span class="p">,</span> <span class="n">vinf_arr_vec</span> <span class="o">=</span> <span class="n">yopt</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">yopt</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;||vinf_dep|| = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vinf_dep_vec</span><span class="p">)</span><span class="o">*</span><span class="n">VU</span><span class="si">:</span><span class="s2">1.4f</span><span class="si">}</span><span class="s2"> m/s (max: </span><span class="si">{</span><span class="n">vinf_dep</span><span class="o">*</span><span class="n">VU</span><span class="si">:</span><span class="s2">1.4f</span><span class="si">}</span><span class="s2"> m/s), ||vinf_arr|| = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vinf_arr_vec</span><span class="p">)</span><span class="o">*</span><span class="n">VU</span><span class="si">:</span><span class="s2">1.4f</span><span class="si">}</span><span class="s2"> m/s (max: </span><span class="si">{</span><span class="n">vinf_arr</span><span class="o">*</span><span class="n">VU</span><span class="si">:</span><span class="s2">1.4f</span><span class="si">}</span><span class="s2"> m/s)&quot;</span><span class="p">)</span>
+
+<span class="c1"># evaluate nonlinear violations</span>
+<span class="n">geq_nl_opt</span><span class="p">,</span> <span class="n">sols</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">evaluate_nonlinear_dynamics</span><span class="p">(</span><span class="n">xopt</span><span class="p">,</span> <span class="n">uopt</span><span class="p">,</span> <span class="n">vopt</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Max dynamics constraint violation: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">geq_nl_opt</span><span class="p">))</span><span class="si">:</span><span class="s2">1.4e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">geq_nl_opt</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="n">tol_feas</span>
+</pre></div>
+</div>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">Initial guess TOF: 250.0000d --&gt; Optimized TOF: 351.0990d (bounds: 100.0000d ~ 500.0000d)</span>
+<span class="go">||vinf_dep|| = 1000.0000 m/s (max: 1000.0000 m/s), ||vinf_arr|| = 500.0000 m/s (max: 500.0000 m/s)</span>
+</pre></div>
+</div>
+<p>Let’s plot our results</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># initial and final orbits</span>
+<span class="n">initial_orbit_states</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_initial_orbit</span><span class="p">()</span>
+<span class="n">final_orbit_states</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_final_orbit</span><span class="p">()</span>
+
+<span class="c1"># plot results</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">7</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">zlabel</span><span class="o">=</span><span class="s2">&quot;z&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">_ts</span><span class="p">,</span> <span class="n">_ys</span><span class="p">)</span> <span class="ow">in</span> <span class="n">sols_ig</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_ys</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">_ys</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">_ys</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">_ts</span><span class="p">,</span> <span class="n">_ys</span><span class="p">)</span> <span class="ow">in</span> <span class="n">sols</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_ys</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">_ys</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">_ys</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;b-&#39;</span><span class="p">)</span>
+    <span class="n">_us_zoh</span> <span class="o">=</span> <span class="n">scocp</span><span class="o">.</span><span class="n">zoh_controls</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">times</span><span class="p">,</span> <span class="n">uopt</span><span class="p">,</span> <span class="n">_ts</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">quiver</span><span class="p">(</span><span class="n">_ys</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">_ys</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">_ys</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="n">_us_zoh</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">_us_zoh</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">_us_zoh</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x0</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x0</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x0</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Initial state&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">xf</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xf</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">xf</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Final state&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">initial_orbit_states</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">initial_orbit_states</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">initial_orbit_states</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span><span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;k-&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">final_orbit_states</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">final_orbit_states</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">final_orbit_states</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span><span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;k-&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="n">ax_m</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">ax_m</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">_ts</span><span class="p">,</span> <span class="n">_ys</span><span class="p">)</span> <span class="ow">in</span> <span class="n">sols</span><span class="p">:</span>
+    <span class="n">ax_m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_ys</span><span class="p">[:,</span><span class="mi">7</span><span class="p">]</span><span class="o">*</span><span class="n">canonical_scales</span><span class="o">.</span><span class="n">TU2DAY</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">_ys</span><span class="p">[:,</span><span class="mi">6</span><span class="p">]),</span> <span class="s1">&#39;b-&#39;</span><span class="p">)</span>
+<span class="n">ax_m</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">sols</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span><span class="p">]),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+<span class="n">ax_m</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">xopt</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">7</span><span class="p">]</span><span class="o">*</span><span class="n">canonical_scales</span><span class="o">.</span><span class="n">TU2DAY</span><span class="p">,</span> <span class="mf">0.01</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">sols</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span><span class="p">]),</span> <span class="sa">f</span><span class="s2">&quot;m_f = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">sols</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span><span class="p">])</span><span class="si">:</span><span class="s2">1.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">ax_m</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Time, days&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Mass&quot;</span><span class="p">)</span>
+<span class="c1">#ax_m.legend()</span>
+
+<span class="n">ax_u</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ax_u</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">ax_u</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">xopt</span><span class="p">[:,</span><span class="mi">7</span><span class="p">]</span><span class="o">*</span><span class="n">canonical_scales</span><span class="o">.</span><span class="n">TU2DAY</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">vopt</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">])),</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Control&quot;</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s1">&#39;post&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">_ts</span><span class="p">,</span> <span class="n">_ys</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sols</span><span class="p">):</span>
+    <span class="n">ax_u</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_ys</span><span class="p">[:,</span><span class="mi">7</span><span class="p">]</span><span class="o">*</span><span class="n">canonical_scales</span><span class="o">.</span><span class="n">TU2DAY</span><span class="p">,</span> <span class="n">Tmax</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">_ys</span><span class="p">[:,</span><span class="mi">6</span><span class="p">]),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Max accel.&quot;</span> <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+<span class="n">ax_u</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Time, days&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Acceleration&quot;</span><span class="p">)</span>
+<span class="n">ax_u</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="n">ax_DeltaJ</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">ax_DeltaJ</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">algo</span><span class="o">.</span><span class="n">plot_DeltaJ</span><span class="p">(</span><span class="n">ax_DeltaJ</span><span class="p">,</span> <span class="n">summary_dict</span><span class="p">)</span>
+<span class="n">ax_DeltaJ</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">tol_opt</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;tol_opt&#39;</span><span class="p">)</span>
+<span class="n">ax_DeltaJ</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="n">ax_DeltaL</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">ax_DeltaL</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">algo</span><span class="o">.</span><span class="n">plot_chi</span><span class="p">(</span><span class="n">ax_DeltaL</span><span class="p">,</span> <span class="n">summary_dict</span><span class="p">)</span>
+<span class="n">ax_DeltaL</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">tol_feas</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;tol_feas&#39;</span><span class="p">)</span>
+<span class="n">ax_DeltaL</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">_ts</span><span class="p">,</span> <span class="n">_ys</span><span class="p">)</span> <span class="ow">in</span> <span class="n">sols_ig</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_ts</span><span class="p">,</span> <span class="n">_ys</span><span class="p">[:,</span><span class="mi">7</span><span class="p">]</span><span class="o">*</span><span class="n">canonical_scales</span><span class="o">.</span><span class="n">TU2DAY</span><span class="p">,</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">_ts</span><span class="p">,</span> <span class="n">_ys</span><span class="p">)</span> <span class="ow">in</span> <span class="n">sols</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_ts</span><span class="p">,</span> <span class="n">_ys</span><span class="p">[:,</span><span class="mi">7</span><span class="p">]</span><span class="o">*</span><span class="n">canonical_scales</span><span class="o">.</span><span class="n">TU2DAY</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;tau&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Time, days&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><img alt="Earth-Mars rendezvous" src="_images/example_pl2pl.png" /></p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="examples_astrodynamics.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Astrodynamics Problems</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="api.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">API</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#planet-to-planet-rendez-vous">Planet-to-planet rendez-vous</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mathematical-model">Mathematical model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#code">Code</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Yuri Shimane
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Yuri Shimane.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
