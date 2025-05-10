@@ -25,27 +25,6 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
     VU = np.sqrt(GM_SUN / DU)    # velocity scale, m/s
     TU = DU / VU                 # time scale, s
 
-
-    # # define canonical parameters
-    # GM_SUN = 132712000000.44     # Sun GM, km^3/s^-2
-    # MSTAR  = 1000.0              # reference spacecraft mass
-    # ISP    = 3000.0              # specific impulse, s
-    # THRUST = 0.3                 # max thrust, kg.m/s^2
-    # G0     = 9.81                # gravity at surface, m/s^2
-
-    # DU = 149.6e6                 # length scale set to Sun-Earth distance, km
-    # VU = np.sqrt(GM_SUN / DU)    # velocity scale, km/s
-    # TU = DU / VU                 # time scale, s
-
-    # isp = ISP/TU                                # canonical specific impulse, TU
-    # c1 = THRUST * (1/MSTAR)*(TU**2/(1e3*DU))  # canonical max thrust
-    # c2 = c1/(isp * G0*(TU**2/(1e3*DU)) )
-
-    # mu = 1.0
-    # parameters_ode = (mu, c1, c2)
-    # print(f"\nCanonical c1: {c1:1.4e}, c2: {c2:1.4e}")
-
-
     # define initial and final planets
     pl0 = pk.planet.jpl_lp('earth')
     plf = pk.planet.jpl_lp('mars')
@@ -65,14 +44,10 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
     vinf_arr = 500/1e3     # 500 m/s
 
     # this is the non-dimentional time integrator for solving the OCP
-    mu = GM_SUN / (VU**2 * DU)                          # canonical gravitational constant
-    c1 = THRUST / (MSTAR*DU/TU**2)                      # canonical max thrust
-    c2 = THRUST/(ISP*G0) / (MSTAR/TU)                   # canonical mass flow rate
-    print(f"\nCanonical c1: {c1:1.4e}, c2: {c2:1.4e}")
-
+    mu = GM_SUN / (VU**2 * DU)      # canonical gravitational constant
+    cex = ISP * G0 * (TU/DU)        # canonical exhaust velocity of thruster
     if use_heyoka:
-        raise NotImplementedError("Heyoka integrator not implemented for mass dynamics")
-        ta_dyn, ta_dyn_aug = scocp_pykep.get_heyoka_integrator_twobody(mu, c1, tol=1e-12, verbose=True)
+        ta_dyn, ta_dyn_aug = scocp_pykep.get_heyoka_integrator_twobody(mu, cex, tol=1e-12, verbose=True)
         integrator_01domain = scocp_pykep.HeyokaIntegrator(
             nx=8,
             nu=4,
@@ -86,17 +61,17 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
             nx=8,
             nu=4,
             nv=1,
-            rhs=scocp.control_rhs_twobody_mass_freetf,
-            rhs_stm=scocp.control_rhs_twobody_mass_freetf_stm,
+            rhs=scocp.control_rhs_twobody_logmass_freetf,
+            rhs_stm=scocp.control_rhs_twobody_logmass_freetf_stm,
             impulsive=False,
-            args=((mu, c1, c2),                # canonical gravitational constant & exhaust velocity
+            args=((mu, cex),                # canonical gravitational constant & exhaust velocity
                 [0.0,0.0,0.0,1.0,0.0]     # place-holder for control vector: [ax,ay,az,s,v]
             ),
             method='DOP853', reltol=1e-12, abstol=1e-12
         )
 
     # create problem
-    problem = scocp_pykep.scocp_pl2pl(
+    problem = scocp_pykep.scocp_pl2pl_logmass(
         integrator_01domain,
         pl0,
         plf,
@@ -112,7 +87,6 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
         vinf_arr,
         r_scaling = pk.AU,
         v_scaling = pk.EARTH_VELOCITY,
-        uniform_dilation = True,
         weight = 100.0,
     )
     # create initial guess
@@ -128,12 +102,12 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
         xbar,
         ubar,
         vbar,
-        maxiter = 200,
+        maxiter = 100,
         verbose = True
     )
     xopt, uopt, vopt, yopt, sols, summary_dict = solution.x, solution.u, solution.v, solution.y, solution.sols, solution.summary_dict
-    #assert summary_dict["status"] == "Optimal"
-    #assert summary_dict["chi"][-1] <= tol_feas
+    assert summary_dict["status"] == "Optimal"
+    assert summary_dict["chi"][-1] <= tol_feas
     print(f"Initial guess TOF: {tf_guess*TU2DAY:1.4f}d --> Optimized TOF: {xopt[-1,7]*TU2DAY:1.4f}d (bounds: {tf_bounds[0]*TU2DAY:1.4f}d ~ {tf_bounds[1]*TU2DAY:1.4f}d)")
     x0 = problem.target_initial.target_state(xopt[0,7])
     xf = problem.target_final.target_state(xopt[-1,7])
@@ -145,7 +119,7 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
     # evaluate nonlinear violations
     geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, vopt, steps=8)
     print(f"Max dynamics constraint violation: {np.max(np.abs(geq_nl_opt)):1.4e}")
-    #assert np.max(np.abs(geq_nl_opt)) <= tol_feas
+    assert np.max(np.abs(geq_nl_opt)) <= tol_feas
 
     # extract solution
     ts_mjd2000, states, controls = problem.process_solution(solution, dense_output=True, dt_day = 1.0)
@@ -196,7 +170,7 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
         for (_ts, _ys) in sols:
             ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], 'b-')
             _us_zoh = scocp.zoh_controls(problem.times, uopt, _ts)
-            ax.quiver(_ys[:,0], _ys[:,1], _ys[:,2], _us_zoh[:,0], _us_zoh[:,1], _us_zoh[:,2], color='r', length=0.1)
+            ax.quiver(_ys[:,0], _ys[:,1], _ys[:,2], _us_zoh[:,0], _us_zoh[:,1], _us_zoh[:,2], color='r', length=2.0)
 
         ax.scatter(x0[0], x0[1], x0[2], marker='x', color='k', label='Initial state')
         ax.scatter(xf[0], xf[1], xf[2], marker='o', color='k', label='Final state')
@@ -208,19 +182,21 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
         ax_m = fig.add_subplot(2,3,2)
         ax_m.grid(True, alpha=0.5)
         for (_ts, _ys) in sols:
-            ax_m.plot(_ys[:,7]*problem.TU2DAY, _ys[:,6], 'b-')
-        ax_m.axhline(sols[-1][1][-1,6], color='r', linestyle='--')
-        ax_m.text(xopt[0,7]*problem.TU2DAY, 0.01 + sols[-1][1][-1,6], f"m_f = {sols[-1][1][-1,6]:1.4f}", color='r')
+            ax_m.plot(_ys[:,7]*problem.TU2DAY, np.exp(_ys[:,6]), 'b-')
+        ax_m.axhline(np.exp(sols[-1][1][-1,6]), color='r', linestyle='--')
+        ax_m.text(xopt[0,7]*problem.TU2DAY, 0.01 + np.exp(sols[-1][1][-1,6]), f"m_f = {np.exp(sols[-1][1][-1,6]):1.4f}", color='r')
         ax_m.set(xlabel="Time, days", ylabel="Mass")
         #ax_m.legend()
 
         ax_u = fig.add_subplot(2,3,3)
         ax_u.grid(True, alpha=0.5)
-        ax_u.step(xopt[:,7]*problem.TU2DAY, np.concatenate((vopt[:,0], [0.0])), label="Gamma", where='post', color='k')
-        ax_u.step(xopt[:,7]*problem.TU2DAY, np.concatenate((uopt[:,0], [0.0])), label="u", where='post', color='r')
-        ax_u.step(xopt[:,7]*problem.TU2DAY, np.concatenate((uopt[:,1], [0.0])), label="v", where='post', color='g')
-        ax_u.step(xopt[:,7]*problem.TU2DAY, np.concatenate((uopt[:,2], [0.0])), label="w", where='post', color='b')
-        ax_u.set(xlabel="Time, days", ylabel="Control throttle")
+        ax_u.step(xopt[:,7]*problem.TU2DAY, np.concatenate((vopt[:,0], [0.0]))*VU/TU, label="Control", where='post', color='k')
+        ax_u.step(xopt[:,7]*problem.TU2DAY, np.concatenate((uopt[:,0], [0.0]))*VU/TU, label="u", where='post', color='r')
+        ax_u.step(xopt[:,7]*problem.TU2DAY, np.concatenate((uopt[:,1], [0.0]))*VU/TU, label="v", where='post', color='g')
+        ax_u.step(xopt[:,7]*problem.TU2DAY, np.concatenate((uopt[:,2], [0.0]))*VU/TU, label="w", where='post', color='b')
+        for idx, (_ts, _ys) in enumerate(sols):
+            ax_u.plot(_ys[:,7]*problem.TU2DAY, THRUST/(MSTAR*np.exp(_ys[:,6])), color='r', linestyle=':', label="Max accel." if idx == 0 else None)
+        ax_u.set(xlabel="Time, days", ylabel="Control acceleration, m/s^2")
         ax_u.legend()
 
         ax_DeltaJ = fig.add_subplot(2,3,4)
@@ -248,7 +224,7 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
         ax.set(xlabel="tau", ylabel="Time, days")
 
         plt.tight_layout()
-        fig.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots/example_pl2pl.png"), dpi=300)
+        fig.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots/example_pl2pl_logmass.png"), dpi=300)
     return
 
 

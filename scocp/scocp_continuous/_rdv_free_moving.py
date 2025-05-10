@@ -179,23 +179,27 @@ class FreeTimeContinuousMovingTargetRdvMass(ContinuousControlSCOCP):
         constraints_objsoc = [cp.SOC(vs[i,0], us[i,0:3]) for i in range(N-1)]
         constraints_control = [vs[i,0] <= 1.0 for i in range(Nseg)]
 
+        # constraints on dynamics for state and control
         constraints_dyn = [
             xs[i+1,:] == self.Phi_A[i,:,:] @ xs[i,:] + self.Phi_B[i,:,0:4] @ us[i,:] + self.Phi_B[i,:,4] * vs[i,:] + self.Phi_c[i,:] + xis_dyn[i,:]
             for i in range(Nseg)
         ]
 
+        # trust region constraints
         constraints_trustregion = [
             xs[i,:] - xbar[i,:] <= self.trust_region_radius for i in range(N)
         ] + [
             xs[i,:] - xbar[i,:] >= -self.trust_region_radius for i in range(N)
         ]
 
+        # boundary conditions
         constraints_initial = [xs[0,0:7] == self.x0[0:7]]
         dg_target = self.target.target_state_derivative(xbar[-1,7])
         constraints_final = [
             xs[-1,0:6] - self.target.target_state(xbar[-1,7]) - dg_target * (xs[-1,7] - xbar[-1,7]) == xis[0:6]
         ]
         
+        # constraints on times
         constraint_t0 = [xs[0,7] == 0.0]
         constraints_tf = [self.tf_bounds[0] <= xs[-1,7],
                           xs[-1,7] <= self.tf_bounds[1]]

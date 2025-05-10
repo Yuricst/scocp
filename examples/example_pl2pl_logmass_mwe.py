@@ -44,7 +44,7 @@ def example_pl2pl(get_plot=False):
     )
     
     # create problem
-    problem = scocp_pykep.scocp_pl2pl(
+    problem = scocp_pykep.scocp_pl2pl_logmass(
         integrator_01domain,
         pl0,
         plf,

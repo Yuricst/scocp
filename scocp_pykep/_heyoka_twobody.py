@@ -46,7 +46,6 @@ def get_heyoka_integrator_twobody(
     for state, rhs in zip(x,f):
         dyn.append((state, rhs))
 
-
     # ----------------------------- Integrator for state only ----------------------------- #
     if verbose:
         print(f"Building integrator for state only", end=" ... ")
