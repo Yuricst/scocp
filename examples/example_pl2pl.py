@@ -12,7 +12,7 @@ import scocp
 import scocp_pykep
 
 
-def example_pl2pl(use_heyoka=False, get_plot=False):
+def example_pl2pl(use_heyoka=True, get_plot=False):
     """Test SCP continuous transfer with log-mass dynamics"""
     # define canonical parameters
     GM_SUN = pk.MU_SUN           # Sun GM, m^3/s^-2
@@ -50,7 +50,7 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
     print(f"\nCanonical c1: {c1:1.4e}, c2: {c2:1.4e}")
 
     if use_heyoka:
-        ta_dyn, ta_dyn_aug = scocp_pykep.get_heyoka_integrator_twobody_mass(mu, c1, c2, tol=1e-12, verbose=True)
+        ta_dyn, ta_dyn_aug = scocp_pykep.get_heyoka_integrator_twobody_mass(mu, c1, c2, tol=1e-15, verbose=True)
         integrator_01domain = scocp_pykep.HeyokaIntegrator(
             nx=8,
             nu=4,
