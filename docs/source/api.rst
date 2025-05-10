@@ -61,6 +61,3 @@ Integrators
 
 .. autoclass:: scocp.ScipyIntegrator
    :members:
-
-.. autoclass:: scocp.HeyokaIntegrator
-   :members:
