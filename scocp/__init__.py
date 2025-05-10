@@ -1,7 +1,7 @@
 """scocp: Sequential Convex Optimization Control Problem"""
 
 __copyright__    = 'Copyright (C) 2025 Yuri Shimane'
-__version__      = '0.1.2'
+__version__      = '0.1.3'
 __license__      = 'GPL-3.0 License'
 __author__       = 'Yuri Shimane'
 __author_email__ = 'yuri.shimane@gatech.edu'
@@ -32,18 +32,8 @@ from .eoms import *
 from ._integrator_scipy import ScipyIntegrator
 
 # sequentially convexified optimal control problems
-from ._scocp_impulsive import (
-    ImpulsiveControlSCOCP,
-    FixedTimeImpulsiveRdv
-)
-from ._scocp_continuous import (
-    ContinuousControlSCOCP,
-    FixedTimeContinuousRdv,
-    FixedTimeContinuousRdvLogMass,
-    FreeTimeContinuousRdv,
-    FreeTimeContinuousRdvLogMass,
-    FreeTimeContinuousMovingTargetRdvLogMass,
-)
+from .scocp_impulsive import *
+from .scocp_continuous import *
 
 # SCP algorithm
 from ._scvxstar import SCvxStar

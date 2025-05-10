@@ -3,7 +3,7 @@
 import cvxpy as cp
 import numpy as np
 
-from ._misc import get_augmented_lagrangian_penalty
+from .._misc import get_augmented_lagrangian_penalty
 
 class ImpulsiveControlSCOCP:
     """Sequentially convexified optimal control problem (SCOCP) for impulsive dynamics
