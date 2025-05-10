@@ -30,7 +30,6 @@ from ._keplerder import keplerder, keplerder_nostm
 # functions for integrating dynamics
 from .eoms import *
 from ._integrator_scipy import ScipyIntegrator
-from ._integrator_heyoka import HeyokaIntegrator
 
 # sequentially convexified optimal control problems
 from ._scocp_impulsive import (

@@ -121,13 +121,13 @@ class ContinuousControlSCOCP:
             self.Phi_c[i,:]   = xf - self.Phi_A[i,:,:] @ xbar[i,:] - self.Phi_B[i,:,:] @ _ubar
         return
         
-    def evaluate_nonlinear_dynamics(self, xs, us, gs, stm = False, steps = None):
+    def evaluate_nonlinear_dynamics(self, xs, us, vs, stm = False, steps = None):
         """Evaluate nonlinear dynamics along given state and control history
         
         Args:
             integrator (obj): integrator object
             times (np.array): time grid
-            xs (np.array): state history
+            vs (np.array): state history
             ubar (np.array): control history
             stm (bool): whether to propagate STMs, defaults to False
         """
@@ -143,7 +143,7 @@ class ContinuousControlSCOCP:
             else:
                 t_eval = np.linspace(ti, self.times[i+1], steps)
             if self.augment_Gamma:
-                _ts, _ys = self.integrator.solve(_tspan, xs[i,:], u=np.concatenate((us[i,:], gs[i,:])), stm=stm, t_eval=t_eval)
+                _ts, _ys = self.integrator.solve(_tspan, xs[i,:], u=np.concatenate((us[i,:], vs[i,:])), stm=stm, t_eval=t_eval)
             else:
                 _ts, _ys = self.integrator.solve(_tspan, xs[i,:], u=us[i,:], stm=stm, t_eval=t_eval)
             sols.append([_ts,_ys])

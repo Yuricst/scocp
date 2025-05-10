@@ -16,7 +16,7 @@ def test_scp_scipy_impulsive(get_plot=False):
     """Test SCP continuous transfer"""
     mu = 1.215058560962404e-02
     ta_dyn, ta_dyn_aug = scocp_pykep.get_heyoka_integrator_cr3bp(mu=mu, tol=1e-12, impulsive=False)
-    integrator = scocp.HeyokaIntegrator(nx=6, nu=3, ta=ta_dyn, ta_stm=ta_dyn_aug, impulsive=False)
+    integrator = scocp_pykep.HeyokaIntegrator(nx=6, nu=3, ta=ta_dyn, ta_stm=ta_dyn_aug, impulsive=False)
     
     # propagate uncontrolled and controlled dynamics
     x0 = np.array([
@@ -67,7 +67,7 @@ def test_scp_scipy_impulsive(get_plot=False):
     # setup algorithm & solve
     tol_feas = 1e-10
     tol_opt = 1e-4
-    algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas)
+    algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas, alpha2=1.5)
     solution = algo.solve(
         xbar,
         ubar,

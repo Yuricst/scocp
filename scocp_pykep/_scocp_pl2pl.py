@@ -84,6 +84,8 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         mass_scaling (float): scaling factor for mass, in kg. If `None`, then `mass_scaling = mass`.
         r_scaling (float): scaling factor for distance, in m
         v_scaling (float): scaling factor for velocity, in m/s
+        g0 (float): gravitaty acceleration at Earth surface, in m/s^2
+        uniform_dilation (bool): if `True`, then the dilation factor is uniform, otherwise it is variable
     """
     def __init__(
         self,
@@ -104,6 +106,7 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         r_scaling = pk.AU,
         v_scaling = pk.EARTH_VELOCITY,
         g0 = pk.G0,
+        uniform_dilation = False,
         *args,
         **kwargs
     ):
@@ -139,6 +142,7 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         self.s_bounds   = np.array(s_bounds) / self.TU2DAY
         self.vinf_dep   = vinf_dep * 1e3 / self.v_scaling
         self.vinf_arr   = vinf_arr * 1e3 / self.v_scaling
+        self.uniform_dilation = uniform_dilation
 
         # set initial state based on initial planet state
         r0_dim, v0_dim = self.p0.eph(self.t0_mjd2000)
@@ -301,6 +305,11 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         ]
         constraints_control = [gs[i,0] - self.max_thrust * np.exp(-xbar[i,6]) * (1 - (xs[i,6] - xbar[i,6])) <= zetas[i] for i in range(Nseg)]
 
+        if self.uniform_dilation:
+            constraints_dilation = [us[i,3] == us[0,3] for i in range(1,Nseg)]
+        else:
+            constraints_dilation = []
+
         # trust region constraints 
         constraints_trustregion = [
             xs[i,0:7] - xbar[i,0:7] <= self.trust_region_radius for i in range(N)
@@ -335,7 +344,7 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             cp.Minimize(objective_func),
             constraints_objsoc + constraints_dyn + constraints_trustregion +\
             constraints_boundary + constraints_vinf_mag + constraints_control +\
-            constraints_t0 + constraints_tf + constraints_s)
+            constraints_t0 + constraints_tf + constraints_s + constraints_dilation)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
         return xs.value, us.value, gs.value, ys.value, xis_dyn.value, xis.value, zetas.value
@@ -356,3 +365,86 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             max(gs[i,0] - self.max_thrust * np.exp(-xs[i,6]), 0.0) for i in range(self.N-1)
         ])
         return g_eq, h_ineq
+
+    def process_solution(
+        self,
+        solution,
+        r_scaling = None,
+        v_scaling = None,
+        t_scaling = None,
+        a_scaling = None,
+        mass_scaling = None,
+        convert_t_to_mjd2000 = True,
+        dense_output = False,
+        dt_day = None,
+        return_acceleration_control = False,
+    ):
+        """Get times, states, and controls from solution object
+        
+        Args:
+            solution (scocp.Solution): solution object returned by `scocp.SCvxStar.solve()` for this problem
+            r_scaling (float): scaling factor for distance, defaults to `self.r_scaling`
+            v_scaling (float): scaling factor for velocity, defaults to `self.v_scaling`
+            t_scaling (float): scaling factor for time, defaults to `self.t_scaling`
+            a_scaling (float): scaling factor for acceleration, defaults to `r_scaling/t_scaling**2`
+            mass_scaling (float): scaling factor for mass, defaults to `self.mass_scaling`
+            convert_t_to_mjd2000 (bool): if `True`, then convert times to mjd2000, defaults to `True`
+            dense_output (bool): if `True`, then return dense output, defaults to `False`
+            dt_day (float): if `dense_output` is `True`, then this is the time step in days for sampling the solution, defaults to `None`
+            return_acceleration_control (bool): if `True`, then return acceleration control, otherwise return thrust controls
+        Returns:
+            (tuple): tuple of 1D array of times, `(N,7)` array of states, and `(N-1,3)` array of controls
+        """
+        if r_scaling is None:
+            r_scaling = self.r_scaling
+        if v_scaling is None:
+            v_scaling = self.v_scaling
+        if t_scaling is None:
+            t_scaling = self.t_scaling
+        if mass_scaling is None:
+            mass_scaling = self.mass_scaling
+        if a_scaling is None:
+            a_scaling = r_scaling/t_scaling**2
+
+        if dense_output is False:
+            if convert_t_to_mjd2000:
+                times = solution.x[:,7] * t_scaling + self.t0_mjd2000
+            else:
+                times = solution.x[:,7] * t_scaling
+
+            states = np.concatenate((
+                solution.x[:,0:3] * r_scaling,
+                solution.x[:,3:6] * v_scaling,
+                np.exp(solution.x[:,6]).reshape(-1,1) * mass_scaling,
+            ), axis=1)
+            if return_acceleration_control:
+                controls = solution.x[:,0:3] * a_scaling       # acceleration control
+            else:
+                controls = np.divide(solution.x[:,0:3] * a_scaling, states[:,6].reshape(-1,1))
+
+        else:
+            if dt_day is None:
+                steps = None
+            else:
+                dt_node_min = np.min(np.diff(solution.x[:,7]))
+                steps = int(np.ceil(dt_node_min*self.TU2DAY / dt_day*86400))
+            _, sols = self.evaluate_nonlinear_dynamics(solution.x, solution.u, solution.v, steps=steps)
+            times = []
+            states = []
+            controls = []
+            for (_ts, _ys) in sols:
+                _states = np.concatenate((
+                    _ys[:,0:3] * r_scaling,
+                    _ys[:,3:6] * v_scaling,
+                    np.exp(_ys[:,6]).reshape(-1,1) * mass_scaling,
+                ), axis=1)
+                times.append(np.array(_ts) * t_scaling)
+                states.append(_states)
+            if return_acceleration_control:
+                controls.append(_ys[:,0:3] * a_scaling)
+            else:
+                controls.append((_ys[:,0:3] * a_scaling) / _states[:,6].reshape(-1,1))
+            times = np.concatenate(times)
+            states = np.concatenate(states)
+            controls = np.concatenate(controls)
+        return times, states, controls
