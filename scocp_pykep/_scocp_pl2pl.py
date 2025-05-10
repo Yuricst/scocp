@@ -418,21 +418,21 @@ class scocp_pl2pl(ContinuousControlSCOCP):
                 np.exp(solution.x[:,6]).reshape(-1,1) * mass_scaling,
             ), axis=1)
             if return_acceleration_control:
-                controls = solution.x[:,0:3] * a_scaling       # acceleration control
+                controls = solution.u[:,0:3] * a_scaling       # acceleration control
             else:
-                controls = np.divide(solution.x[:,0:3] * a_scaling, states[:,6].reshape(-1,1))
+                controls = np.divide(solution.u[:,0:3] * a_scaling, states[:,6].reshape(-1,1))
 
         else:
             if dt_day is None:
                 steps = None
             else:
                 dt_node_min = np.min(np.diff(solution.x[:,7]))
-                steps = int(np.ceil(dt_node_min*self.TU2DAY / dt_day*86400))
+                steps = 100 #int(np.ceil(dt_node_min*self.TU2DAY / dt_day*86400))
             _, sols = self.evaluate_nonlinear_dynamics(solution.x, solution.u, solution.v, steps=steps)
             times = []
             states = []
             controls = []
-            for (_ts, _ys) in sols:
+            for (idx, (_ts, _ys)) in enumerate(sols):
                 _states = np.concatenate((
                     _ys[:,0:3] * r_scaling,
                     _ys[:,3:6] * v_scaling,
@@ -440,10 +440,10 @@ class scocp_pl2pl(ContinuousControlSCOCP):
                 ), axis=1)
                 times.append(np.array(_ts) * t_scaling)
                 states.append(_states)
-            if return_acceleration_control:
-                controls.append(_ys[:,0:3] * a_scaling)
-            else:
-                controls.append((_ys[:,0:3] * a_scaling) / _states[:,6].reshape(-1,1))
+                if return_acceleration_control:
+                    controls.append(np.tile(solution.u[idx,0:3] * a_scaling, (len(_ts), 1)))
+                else:
+                    controls.append(np.tile(solution.u[idx,0:3] * a_scaling, (len(_ts), 1)) / _states[:,6].reshape(-1,1))
             times = np.concatenate(times)
             states = np.concatenate(states)
             controls = np.concatenate(controls)

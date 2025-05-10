@@ -123,9 +123,9 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
 
     # extract solution
     ts_mjd2000, states, controls = problem.process_solution(solution, dense_output=True, dt_day = 1.0)
+    print(f"ts_mjd2000.shape = {ts_mjd2000.shape}")
     print(f"states.shape = {states.shape}")
-    # print(f"controls.shape = {controls.shape}")
-
+    print(f"controls.shape = {controls.shape}")
 
     # initial and final orbits
     initial_orbit_states = problem.get_initial_orbit()
@@ -153,7 +153,7 @@ def example_pl2pl(use_heyoka=False, get_plot=False):
     ax_control.set(xlabel="Time, days", ylabel="Control")
     ax_control.grid(True, alpha=0.5)
     ax_control.legend()
-
+    plt.tight_layout()
     
     # # evaluate solution
     # if (get_plot is True) and (summary_dict["status"] != "CPFailed"):
