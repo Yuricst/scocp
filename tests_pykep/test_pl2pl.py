@@ -33,7 +33,7 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
     TU2DAY = TU / 86400.0                   # convert non-dimensional time to elapsed time in days
 
     # define transfer problem discretization
-    tf_bounds = [100.0, 500.0]
+    tf_bounds = [1200.0, 1700.0]
     t0_guess = 0.0
     tf_guess = 250.0
     N = 30

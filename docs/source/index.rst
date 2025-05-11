@@ -27,7 +27,7 @@ scocp: Sequential Convexified Optimal Control Problem solver in Python
    installation
    tutorials
    examples_astrodynamics
-   examples_pykep
+   examples/ex_pl2pl.ipynb
    api
 
 

@@ -30,10 +30,9 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
     plf = pk.planet.jpl_lp('mars')
 
     t0_mjd2000_bounds = [1100.0, 1200.0]    # initial epoch in mjd2000
-    TU2DAY = TU / 86400.0                   # convert non-dimensional time to elapsed time in days
 
     # define transfer problem discretization
-    tf_bounds = [100.0, 500.0]
+    tf_bounds = [1200.0, 1700.0]
     t0_guess = 0.0
     tf_guess = 250.0
     N = 30
@@ -70,7 +69,7 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
             args=((mu, c1, c2),                # canonical gravitational constant & exhaust velocity
                 [0.0,0.0,0.0,1.0,0.0]          # place-holder for control vector: [ux,uy,uz,s,v]
             ),
-            method='DOP853', reltol=1e-14, abstol=1e-14
+            method='DOP853', reltol=1e-13, abstol=1e-13
         )
 
     # create problem
@@ -80,8 +79,6 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
         plf,
         MSTAR,
         pk.MU_SUN,
-        THRUST,
-        ISP,
         N,
         t0_mjd2000_bounds,
         tf_bounds,
@@ -91,8 +88,10 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
         r_scaling = pk.AU,
         v_scaling = pk.EARTH_VELOCITY,
         uniform_dilation = True,
+        objective_type = "mf",
         weight = 100.0,
     )
+
     # create initial guess
     print(f"Preparing initial guess...")
     xbar, ubar, vbar = problem.get_initial_guess(t0_guess, tf_guess)
@@ -110,20 +109,14 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
         verbose = True
     )
     xopt, uopt, vopt, yopt, sols, summary_dict = solution.x, solution.u, solution.v, solution.y, solution.sols, solution.summary_dict
-    #assert summary_dict["status"] == "Optimal"
-    #assert summary_dict["chi"][-1] <= tol_feas
-    print(f"Initial guess TOF: {tf_guess*TU2DAY:1.4f}d --> Optimized TOF: {xopt[-1,7]*TU2DAY:1.4f}d (bounds: {tf_bounds[0]*TU2DAY:1.4f}d ~ {tf_bounds[1]*TU2DAY:1.4f}d)")
-    x0 = problem.target_initial.target_state(xopt[0,7])
-    xf = problem.target_final.target_state(xopt[-1,7])
-
-    # evaluate v-infinity vectors
-    vinf_dep_vec, vinf_arr_vec = yopt[0:3], yopt[3:6]
-    print(f"||vinf_dep|| = {np.linalg.norm(vinf_dep_vec)*VU:1.4f} m/s (max: {vinf_dep*VU:1.4f} m/s), ||vinf_arr|| = {np.linalg.norm(vinf_arr_vec)*VU:1.4f} m/s (max: {vinf_arr*VU:1.4f} m/s)")
+    assert summary_dict["status"] == "Optimal"
+    assert summary_dict["chi"][-1] <= tol_feas
+    problem.pretty(solution)
 
     # evaluate nonlinear violations
     geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, vopt, steps=8)
     print(f"Max dynamics constraint violation: {np.max(np.abs(geq_nl_opt)):1.4e}")
-    #assert np.max(np.abs(geq_nl_opt)) <= tol_feas
+    assert np.max(np.abs(geq_nl_opt)) <= tol_feas
 
     # extract solution
     ts_mjd2000, states, controls = problem.process_solution(solution)
@@ -140,6 +133,8 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
         # initial and final orbits
         initial_orbit_states = problem.get_initial_orbit()
         final_orbit_states = problem.get_final_orbit()
+        x0 = problem.target_initial.target_state(xopt[0,7])
+        xf = problem.target_final.target_state(xopt[-1,7])
 
         # plot results
         fig = plt.figure(figsize=(12,7))

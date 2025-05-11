@@ -28,7 +28,7 @@ class PlanetTarget:
     """
     def __init__(self, planet: pk.planet.planet, t0_mjd2000: float, TU2DAY: float, DU: float, VU: float, mu: float):
         self.planet = planet
-        self.t0_mjd2000 = t0_mjd2000
+        self.t0_min = t0_mjd2000
         self.TU2DAY = TU2DAY
         self.DU = DU
         self.VU = VU
@@ -36,22 +36,22 @@ class PlanetTarget:
         return
     
     def target_state(self, t: float) -> np.ndarray:
-        """Evaluate planet state at time `epoch = self.t0_mjd2000 + t * self.TU` where `epoch` is in mjd2000
+        """Evaluate planet state at time `epoch = self.t0_min + t * self.TU` where `epoch` is in mjd2000
         
         Args:
-            t (float): elapsed non-dimensional time since `self.t0_mjd2000` in units `self.TU`
+            t (float): elapsed non-dimensional time since `self.t0_min` in units `self.TU`
         
         Returns:
             (np.array): Cartesian state vector of the target planet at time `epoch`
         """
-        r, v = self.planet.eph(self.t0_mjd2000 + t*self.TU2DAY)
+        r, v = self.planet.eph(self.t0_min + t*self.TU2DAY)
         return np.concatenate((np.array(r)/self.DU, np.array(v)/self.VU))
     
     def target_state_derivative(self, t: float) -> np.ndarray:
-        """Evaluate planet state derivative at time `self.t0_mjd2000 + t * self.TU`
+        """Evaluate planet state derivative at time `self.t0_min + t * self.TU`
         
         Args:
-            t (float): elapsed non-dimensional time since `self.t0_mjd2000` in units `self.TU`
+            t (float): elapsed non-dimensional time since `self.t0_min` in units `self.TU`
         
         Returns:
             (np.array): Cartesian state derivative of the target planet at time `epoch`
@@ -97,8 +97,8 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
         max_thrust = 0.45,
         isp = 3000.0,
         nseg: int = 30,
-        t0_mjd2000_bounds: tuple[float, float] = [6700.0, 6800.0],
-        tf_bounds: tuple[float, float] = [100.0, 500.0],
+        t0_bounds: tuple[float, float] = [6700.0, 6800.0],
+        tf_bounds: tuple[float, float] = [6900.0, 7700.0],
         s_bounds: tuple[float, float] = [1.0, 5e3],
         vinf_dep: float = 3.0,
         vinf_arr: float = 0.0,
@@ -136,16 +136,19 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
         self.mass0      = mass / self.mass_scaling
         self.max_thrust = max_thrust * (1/self.mass_scaling)*(self.t_scaling**2/self.r_scaling)
         self.cex        = isp * g0 * (self.t_scaling/self.r_scaling)
-        self.t0_mjd2000 = t0_mjd2000_bounds[0]
-        self.t0_bounds  = [t0_mjd2000_bounds[0] - self.t0_mjd2000, t0_mjd2000_bounds[1] - self.t0_mjd2000]
+        self.t0_min     = t0_bounds[0]
+        self.t0_bounds  = [(t0_bounds[0] - self.t0_min) / self.TU2DAY,
+                           (t0_bounds[1] - self.t0_min) / self.TU2DAY]
         self.tf_bounds  = np.array(tf_bounds) / self.TU2DAY
+        # self.tf_bounds  = [(tf_bounds[0] - self.t0_min) / self.TU2DAY,
+        #                    (tf_bounds[1] - self.t0_min) / self.TU2DAY]
         self.s_bounds   = np.array(s_bounds) / self.TU2DAY
         self.vinf_dep   = vinf_dep * 1e3 / self.v_scaling
         self.vinf_arr   = vinf_arr * 1e3 / self.v_scaling
         self.uniform_dilation = uniform_dilation
 
         # set initial state based on initial planet state
-        r0_dim, v0_dim = self.p0.eph(self.t0_mjd2000)
+        r0_dim, v0_dim = self.p0.eph(self.t0_min)
         self.x0 = np.zeros(7)
         self.x0[0:3] = np.array(r0_dim)/self.r_scaling
         self.x0[3:6] = np.array(v0_dim)/self.v_scaling
@@ -154,7 +157,7 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
         # construct initial target object
         self.target_initial = PlanetTarget(
             p0,
-            t0_mjd2000 = self.t0_mjd2000,
+            t0_mjd2000 = self.t0_min,
             TU2DAY = self.TU2DAY,
             DU = self.r_scaling,
             VU = self.v_scaling,
@@ -164,7 +167,7 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
         # construct final target object
         self.target_final = PlanetTarget(
             pf,
-            t0_mjd2000 = self.t0_mjd2000,
+            t0_mjd2000 = self.t0_min,
             TU2DAY = self.TU2DAY,
             DU = self.r_scaling,
             VU = self.v_scaling,
@@ -392,7 +395,7 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
             dense_output (bool): if `True`, then return dense output, defaults to `False`
             dt_day (float): if `dense_output` is `True`, then this is the time step in days for sampling the solution, defaults to `None`
             return_acceleration_control (bool): if `True`, then return acceleration control, otherwise return thrust controls
-            
+
         Returns:
             (tuple): tuple of 1D array of times, `(N,7)` array of states, and `(N-1,3)` array of controls
         """
@@ -409,7 +412,7 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
 
         if dense_output is False:
             if convert_t_to_mjd2000:
-                times = solution.x[:,7] * t_scaling + self.t0_mjd2000
+                times = solution.x[:,7] * t_scaling + self.t0_min
             else:
                 times = solution.x[:,7] * t_scaling
 
@@ -452,20 +455,28 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
 
 
 class scocp_pl2pl(ContinuousControlSCOCP):
-    """Free-time continuous rendezvous problem class with log-mass dynamics
+    """Free-time continuous rendezvous problem class with mass dynamics
     
     Note the ordering expected for the state and the control vectors: 
+        * state = `[x,y,z,vx,vy,vz,mass,t]`
+        * control = `[ux,uy,uz,s,v]` where:
+            * `s` is the dilation factor,
+            * `ux,uy,uz` is the thrust throttle, bounded between -1 and 1,
+            * `v` is the control magnitude (at convergence), bounded between 0 and 1
 
-    state = [x,y,z,vx,vy,vz,log(mass),t]
-    u = [ax, ay, az, s, Gamma] where s is the dilation factor, Gamma is the control magnitude (at convergence)
+    The objective should be one of the following:
+        * `"mf"`: maximize final mass (i.e. minimum fuel problem)
+        * `"tf"`: minimize arrival time (i.e. earliest arrival)
+        * `"tof"`: minimize time of flight (i.e. minimum time in transit)
+
+    The solution of this optimal control problem obeys the stark model dynamics, i.e. we assume a zeroth-order hold on the thrust inputs.
     
     Args:
         integrator (scocp.ScipyIntegrator or scocp.HeyokaIntegrator): integrator object
         p0 (pykep.planet.planet): initial planet object
         pf (pykep.planet.planet): final planet object
         mass (float): initial mass in kg
-        max_thrust (float): thrust magnitude in Newtons
-        isp (float): specific impulse in seconds
+        mu_SI (float): gravitational parameter of the central body, in m^3/s^2
         nseg (int): number of segments (s.t. `N = nseg + 1`)
         t0_mjd2000 (float): initial epoch in mjd2000
         tf_bounds (tuple[float, float]): bounds on final time in days
@@ -475,8 +486,8 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         mass_scaling (float): scaling factor for mass, in kg. If `None`, then `mass_scaling = mass`.
         r_scaling (float): scaling factor for distance, in m
         v_scaling (float): scaling factor for velocity, in m/s
-        g0 (float): gravitaty acceleration at Earth surface, in m/s^2
         uniform_dilation (bool): if `True`, then the dilation factor is uniform, otherwise it is variable
+        objective_type (str): objective type, one of `"mf"`, `"tf"`, or `"tof"`
     """
     def __init__(
         self,
@@ -485,22 +496,24 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         pf: pk.planet.planet,
         mass = 1500.0,
         mu_SI = pk.MU_SUN,
-        max_thrust = 0.45,
-        isp = 3000.0,
         nseg: int = 30,
-        t0_mjd2000_bounds: tuple[float, float] = [6700.0, 6800.0],
-        tf_bounds: tuple[float, float] = [100.0, 500.0],
+        t0_bounds: tuple[float, float] = [6700.0, 6800.0],
+        tf_bounds: tuple[float, float] = [6900.0, 7700.0],
         s_bounds: tuple[float, float] = [1.0, 5e3],
         vinf_dep: float = 3.0,
         vinf_arr: float = 0.0,
         mass_scaling = None,
         r_scaling = pk.AU,
         v_scaling = pk.EARTH_VELOCITY,
-        g0 = pk.G0,
         uniform_dilation = True,
+        objective_type = "mf",
         *args,
         **kwargs
     ):
+        objective_types = ["mf", "tf", "tof"]
+        assert objective_type in objective_types, f"objective_type must be one of {objective_types}"
+        self.objective_type = objective_type
+
         # define problem parameters and inherit parent class
         N = nseg + 1
         ng = 12
@@ -525,16 +538,18 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         self.p0         = p0
         self.pf         = pf
         self.mass0      = mass / self.mass_scaling
-        self.t0_mjd2000 = t0_mjd2000_bounds[0]
-        self.t0_bounds  = [t0_mjd2000_bounds[0] - self.t0_mjd2000, t0_mjd2000_bounds[1] - self.t0_mjd2000]
-        self.tf_bounds  = np.array(tf_bounds) / self.TU2DAY
+        self.t0_min     = t0_bounds[0]
+        self.t0_bounds  = [(t0_bounds[0] - self.t0_min) / self.TU2DAY,
+                           (t0_bounds[1] - self.t0_min) / self.TU2DAY]
+        self.tf_bounds  = [(tf_bounds[0] - self.t0_min) / self.TU2DAY,
+                           (tf_bounds[1] - self.t0_min) / self.TU2DAY]
         self.s_bounds   = np.array(s_bounds) / self.TU2DAY
         self.vinf_dep   = vinf_dep * 1e3 / self.v_scaling
         self.vinf_arr   = vinf_arr * 1e3 / self.v_scaling
         self.uniform_dilation = uniform_dilation
 
         # set initial state based on initial planet state
-        r0_dim, v0_dim = self.p0.eph(self.t0_mjd2000)
+        r0_dim, v0_dim = self.p0.eph(self.t0_min)
         self.x0 = np.zeros(6)
         self.x0[0:3] = np.array(r0_dim)/self.r_scaling
         self.x0[3:6] = np.array(v0_dim)/self.v_scaling
@@ -542,7 +557,7 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         # construct initial target object
         self.target_initial = PlanetTarget(
             p0,
-            t0_mjd2000 = self.t0_mjd2000,
+            t0_mjd2000 = self.t0_min,
             TU2DAY = self.TU2DAY,
             DU = self.r_scaling,
             VU = self.v_scaling,
@@ -552,7 +567,7 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         # construct final target object
         self.target_final = PlanetTarget(
             pf,
-            t0_mjd2000 = self.t0_mjd2000,
+            t0_mjd2000 = self.t0_min,
             TU2DAY = self.TU2DAY,
             DU = self.r_scaling,
             VU = self.v_scaling,
@@ -645,9 +660,14 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         vbar = np.sum(ubar[:,0:3], axis=1).reshape(-1,1)
         return xbar, ubar, vbar
     
-    def evaluate_objective(self, xs, us, gs, ys=None):
+    def evaluate_objective(self, xs, us, vs, ys=None):
         """Evaluate the objective function"""
-        return -xs[-1,6]
+        if self.objective_type == "mf":
+            return -xs[-1,6]
+        elif self.objective_type == "tof":
+            return xs[-1,7] - xs[0,7]
+        elif self.objective_type == "tf":
+            return xs[-1,7]
     
     def solve_convex_problem(self, xbar, ubar, vbar, ybar=None):
         """Solve the convex subproblem
@@ -679,7 +699,7 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             xi=xis,
             lmb_eq=self.lmb_eq,
         )
-        objective_func = -xs[-1,6] + penalty
+        objective_func = self.evaluate_objective(xs, us, vs, ys) + penalty
         constraints_objsoc = [cp.SOC(vs[i,0], us[i,0:3]) for i in range(N-1)]
         constraints_control = [vs[i,0] <= 1.0 for i in range(Nseg)]
         
@@ -746,6 +766,19 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             xs[-1,3:6] - ys[3:6] - self.target_final.target_state(xs[-1,7])[3:6],
         ))
         return g_eq, np.zeros(self.nh)
+    
+    def pretty(self, solution):
+        """Pretty print the solution"""
+        print(f"\n ********* Trajectory summary ********* ")
+        print(f"   Objective type       : {self.objective_type}")
+        print(f"   Departure            : {self.t0_min + solution.x[0,7]*self.TU2DAY:1.4f} MJD")
+        print(f"   Arrival              : {self.t0_min + solution.x[-1,7]*self.TU2DAY:1.4f} MJD")
+        print(f"   TOF                  : {solution.x[-1,7]*self.TU2DAY:1.4f} days")
+        print(f"   Final mass           : {solution.x[-1,6]*self.mass_scaling:1.4f} kg")
+        print(f"   Departure v-infinity : {np.linalg.norm(solution.y[0:3])*self.v_scaling:1.2f} m/s")
+        print(f"   Arrival v-infinity   : {np.linalg.norm(solution.y[3:6])*self.v_scaling:1.2f} m/s")
+        print(f"\n")
+        return
 
     def process_solution(
         self,
@@ -756,7 +789,7 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         mass_scaling = None,
         convert_t_to_mjd2000 = True,
     ):
-        """Get times, states, and controls from solution object
+        """Get times, states, and controls from solution object, re-scaled back to SI units
         
         Args:
             solution (scocp.Solution): solution object returned by `scocp.SCvxStar.solve()` for this problem
@@ -779,7 +812,7 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             mass_scaling = self.mass_scaling
 
         if convert_t_to_mjd2000:
-            times = solution.x[:,7] * t_scaling + self.t0_mjd2000
+            times = solution.x[:,7] * t_scaling + self.t0_min
         else:
             times = solution.x[:,7] * t_scaling
 
