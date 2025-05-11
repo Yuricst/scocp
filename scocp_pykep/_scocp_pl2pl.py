@@ -13,6 +13,8 @@ from scocp import (
     get_augmented_lagrangian_penalty,
     ContinuousControlSCOCP,
     rhs_twobody,
+    mee2rv,
+    rv2mee,
 )
 
 
@@ -189,7 +191,7 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
             (tuple): tuple of 1D array of time and `(steps,6)` array ofstate history
         """
         x0 = self.target_initial.target_state(0.0)
-        oe0 = pk.ic2par(x0[0:3], x0[3:6], self.mu)
+        oe0 = rv2mee(np.array(x0), self.mu)
         period = 2*np.pi*np.sqrt(oe0[0]**3 / self.mu)
         t_eval = np.linspace(0, period, steps)
         states = np.zeros((steps, 6))
@@ -207,7 +209,7 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
             (tuple): tuple of 1D array of time and `(steps,6)` array of state history
         """
         xf0 = self.target_final.target_state(0.0)
-        oef = pk.ic2par(xf0[0:3], xf0[3:6], self.mu)
+        oef = rv2mee(xf0, self.mu)
         period = 2*np.pi*np.sqrt(oef[0]**3 / self.mu)
         t_eval = np.linspace(0, period, steps)
         states = np.zeros((steps, 6))
@@ -215,12 +217,13 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
             states[i,0:3], states[i,3:6] = pk.propagate_lagrangian(xf0[0:3], xf0[3:6], t, mu=self.mu)
         return t_eval, states
     
-    def get_initial_guess(self, t0_guess: float, tf_guess: float):
+    def get_initial_guess(self, t0_guess: float, tf_guess: float, Nrev_guess: float = 1.0):
         """Construct initial guess based on linear interpolation along orbital elements
         
         Args:
             t0_guess_si (float): guess for loiter time
             tf_guess_si (float): guess for final arrival time
+            Nrev_guess (float): guess for number of revolutions
         
         Returns:
             (tuple): tuple of `(N,8)` array of state history, `(N-1,4)` array of control history, and `(N-1,1)` array of constraint history
@@ -231,24 +234,24 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
 
         # initial orbital elements
         x0 = self.target_initial.target_state(t0_guess)
-        oe0 = pk.ic2par(x0[0:3], x0[3:6], self.mu)
+        oe0 = rv2mee(np.array(x0), self.mu)
 
         # final orbital elements
         xf_guess = self.target_final.target_state(tf_guess)
-        oef = pk.ic2par(xf_guess[0:3], xf_guess[3:6], self.mu)
-
+        oef = rv2mee(xf_guess, self.mu)
+        
         elements = np.concatenate((
             np.linspace(oe0[0], oef[0], self.N).reshape(-1,1),
             np.linspace(oe0[1], oef[1], self.N).reshape(-1,1),
             np.linspace(oe0[2], oef[2], self.N).reshape(-1,1),
             np.linspace(oe0[3], oef[3], self.N).reshape(-1,1),
             np.linspace(oe0[4], oef[4], self.N).reshape(-1,1),
-            np.linspace(oe0[5], oef[5], self.N).reshape(-1,1),
+            np.linspace(oe0[5], oe0[5] + 2*np.pi * Nrev_guess, self.N).reshape(-1,1),
         ), axis=1)
 
         elements[:,5] = np.linspace(oe0[5], oef[5]+2*np.pi, self.N)
         xbar = np.zeros((self.N,8))
-        xbar[:,0:6]  = np.array([np.concatenate(pk.par2ic(E,self.mu)) for E in elements])
+        xbar[:,0:6]  = np.array([mee2rv(E,self.mu) for E in elements])
         xbar[:,6]    = np.log(np.linspace(1.0, 0.5, self.N))  # initial guess for log-mass
         xbar[0,0:6]  = x0[0:6]                # overwrite initial state
         xbar[0,6]    = np.log(self.mass0)
@@ -589,7 +592,7 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             (tuple): tuple of 1D array of time and `(steps,6)` array ofstate history
         """
         x0 = self.target_initial.target_state(0.0)
-        oe0 = pk.ic2par(x0[0:3], x0[3:6], self.mu)
+        oe0 = rv2mee(np.array(x0), self.mu)
         period = 2*np.pi*np.sqrt(oe0[0]**3 / self.mu)
         t_eval = np.linspace(0, period, steps)
         states = np.zeros((steps, 6))
@@ -607,7 +610,7 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             (tuple): tuple of 1D array of time and `(steps,6)` array of state history
         """
         xf0 = self.target_final.target_state(0.0)
-        oef = pk.ic2par(xf0[0:3], xf0[3:6], self.mu)
+        oef = rv2mee(xf0, self.mu)
         period = 2*np.pi*np.sqrt(oef[0]**3 / self.mu)
         t_eval = np.linspace(0, period, steps)
         states = np.zeros((steps, 6))
@@ -615,12 +618,13 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             states[i,0:3], states[i,3:6] = pk.propagate_lagrangian(xf0[0:3], xf0[3:6], t, mu=self.mu)
         return t_eval, states
     
-    def get_initial_guess(self, t0_guess: float, tf_guess: float):
+    def get_initial_guess(self, t0_guess: float, tf_guess: float, Nrev_guess: float = 1.0):
         """Construct initial guess based on linear interpolation along orbital elements
         
         Args:
             t0_guess_si (float): guess for loiter time
             tf_guess_si (float): guess for final arrival time
+            Nrev_guess (float): guess for number of revolutions
         
         Returns:
             (tuple): tuple of `(N,8)` array of state history, `(N-1,4)` array of control history, and `(N-1,1)` array of constraint history
@@ -631,24 +635,22 @@ class scocp_pl2pl(ContinuousControlSCOCP):
 
         # initial orbital elements
         x0 = self.target_initial.target_state(t0_guess)
-        oe0 = pk.ic2par(x0[0:3], x0[3:6], self.mu)
+        oe0 = rv2mee(np.array(x0), self.mu)
 
         # final orbital elements
         xf_guess = self.target_final.target_state(tf_guess)
-        oef = pk.ic2par(xf_guess[0:3], xf_guess[3:6], self.mu)
-
+        oef = rv2mee(xf_guess, self.mu)
+        
         elements = np.concatenate((
             np.linspace(oe0[0], oef[0], self.N).reshape(-1,1),
             np.linspace(oe0[1], oef[1], self.N).reshape(-1,1),
             np.linspace(oe0[2], oef[2], self.N).reshape(-1,1),
             np.linspace(oe0[3], oef[3], self.N).reshape(-1,1),
             np.linspace(oe0[4], oef[4], self.N).reshape(-1,1),
-            np.linspace(oe0[5], oef[5], self.N).reshape(-1,1),
+            np.linspace(oe0[5], oe0[5] + 2*np.pi * Nrev_guess, self.N).reshape(-1,1),
         ), axis=1)
-
-        elements[:,5] = np.linspace(oe0[5], oef[5]+2*np.pi, self.N)
         xbar = np.zeros((self.N,8))
-        xbar[:,0:6]  = np.array([np.concatenate(pk.par2ic(E,self.mu)) for E in elements])
+        xbar[:,0:6]  = np.array([mee2rv(E,self.mu) for E in elements])
         xbar[:,6]    = np.linspace(1.0, 0.5, self.N)                  # initial guess for log-mass
         xbar[0,0:6]  = x0[0:6]                                        # overwrite initial state
         xbar[0,6]    = self.mass0

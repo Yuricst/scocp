@@ -108,12 +108,7 @@ def kep2rv(elements, mu):
     """Get Cartesian state-vector to Keplerian elements
 	
     Args:
-        ecc (float): eccentricity, scalar
-        sma (float): semi-major axis
-        inc (float): inclination
-        raan (float): right ascension of ascending node 
-        aop (float): argument of periapsis
-        ta (float): true anomaly
+        elements (np.array): array of Keplerian elements, [sma, ecc, inc, raan, aop, ta]
         mu (float): gravitational parameter
 
     Returns:
@@ -309,10 +304,60 @@ def rv2kep(state, mu, fictious_vz=1.e-15):
     # if state is planar, inject fictious out-of-plane component
     if (state[2] == 0.) and (state[5] == 0.):
         state[5] = fictious_vz
-    ecc  = get_eccentricity(state, mu)
+    ecc  = np.linalg.norm(get_eccentricity(state, mu))
     sma  = get_semiMajorAxis(state, mu)
     inc  = get_inclination(state)
     raan = get_raan(state)
     aop  = get_omega(state, mu)
     ta   = get_trueanomaly(state, mu)
-    return [sma, ecc, inc, raan, aop, ta]
+    return np.array([sma, ecc, inc, raan, aop, ta])
+
+
+def rv2mee(state, mu):
+    """Convert Cartesian state to mean elements
+    
+    Args:
+        state (np.array): Cartesian state
+        mu (float): gravitational parameter
+
+    Returns:
+        (np.array): mean elements
+    """
+    a,e,i,W,w,ta = rv2kep(state, mu)
+    p = a*(1-e**2)
+    f = e*np.cos(w+W)
+    g = e*np.sin(w+W)
+    h = np.tan(i/2) * np.cos(W)
+    k = np.tan(i/2) * np.sin(W)
+    L = W + w + ta
+    return np.array([p,f,g,h,k,L])
+    
+
+def mee2rv(mee, mu):
+    """Convert mean elements to Cartesian state
+    
+    Args:
+        mee (np.array): mean elements
+        mu (float): gravitational parameter
+
+    Returns:
+        (np.array): Cartesian state
+    """
+    p,f,g,h,k,L = mee
+    alpha2 = h**2 - k**2
+    s2 = 1 + h**2 + k**2
+    cosL = np.cos(L)
+    sinL = np.sin(L)
+    w = 1 + f*cosL + g*sinL
+    r = p/w
+    sqrt_mu_p = np.sqrt(mu/p)
+
+    rv = np.array([
+        r/s2 * (cosL + alpha2*cosL + 2*h*k*sinL),
+        r/s2 * (sinL - alpha2*sinL + 2*h*k*cosL),
+        2*r/s2 * (h*sinL - k*cosL),
+        -1/s2 * sqrt_mu_p * ( sinL + alpha2*sinL - 2*h*k*cosL + g - 2*g*h*k + alpha2*g),
+        -1/s2 * sqrt_mu_p * (-cosL + alpha2*cosL + 2*h*k*sinL - f + 2*g*h*k + alpha2*f),
+         2/s2 * sqrt_mu_p * (h*cosL + k*sinL + f*h + g*k)
+    ])
+    return rv

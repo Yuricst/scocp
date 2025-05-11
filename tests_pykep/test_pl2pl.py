@@ -80,8 +80,6 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
         plf,
         MSTAR,
         pk.MU_SUN,
-        THRUST,
-        ISP,
         N,
         t0_mjd2000_bounds,
         tf_bounds,
@@ -97,6 +95,23 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
     print(f"Preparing initial guess...")
     xbar, ubar, vbar = problem.get_initial_guess(t0_guess, tf_guess)
     geq_nl_ig, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, vbar, steps=5)   # evaluate initial guess
+
+    # plot initial guess
+    fig = plt.figure(figsize=(12,5))
+    ax = fig.add_subplot(1,2,1,projection='3d')
+    initial_orbit_states = problem.get_initial_orbit()
+    final_orbit_states = problem.get_final_orbit()
+    ax.plot(initial_orbit_states[1][:,0], initial_orbit_states[1][:,1], initial_orbit_states[1][:,2], 'k-', lw=0.3)
+    ax.plot(final_orbit_states[1][:,0], final_orbit_states[1][:,1], final_orbit_states[1][:,2], 'k-', lw=0.3)
+    ax.scatter(xbar[:,0], xbar[:,1], xbar[:,2], marker='o', color='k', label='Nodes')
+    for (ts, ys) in sols_ig:
+        ax.plot(ys[:,0], ys[:,1], ys[:,2], 'b-')
+    ax.legend()
+
+    ax_m = fig.add_subplot(1,2,2)
+    ax_m.plot(xbar[:,7], xbar[:,6], 'k-')
+    ax_m.set(xlabel="Time", ylabel="Mass")
+    ax_m.legend()
 
     # setup algorithm & solve
     tol_feas = 1e-10
