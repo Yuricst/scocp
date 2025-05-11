@@ -26,7 +26,7 @@ class PlanetTarget:
         TU (float): time unit to convert non-dimensional time to elapsed time in days
         mu (float): gravitational parameter in km^3/s^2
     """
-    def __init__(self, planet: pk.planet.planet, t0_mjd2000: float, TU2DAY: float, DU: float, VU: float, mu: float):
+    def __init__(self, planet, t0_mjd2000: float, TU2DAY: float, DU: float, VU: float, mu: float):
         self.planet = planet
         self.t0_min = t0_mjd2000
         self.TU2DAY = TU2DAY
@@ -90,8 +90,8 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
     def __init__(
         self,
         integrator,
-        p0: pk.planet.planet,
-        pf: pk.planet.planet,
+        p0,
+        pf,
         mass = 1500.0,
         mu_SI = pk.MU_SUN,
         max_thrust = 0.45,
@@ -492,8 +492,8 @@ class scocp_pl2pl(ContinuousControlSCOCP):
     def __init__(
         self,
         integrator,
-        p0: pk.planet.planet,
-        pf: pk.planet.planet,
+        p0,
+        pf,
         mass = 1500.0,
         mu_SI = pk.MU_SUN,
         nseg: int = 30,
