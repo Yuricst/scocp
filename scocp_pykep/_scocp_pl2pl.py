@@ -807,7 +807,7 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         if v_scaling is None:
             v_scaling = self.v_scaling
         if t_scaling is None:
-            t_scaling = self.t_scaling
+            t_scaling = self.TU2DAY
         if mass_scaling is None:
             mass_scaling = self.mass_scaling
 
@@ -819,7 +819,7 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         states = np.concatenate((
             solution.x[:,0:3] * r_scaling,
             solution.x[:,3:6] * v_scaling,
-            np.exp(solution.x[:,6]).reshape(-1,1) * mass_scaling,
+            solution.x[:,6].reshape(-1,1) * mass_scaling,
         ), axis=1)
         controls = solution.u[:,0:3]
         return times, states, controls
