@@ -33,8 +33,8 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
 
     # define transfer problem discretization
     tf_bounds = [1200.0, 1700.0]
-    t0_guess = 0.0
-    tf_guess = 250.0
+    t0_guess = 1100.0
+    tf_guess = 1400.0
     N = 30
     s_bounds = [0.01*tf_guess, 10*tf_guess]
 
@@ -95,6 +95,7 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
     # create initial guess
     print(f"Preparing initial guess...")
     xbar, ubar, vbar = problem.get_initial_guess(t0_guess, tf_guess)
+    ybar = np.zeros((problem.ny),)    # initial guess for v-infinity vectors
     geq_nl_ig, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, vbar, steps=5)   # evaluate initial guess
 
     # setup algorithm & solve
@@ -105,6 +106,7 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
         xbar,
         ubar,
         vbar,
+        ybar = ybar,
         maxiter = 200,
         verbose = True
     )

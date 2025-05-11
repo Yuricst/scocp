@@ -15,6 +15,7 @@ from scocp import (
     rhs_twobody,
     mee2rv,
     rv2mee,
+    keplerder_nostm,
 )
 
 
@@ -196,7 +197,8 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
         t_eval = np.linspace(0, period, steps)
         states = np.zeros((steps, 6))
         for i, t in enumerate(t_eval):
-            states[i,0:3], states[i,3:6] = pk.propagate_lagrangian(self.x0[0:3], self.x0[3:6], t, mu=self.mu)
+            #states[i,0:3], states[i,3:6] = pk.propagate_lagrangian(self.x0[0:3], self.x0[3:6], t, mu=self.mu)
+            states[i,:] = keplerder_nostm(self.mu, self.x0, 0.0, t)
         return t_eval, states
     
     def get_final_orbit(self, steps: int=100):
@@ -214,7 +216,8 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
         t_eval = np.linspace(0, period, steps)
         states = np.zeros((steps, 6))
         for i, t in enumerate(t_eval):
-            states[i,0:3], states[i,3:6] = pk.propagate_lagrangian(xf0[0:3], xf0[3:6], t, mu=self.mu)
+            #states[i,0:3], states[i,3:6] = pk.propagate_lagrangian(xf0[0:3], xf0[3:6], t, mu=self.mu)
+            states[i,:] = keplerder_nostm(self.mu, xf0, 0.0, t)
         return t_eval, states
     
     def get_initial_guess(self, t0_guess: float, tf_guess: float, Nrev_guess: float = 1.0):
@@ -597,7 +600,8 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         t_eval = np.linspace(0, period, steps)
         states = np.zeros((steps, 6))
         for i, t in enumerate(t_eval):
-            states[i,0:3], states[i,3:6] = pk.propagate_lagrangian(self.x0[0:3], self.x0[3:6], t, mu=self.mu)
+            #states[i,0:3], states[i,3:6] = pk.propagate_lagrangian(self.x0[0:3], self.x0[3:6], t, mu=self.mu)
+            states[i,:] = keplerder_nostm(self.mu, self.x0, 0.0, t)
         return t_eval, states
     
     def get_final_orbit(self, steps: int=100):
@@ -615,23 +619,24 @@ class scocp_pl2pl(ContinuousControlSCOCP):
         t_eval = np.linspace(0, period, steps)
         states = np.zeros((steps, 6))
         for i, t in enumerate(t_eval):
-            states[i,0:3], states[i,3:6] = pk.propagate_lagrangian(xf0[0:3], xf0[3:6], t, mu=self.mu)
+            #states[i,0:3], states[i,3:6] = pk.propagate_lagrangian(xf0[0:3], xf0[3:6], t, mu=self.mu)
+            states[i,:] = keplerder_nostm(self.mu, xf0, 0.0, t)
         return t_eval, states
     
     def get_initial_guess(self, t0_guess: float, tf_guess: float, Nrev_guess: float = 1.0):
         """Construct initial guess based on linear interpolation along orbital elements
         
         Args:
-            t0_guess_si (float): guess for loiter time
-            tf_guess_si (float): guess for final arrival time
+            t0_guess_si (float): guess for departure time in MJD
+            tf_guess_si (float): guess for final arrival time in MJD
             Nrev_guess (float): guess for number of revolutions
         
         Returns:
             (tuple): tuple of `(N,8)` array of state history, `(N-1,4)` array of control history, and `(N-1,1)` array of constraint history
         """
         # re-scale time
-        t0_guess = t0_guess / self.TU2DAY
-        tf_guess = tf_guess / self.TU2DAY
+        t0_guess = (t0_guess - self.t0_min) / self.TU2DAY
+        tf_guess = (tf_guess - self.t0_min) / self.TU2DAY
 
         # initial orbital elements
         x0 = self.target_initial.target_state(t0_guess)
