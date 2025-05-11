@@ -1,5 +1,10 @@
 # `scocp`: **Sequential Convexified Optimal Control Problem solver in Python**
 
+<p align="center">
+  <img src="docs/source/figs/logo.svg" width="50%">
+</p>
+
+
 [![PyPI version](https://badge.fury.io/py/scocp.svg)](https://badge.fury.io/py/scocp)
 ![test-scocp workflow](https://github.com/Yuricst/scocp/actions/workflows/test_scocp.yml/badge.svg)
 [![documentation workflow](https://github.com/Yuricst/scocp/actions/workflows/documentation.yml/badge.svg)](https://yuricst.github.io/scocp/)

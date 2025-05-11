@@ -10,8 +10,12 @@ Below is a list of implemented classes:
 
 | Class |  Dynamics | Final time | Initial conditions | Final conditions |
 |-------|-----------|------------|--------------------|------------------|
-| `FixedTimeContinuousRdv`                   | Translational dynamics            | Fixed | Fixed | Fixed |
-| `FixedTimeContinuousRdvLogMass`            | Translational dynamics + log-mass | Fixed | Fixed | Fixed |
-| `FreeTimeContinuousRdv`                    | Translational dynamics            | Free  | Fixed | Fixed |
-| `FreeTimeContinuousRdvLogMass`             | Translational dynamics + log-mass | Free  | Fixed | Fixed |
-| `FreeTimeContinuousMovingTargetRdvLogMass` | Translational dynamics + log-mass | Free  | Fixed | Moving target |
+| [`FixedTimeContinuousRdv`](scocp.FixedTimeContinuousRdv)                   | Translational dynamics            | Fixed | Fixed | Fixed |
+| [`FixedTimeContinuousRdvLogMass`](scocp.FixedTimeContinuousRdvLogMass)            | Translational dynamics + log-mass | Fixed | Fixed | Fixed |
+| [`FreeTimeContinuousRdv`](scocp.FreeTimeContinuousRdv)                    | Translational dynamics            | Free  | Fixed | Fixed |
+| [`FreeTimeContinuousRdvLogMass`](scocp.FreeTimeContinuousRdvLogMass)             | Translational dynamics + log-mass | Free  | Fixed | Fixed |
+| [`FreeTimeContinuousMovingTargetRdvLogMass`](scocp.FreeTimeContinuousMovingTargetRdvLogMass) | Translational dynamics + log-mass | Free  | Fixed | Moving target |
+| [`FreeTimeContinuousMovingTargetRdvMass`](scocp.FreeTimeContinuousMovingTargetRdvMass)    | Translational dynamics + mass     | Free  | Fixed | Moving target |
+
+## Log-mass vs. mass dynamics?
+

@@ -38,6 +38,10 @@ Example continuous control problems
    :members:
 
 .. autoclass:: scocp.FreeTimeContinuousMovingTargetRdvLogMass
+   :members:
+
+.. autoclass:: scocp.FreeTimeContinuousMovingTargetRdvMass
+   :members:
 
 
 Impulsive control problems

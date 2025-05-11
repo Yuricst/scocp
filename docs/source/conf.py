@@ -9,6 +9,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import re
 import os
 import sys
 sys.path.insert(0, os.path.abspath('./../..'))
@@ -19,8 +20,13 @@ sys.path.insert(0, os.path.abspath('./../..'))
 
 project = 'scocp'
 copyright = '2025, Yuri Shimane'
-author = 'Yuri Shimane'
-release = '0.1.2'
+# author = 'Yuri Shimane'
+# release = '0.1.3'
+
+with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../../scocp", '__init__.py')) as f:
+    init_text = f.read()
+    release = re.search(r'__version__\s*=\s*[\'\"](.+?)[\'\"]', init_text).group(1)
+    author = re.search(r'__author__\s*=\s*[\'\"](.+?)[\'\"]', init_text).group(1)
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -43,6 +49,7 @@ exclude_patterns = []
 
 html_theme = 'sphinx_book_theme'
 html_static_path = ['_static']
+html_logo = "figs/logo.png"
 
 # -- Using markdown
 source_suffix = {
