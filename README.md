@@ -5,7 +5,7 @@
 [![documentation workflow](https://github.com/Yuricst/scocp/actions/workflows/documentation.yml/badge.svg)](https://yuricst.github.io/scocp/)
 
 <p align="center">
-  <img src="docs/source/figs/logo.svg" width="50%">
+  <a href="https://yuricst.github.io/scocp/"><img src="docs/source/figs/logo.svg" width="40%"></a>
 </p>
 
 `scocp` is a pythononic framework for solving general optimal control problems (OCPs) of the form:
