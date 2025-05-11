@@ -822,4 +822,8 @@ class scocp_pl2pl(ContinuousControlSCOCP):
             solution.x[:,6].reshape(-1,1) * mass_scaling,
         ), axis=1)
         controls = solution.u[:,0:3]
-        return times, states, controls
+        v_infinities = [
+            solution.y[0:3] * v_scaling,
+            solution.y[3:6] * v_scaling,
+        ]
+        return times, states, controls, v_infinities

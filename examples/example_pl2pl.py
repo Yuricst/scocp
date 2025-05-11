@@ -119,7 +119,7 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
     assert np.max(np.abs(geq_nl_opt)) <= tol_feas
 
     # extract solution
-    ts_mjd2000, states, controls = problem.process_solution(solution)
+    ts_mjd2000, states, controls, v_infinities = problem.process_solution(solution)
     print(f"ts_mjd2000.shape = {ts_mjd2000.shape}")
     print(f"states.shape = {states.shape}")
     print(f"controls.shape = {controls.shape}")
