@@ -20,3 +20,4 @@ from ._heyoka_cr3bp import get_heyoka_integrator_cr3bp
 from ._heyoka_twobody import get_heyoka_integrator_twobody_logmass, get_heyoka_integrator_twobody_mass
 from ._integrator_heyoka import HeyokaIntegrator
 from ._scocp_pl2pl import PlanetTarget, scocp_pl2pl_logmass, scocp_pl2pl
+from ._scocp_pl2pl_warmstart import scocp_pl2pl_warmstart

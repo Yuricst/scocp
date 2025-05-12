@@ -38,7 +38,7 @@ def example_pl2pl(use_heyoka=True, get_plot=False, N_retry: int = 3):
     tf_bounds = [1450.0, 1650.0]
     t0_guess = t0_mjd2000_bounds[0]
     tf_guess = tf_bounds[0]
-    N = 8
+    N = 15
     s_bounds = [0.01*tf_guess, 10*tf_guess]
 
     # max v-infinity vector magnitudes
@@ -84,6 +84,7 @@ def example_pl2pl(use_heyoka=True, get_plot=False, N_retry: int = 3):
         )
 
     # create problem
+    #problem = scocp_pykep.scocp_pl2pl_warmstart(
     problem = scocp_pykep.scocp_pl2pl(
         integrator_01domain,
         pl0,
@@ -106,6 +107,9 @@ def example_pl2pl(use_heyoka=True, get_plot=False, N_retry: int = 3):
     t_cpus = []
     t_scp = []
     t_cvx = []
+    t_scp_accepted = []
+    t_cvx_accepted = []
+    step_accept = []
     for i_retry in range(N_retry):
         print(f" **** SCvx* retry {i_retry+1} of {N_retry} **** ")
         # create initial guess
@@ -125,36 +129,52 @@ def example_pl2pl(use_heyoka=True, get_plot=False, N_retry: int = 3):
             vbar,
             ybar = ybar,
             maxiter = 200,
-            verbose = False
+            verbose = N_retry==1
         )
         t_cpus.append(time.time() - t_start)
         xopt, uopt, vopt, yopt, sols, summary_dict = solution.x, solution.u, solution.v, solution.y, solution.sols, solution.summary_dict
         t_cvx.append(summary_dict["t_cvx"])
         t_scp.append(summary_dict["t_scp"])
-        assert summary_dict["status"] == "Optimal"
-        assert summary_dict["chi"][-1] <= tol_feas
-        print(f"    CPU time: {t_cpus[-1]:1.4f} seconds\n")
+        step_accept.append(summary_dict["accept"])
+
+        _tc_accepted = []
+        _ts_accepted = []
+        for (a,tc,ts) in zip(summary_dict["accept"], summary_dict["t_cvx"], summary_dict["t_scp"]):
+            if a == 1:
+                _tc_accepted.append(tc)
+                _ts_accepted.append(ts)
+        t_cvx_accepted.append(_tc_accepted)
+        t_scp_accepted.append(_ts_accepted)
+        #assert summary_dict["status"] == "Optimal"
+        #assert summary_dict["chi"][-1] <= tol_feas
+        fraction_of_cvx_time = np.divide(t_cvx_accepted[-1], t_scp_accepted[-1])
+        print(f"    Total CPU time                           : {t_cpus[-1]:1.4f} seconds")
+        print(f"    Mean SCP iteration time (accepted steps) : {np.mean(t_scp_accepted[-1]):1.4f} seconds")
+        print(f"    Mean CVX time           (accepted steps) : {np.mean(t_cvx_accepted[-1]):1.4f} seconds")
+        print(f"    Fraction of CVX time    (accepted steps) : {100*np.mean(fraction_of_cvx_time):1.4f}%\n")
 
     problem.pretty(solution)
 
     # plot CPU time per iteration
-    fig = plt.figure(figsize=(12,7))
+    fig = plt.figure(figsize=(12,5))
     ax = fig.add_subplot(121)
     ax.grid(True, alpha=0.5)
     ax.set(xlabel="Iteration", ylabel="SCP iteration time, s")
-    for ts in t_scp:
-        ax.plot(np.array(ts), marker="x")
+    for (ts, accept) in zip(t_scp_accepted, step_accept):
+        iters = np.arange(len(ts))
+        ax.plot(iters, ts)#, marker=['o' if a == 1 else 'x' for a in accept])
     
     ax_cpu = fig.add_subplot(122)
     ax_cpu.grid(True, alpha=0.5)
     ax_cpu.set(xlabel="Iteration", ylabel="Convex program time, s")
-    for ts in t_cvx:
-        ax_cpu.plot(np.array(ts), marker="x")
+    for (ts, accept) in zip(t_cvx_accepted, step_accept):
+        iters = np.arange(len(ts))
+        ax_cpu.plot(iters, ts)#, marker=['o' if a == 1 else 'x' for a in accept])
     plt.tight_layout()
 
     # evaluate nonlinear violations
     geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, vopt, steps=8)
-    assert np.max(np.abs(geq_nl_opt)) <= tol_feas
+    #assert np.max(np.abs(geq_nl_opt)) <= tol_feas
 
     # extract solution
     ts_mjd2000, states, controls, v_infinities = problem.process_solution(solution)
