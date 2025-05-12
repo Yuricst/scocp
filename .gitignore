@@ -175,3 +175,4 @@ cython_debug/
 
 # Mac OS temp file
 .DS_Store
+*.pk

@@ -170,12 +170,18 @@ class SCvxStar:
             "weight": self.problem.weight,
             "trust_region_radius": self.problem.trust_region_radius,
             "rho": self.rho0,
+            "t_cvx": [],
+            "t_scp": [],
         }
 
         for k in range(maxiter):
+            tstart_scp = time.time()
+
             # build linear model
             self.problem.build_linear_model(xbar, ubar, vbar)
+            tstart_cvx = time.time()
             xopt, uopt, vopt, yopt, xi_dyn_opt, xi_opt, zeta_opt = self.problem.solve_convex_problem(xbar, ubar, vbar, ybar)
+            scp_summary_dict["t_cvx"].append(time.time() - tstart_cvx)
             if self.problem.cp_status not in ["optimal", "optimal_inaccurate"]:
                 status_AL = "CPFailed"
                 if verbose:
@@ -265,6 +271,7 @@ class SCvxStar:
                 if verbose:
                     print(f"    Exceeded {n_min_trust_region} steps at minimum trust region! Stopping SCvx*due to slow progress...\n")
                 break
+            scp_summary_dict["t_scp"].append(time.time() - tstart_scp)
 
         if (k == maxiter - 1) and (status_AL not in ["Optimal", "CPFailed", "SlowProgress"]):
             if chi <= self.tol_feas:

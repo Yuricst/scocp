@@ -43,15 +43,23 @@ class ContinuousControlSCOCP:
         self.ng = ng
         self.nh = nh
         self.ny = ny
-        self.weight = weight
-        self.trust_region_radius = trust_region_radius
+        self.weight_initial = weight
+        self.trust_region_radius_initial = trust_region_radius
         self.solver = solver
         self.verbose_solver = verbose_solver
         self.augment_Gamma = augment_Gamma
-        # initialize storage
+        
+        # reset the problem
+        self.reset()
+        return
+    
+    def reset(self):
+        """Reset problem parameters and storages"""
+        self.weight = self.weight_initial
+        self.trust_region_radius = self.trust_region_radius_initial
         self.cp_status = "not_solved"
         Nseg = self.N - 1
-        if augment_Gamma:
+        if self.augment_Gamma:
             self.Phi_A = np.zeros((Nseg,self.integrator.nx,self.integrator.nx))
             self.Phi_B = np.zeros((Nseg,self.integrator.nx,self.integrator.nu+1))
             self.Phi_c = np.zeros((Nseg,self.integrator.nx))

@@ -1,9 +1,11 @@
-"""Test rendezvous with moving target"""
+"""Benchmark the CPU time of the scocp_pl2pl problem"""
+
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pykep as pk
 import pickle as pkl
+import time
 
 import os
 import sys
@@ -13,7 +15,7 @@ import scocp
 import scocp_pykep
 
 
-def example_pl2pl(use_heyoka=True, get_plot=False):
+def example_pl2pl(use_heyoka=True, get_plot=False, N_retry: int = 3):
     """Test SCP continuous transfer with log-mass dynamics"""
     # define canonical parameters
     GM_SUN = pk.MU_SUN           # Sun GM, m^3/s^-2
@@ -30,13 +32,13 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
     pl0 = pk.planet.jpl_lp('earth')
     plf = pk.planet.jpl_lp('mars')
 
-    t0_mjd2000_bounds = [1100.0, 1200.0]    # initial epoch in mjd2000
+    t0_mjd2000_bounds = [1150.0, 1200.0]    # initial epoch in mjd2000
 
     # define transfer problem discretization
-    tf_bounds = [1200.0, 1700.0]
-    t0_guess = 1100.0
-    tf_guess = 1400.0
-    N = 30
+    tf_bounds = [1450.0, 1650.0]
+    t0_guess = t0_mjd2000_bounds[0]
+    tf_guess = tf_bounds[0]
+    N = 8
     s_bounds = [0.01*tf_guess, 10*tf_guess]
 
     # max v-infinity vector magnitudes
@@ -47,7 +49,6 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
     mu = GM_SUN / (VU**2 * DU)                          # canonical gravitational constant
     c1 = THRUST / (MSTAR*DU/TU**2)                      # canonical max thrust
     c2 = THRUST/(ISP*G0) / (MSTAR/TU)                   # canonical mass flow rate
-    print(f"\nCanonical c1: {c1:1.4e}, c2: {c2:1.4e}")
 
     if use_heyoka:
         if os.path.isfile(os.path.join(os.path.dirname(os.path.abspath(__file__)), "ta_twobody_mass.pk")):
@@ -102,39 +103,61 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
         weight = 100.0,
     )
 
-    # create initial guess
-    print(f"Preparing initial guess...")
-    xbar, ubar, vbar = problem.get_initial_guess(t0_guess, tf_guess)
-    ybar = np.zeros((problem.ny),)    # initial guess for v-infinity vectors
-    geq_nl_ig, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, vbar, steps=5)   # evaluate initial guess
+    t_cpus = []
+    t_scp = []
+    t_cvx = []
+    for i_retry in range(N_retry):
+        print(f" **** SCvx* retry {i_retry+1} of {N_retry} **** ")
+        # create initial guess
+        xbar, ubar, vbar = problem.get_initial_guess(t0_guess, tf_guess)
+        ybar = np.zeros((problem.ny),)    # initial guess for v-infinity vectors
+        geq_nl_ig, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, vbar, steps=5)   # evaluate initial guess
 
-    # setup algorithm & solve
-    tol_feas = 1e-12
-    tol_opt = 1e-6
-    algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas, rho1=1e-8, r_bounds=[1e-10, 10.0])
-    solution = algo.solve(
-        xbar,
-        ubar,
-        vbar,
-        ybar = ybar,
-        maxiter = 200,
-        verbose = True
-    )
-    xopt, uopt, vopt, yopt, sols, summary_dict = solution.x, solution.u, solution.v, solution.y, solution.sols, solution.summary_dict
-    assert summary_dict["status"] == "Optimal"
-    assert summary_dict["chi"][-1] <= tol_feas
+        # setup algorithm & solve
+        tol_feas = 1e-10
+        tol_opt = 1e-6
+        problem.reset()              # when re-solving, make sure to reset the problem
+        algo = scocp.SCvxStar(problem, tol_opt=tol_opt, tol_feas=tol_feas, rho1=1e-8, r_bounds=[1e-10, 10.0])
+        t_start = time.time()
+        solution = algo.solve(
+            xbar,
+            ubar,
+            vbar,
+            ybar = ybar,
+            maxiter = 200,
+            verbose = False
+        )
+        t_cpus.append(time.time() - t_start)
+        xopt, uopt, vopt, yopt, sols, summary_dict = solution.x, solution.u, solution.v, solution.y, solution.sols, solution.summary_dict
+        t_cvx.append(summary_dict["t_cvx"])
+        t_scp.append(summary_dict["t_scp"])
+        assert summary_dict["status"] == "Optimal"
+        assert summary_dict["chi"][-1] <= tol_feas
+        print(f"    CPU time: {t_cpus[-1]:1.4f} seconds\n")
+
     problem.pretty(solution)
+
+    # plot CPU time per iteration
+    fig = plt.figure(figsize=(12,7))
+    ax = fig.add_subplot(121)
+    ax.grid(True, alpha=0.5)
+    ax.set(xlabel="Iteration", ylabel="SCP iteration time, s")
+    for ts in t_scp:
+        ax.plot(np.array(ts), marker="x")
+    
+    ax_cpu = fig.add_subplot(122)
+    ax_cpu.grid(True, alpha=0.5)
+    ax_cpu.set(xlabel="Iteration", ylabel="Convex program time, s")
+    for ts in t_cvx:
+        ax_cpu.plot(np.array(ts), marker="x")
+    plt.tight_layout()
 
     # evaluate nonlinear violations
     geq_nl_opt, sols = problem.evaluate_nonlinear_dynamics(xopt, uopt, vopt, steps=8)
-    print(f"Max dynamics constraint violation: {np.max(np.abs(geq_nl_opt)):1.4e}")
     assert np.max(np.abs(geq_nl_opt)) <= tol_feas
 
     # extract solution
     ts_mjd2000, states, controls, v_infinities = problem.process_solution(solution)
-    print(f"ts_mjd2000.shape = {ts_mjd2000.shape}")
-    print(f"states.shape = {states.shape}")
-    print(f"controls.shape = {controls.shape}")
 
     # initial and final orbits
     initial_orbit_states = problem.get_initial_orbit()
@@ -218,6 +241,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--heyoka", default=1, type=int)
     parser.add_argument("--plot", default=1, type=int)
+    parser.add_argument("--retry", default=3, type=int)
     args = parser.parse_args()
-    example_pl2pl(use_heyoka=bool(args.heyoka), get_plot=bool(args.plot))
+    example_pl2pl(use_heyoka=bool(args.heyoka), get_plot=bool(args.plot), N_retry=args.retry)
     plt.show()
