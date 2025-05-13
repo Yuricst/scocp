@@ -234,7 +234,7 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
         # re-scale time
         t0_guess = t0_guess / self.TU2DAY
         tf_guess = tf_guess / self.TU2DAY
-
+        
         # initial orbital elements
         x0 = self.target_initial.target_state(t0_guess)
         oe0 = rv2mee(np.array(x0), self.mu)
@@ -325,7 +325,7 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
         ] + [
             xs[i,0:7] - xbar[i,0:7] >= -self.trust_region_radius for i in range(N)
         ]
-        
+
         # boundary conditions
         constraints_boundary = [
             xs[0,0:6] - np.concatenate((np.zeros((3,3)), np.eye(3))) @ ys[0:3] \

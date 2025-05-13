@@ -38,7 +38,7 @@ def example_pl2pl(use_heyoka=True, get_plot=False, N_retry: int = 3):
     tf_bounds = [1450.0, 1650.0]
     t0_guess = t0_mjd2000_bounds[0]
     tf_guess = tf_bounds[0]
-    N = 15
+    N = 40
     s_bounds = [0.01*tf_guess, 10*tf_guess]
 
     # max v-infinity vector magnitudes

@@ -108,6 +108,30 @@ def example_pl2pl(use_heyoka=True, get_plot=False):
     ybar = np.zeros((problem.ny),)    # initial guess for v-infinity vectors
     geq_nl_ig, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, vbar, steps=5)   # evaluate initial guess
 
+    # Lambert based initial guess
+    dt_guess = 3.0   # in days
+    _, tdep_min, tdep_max, l_sol = scocp_pykep.get_lambert_gridsearch(pk.MU_SUN, pl0, plf, t0_guess, tf_guess, dt_guess)
+    xbar, ubar, vbar = scocp_pykep.lambert_sol_to_guess(problem, tdep_min, tdep_max, pl0, np.array(l_sol.get_v1()[0]))
+    ybar = np.zeros((problem.ny),)    # initial guess for v-infinity vectors
+    geq_nl_ig, sols_ig = problem.evaluate_nonlinear_dynamics(xbar, ubar, vbar, steps=5)   # evaluate initial guess
+
+    fig = plt.figure(figsize=(12,7))
+    ax = fig.add_subplot(1,1,1,projection='3d')
+    ax.set(xlabel="x", ylabel="y", zlabel="z")
+    for idx,(_ts, _ys) in enumerate(sols_ig):
+        if idx == 0:
+            label = "Initial guess"
+        else:
+            label = None
+        ax.plot(_ys[:,0], _ys[:,1], _ys[:,2], '-', color='b', label=label, lw=0.35)
+        _us_zoh = scocp.zoh_controls(problem.times, ubar, _ts)
+        ax.quiver(_ys[:,0], _ys[:,1], _ys[:,2], _us_zoh[:,0], _us_zoh[:,1], _us_zoh[:,2], color='r', length=0.05)
+    initial_orbit_states = problem.get_initial_orbit()
+    final_orbit_states = problem.get_final_orbit()
+    ax.plot(initial_orbit_states[1][:,0], initial_orbit_states[1][:,1], initial_orbit_states[1][:,2], 'k-', lw=0.3)
+    ax.plot(final_orbit_states[1][:,0], final_orbit_states[1][:,1], final_orbit_states[1][:,2], 'k-', lw=0.3)
+    ax.set(xlabel="x, DU", ylabel="y, DU", zlabel="z, DU")
+
     # setup algorithm & solve
     tol_feas = 1e-12
     tol_opt = 1e-6

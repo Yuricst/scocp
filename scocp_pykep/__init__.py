@@ -21,3 +21,4 @@ from ._heyoka_twobody import get_heyoka_integrator_twobody_logmass, get_heyoka_i
 from ._integrator_heyoka import HeyokaIntegrator
 from ._scocp_pl2pl import PlanetTarget, scocp_pl2pl_logmass, scocp_pl2pl
 from ._scocp_pl2pl_warmstart import scocp_pl2pl_warmstart
+from ._lambert_initialguess import get_lambert_gridsearch, lambert_sol_to_guess
