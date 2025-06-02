@@ -45,6 +45,7 @@ def test_scp_scipy_impulsive(get_plot=False):
 
     # create subproblem
     problem = scocp.FixedTimeImpulsiveRdv(x0, xf, integrator, times)
+    print(f"problem.augment_Gamma: {problem.augment_Gamma}")
 
     # create initial guess
     print(f"Preparing initial guess...")
