@@ -134,6 +134,11 @@ coverage report -m
 
 See example notebooks in `./examples`.
 
+- Cartpole: [Cartpole example notebook](examples/cartpole.ipynb)
+
+
+## Astrodynamics examples
+
 ### Continuous Control
 
 #### `FixedTimeContinuousRdv`:Fixed TOF Continuous control rendez-vous
