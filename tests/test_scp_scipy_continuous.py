@@ -127,7 +127,6 @@ def test_scp_scipy_continuous(get_plot=False):
 
         plt.tight_layout()
         fig.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots/scp_scipy_continuous_transfer.png"), dpi=300)
-        plt.show()
     return
 
 
