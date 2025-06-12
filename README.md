@@ -196,3 +196,30 @@ See example notebooks in `./examples`.
 - Fixed boundary conditions
 
 <img src="tests/plots/scp_scipy_impulsive_transfer.png" width="70%">
+
+
+## SCP Miso
+
+### Modeling tips
+
+#### Trust-region constraint
+
+- We want to relax the trust-region as much as possible (for faster convergence) without exising the region approximated by linearization/convexification
+- If the control is not upper-bounded (e.g. impulsive), set trust-region on both state and control; if continuous, consider using trust-region only on the state, or use different trust-region radii
+
+### Tuning algorithm hyperparameters
+
+Before delving into the rabbit hole of hyperparameters, make sure you're 100% sure model is correct & scaled somewhat appropriately (i.e. no large order of magnitude difference in your state & control variables, etc).
+
+TODO
+
+
+### Commmon issues
+
+#### My progress is too slow
+
+Is your trust-region upper-bound uncecessarily too small? Is your trust-region collapsing?
+Below are some things you could do - note that effectiveness is case-dependent!
+
+- Using a lower `rho2` will re-increase the step-size more frequently (default: `rho2 = 0.7`)
+- Using a larger weight update factor `beta` will decrease the feasibility faster (default: `beta = 2.0`)
