@@ -31,7 +31,7 @@ class ScipyIntegrator:
         self.reltol = reltol
         self.abstol = abstol
         self.args = args
-        if impulsive is False:
+        if impulsive is False and self.nu > 0:
             assert len(self.args[-1]) == self.nu + self.nv,\
                 f"last argument must be a place-holder for control with length {self.nu + self.nv}, but got {len(self.args[-1])}"
         return
