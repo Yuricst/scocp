@@ -22,8 +22,6 @@ class FreeTimeContinuousRdv(ContinuousControlSCOCP):
     """
     def __init__(self, x0, xf, umax, tf_bounds, s_bounds, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        assert len(x0) == 6
-        assert len(xf) == 6
         assert abs(self.times[0]  - 0.0) < 1e-14, f"self.times[0] must be 0.0, but given {self.times[0]}"
         assert abs(self.times[-1] - 1.0) < 1e-14, f"self.times[-1] must be 1.0, but given {self.times[-1]}"
         assert s_bounds[0] > 0.0, f"s_bounds[0] must be greater than 0.0, but given {s_bounds[0]}"
