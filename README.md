@@ -136,6 +136,14 @@ See example notebooks in `./examples`.
 
 - [Cartpole](./examples/example_cartpole.ipynb)
 
+#### Quadratic objective, unconstrained
+<img src="examples/plots/cartpole_quadratic_state_history.png" width="90%">
+<img src="examples/plots/cartpole_quadratic_convergence.png" width="90%">
+
+#### Fuel-optimal objective, unconstrained
+<img src="examples/plots/cartpole_fueloptimal_state_history.png" width="90%">
+<img src="examples/plots/cartpole_fueloptimal_convergence.png" width="90%">
+
 
 ## Astrodynamics examples
 
