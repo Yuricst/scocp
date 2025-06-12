@@ -52,6 +52,7 @@ class SCvxStar:
         beta (float): weight update factor
         gamma (float): update factor forLagrange multiplier update criterion delta
         r_bounds (list): trust region bounds
+        weight_max (float): maximum weight
     """
     def __init__(
         self,
@@ -67,11 +68,13 @@ class SCvxStar:
         gamma = 0.9,
         r_bounds = [1e-8, 10.0],
         steps_minimum_trust_region = 10,
+        weight_max = 1e16,
     ):
         # assertions on hyperparameters
         assert 0.0 <= rho0 < 1.0, "rho0 must be in [0.0, 1.0)"
         assert alpha1 > 1.0, "alpha1 must be greater than 1.0"
         assert alpha2 > 1.0, "alpha2 must be greater than 1.0"
+        assert rho1 < rho2, "rho1 must be less than rho2"
         assert beta > 1.0, "beta must be greater than 1.0"
         assert 0.0 < gamma < 1.0, "gamma must be in (0.0, 1.0)"
         assert r_bounds[0] > 0.0, "r_bounds[0] must be greater than 0.0"
@@ -89,6 +92,7 @@ class SCvxStar:
         self.gamma = gamma
         self.r_bounds = r_bounds
         self.steps_minimum_trust_region = steps_minimum_trust_region
+        self.weight_max = weight_max
         return
     
 
@@ -100,7 +104,8 @@ class SCvxStar:
             g (np.array): ng-by-1 array of nonlinear equality constraints violations
             h (np.array): nh-by-1 array of nonlinear inequality constraints violations
         """
-        assert gdyn.shape == (self.problem.N-1, self.problem.integrator.nx)
+        assert gdyn.shape == (self.problem.N-1, self.problem.integrator.nx),\
+            f"gdyn.shape = {gdyn.shape} != (self.problem.N-1, self.problem.integrator.nx) = {(self.problem.N-1, self.problem.integrator.nx)}"
         Nseg,_ = self.problem.lmb_dynamics.shape
         penalty = 0.0
         for i in range(Nseg):
@@ -123,6 +128,7 @@ class SCvxStar:
         maxiter: int = 10,
         verbose: bool = True,
         feasability_norm = np.inf,
+        debug = False,
     ):
         """Solve optimal control problem via SCvx* algorithm
         
@@ -201,6 +207,22 @@ class SCvxStar:
             J_opt = J0                                                + self.evaluate_penalty(gdyn_nl_opt, g_nl_opt, h_nl_opt)
             L_opt = J0                                                + self.evaluate_penalty(xi_dyn_opt, xi_opt, zeta_opt)
 
+            if debug:
+                print(f"\n  SCvxStar debug mode output at iteration {k+1}:")
+                print(f"    J0            = {J0:1.4e}")
+                print(f"    P(g(z), h(z)) = {self.evaluate_penalty(gdyn_nl_opt, g_nl_opt, h_nl_opt):1.4e}")
+                print(f"    P(xi, zeta)   = {self.evaluate_penalty(xi_dyn_opt, xi_opt, zeta_opt):1.4e}")
+                print(f"    ||gdyn_nl_opt|| = {np.linalg.norm(gdyn_nl_opt, np.inf):1.4e}")
+                print(f"    ||xi_dyn_opt||  = {np.linalg.norm(xi_dyn_opt, np.inf):1.4e}")
+                if self.problem.ng > 0:
+                    print(f"    ||g_nl_opt||    = {np.linalg.norm(g_nl_opt, np.inf):1.4e}")
+                    print(f"    ||xi_opt||      = {np.linalg.norm(xi_opt, np.inf):1.4e}")
+                if self.problem.nh > 0:
+                    print(f"    ||h_nl_opt||    = {np.linalg.norm(h_nl_opt, np.inf):1.4e}")
+                    print(f"    ||zeta_opt||    = {np.linalg.norm(zeta_opt, np.inf):1.4e}")
+                print(f"    chi = {chi:1.4e}")
+                print("\n")
+
             # evaluate step acceptance criterion parameter
             DeltaJ = J_bar - J_opt
             DeltaL = J_bar - L_opt
@@ -247,7 +269,7 @@ class SCvxStar:
                         self.problem.lmb_ineq = self.problem.lmb_ineq + self.problem.weight * h_nl_opt
 
                     # update weight
-                    self.problem.weight = self.beta * self.problem.weight
+                    self.problem.weight = min(self.beta * self.problem.weight, self.weight_max)
                     
                     # multiplier & weight update
                     if delta > 1e15:
