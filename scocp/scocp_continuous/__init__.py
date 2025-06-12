@@ -15,3 +15,6 @@ from ._rdv_free_moving import (
     FreeTimeContinuousMovingTargetRdvLogMass,
     FreeTimeContinuousMovingTargetRdvMass,
 )
+from ._ballistic import (
+    FixedTimeBallisticTrajectory,
+)
