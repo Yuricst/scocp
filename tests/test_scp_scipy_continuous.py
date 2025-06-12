@@ -28,6 +28,7 @@ def test_scp_scipy_continuous(get_plot=False):
         0.0])
     period_0 = 2.3538670417546639E+00
     sol_lpo0 = integrator.solve([0, period_0], x0, get_ODESolution=True)
+    print(f"sol_lpo0.y[-1,:] = {list(sol_lpo0.y[:6, -1])}")
 
     xf = np.array([
         1.1648780946517576,
