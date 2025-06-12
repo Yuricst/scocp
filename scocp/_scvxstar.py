@@ -152,7 +152,8 @@ class SCvxStar:
 
         # initialize vbar if not provided
         if vbar is None:
-            vbar = np.sum(ubar, axis=1).reshape(-1,1)
+            assert self.problem.augment_Gamma == False, f"If augment_Gamma is True, vbar must be provided"
+            # vbar = np.sum(ubar, axis=1).reshape(-1,1)
         if ybar is None and self.problem.ny > 0:
             ybar = np.zeros((self.problem.ny,))
 
@@ -250,8 +251,9 @@ class SCvxStar:
                 
             if rho >= self.rho0:
                 xbar[:,:] = xopt[:,:]
-                ubar[:,:] = uopt[:,:]   
-                vbar[:,:] = vopt[:,:]
+                ubar[:,:] = uopt[:,:]
+                if vbar is not None:
+                    vbar[:,:] = vopt[:,:]
                 if self.problem.ny > 0:
                     ybar[:] = yopt[:]
                 gdyn_nl_bar[:,:] = gdyn_nl_opt[:,:]
