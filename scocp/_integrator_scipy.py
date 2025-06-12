@@ -33,7 +33,7 @@ class ScipyIntegrator:
         self.args = args
         if impulsive is False and self.nu > 0:
             assert len(self.args[-1]) == self.nu + self.nv,\
-                f"last argument must be a place-holder for control with length {self.nu + self.nv}, but got {len(self.args[-1])}"
+                f"last argument must be a place-holder for control with length {self.nu + self.nv}, but got {len(self.args[-1])}; if only control is needed, pass as `args = ([0.0,],)`"
         return
 
     def solve(self, tspan, x0, u=None, stm=False, t_eval=None, args=None, get_ODESolution=False):
