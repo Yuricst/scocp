@@ -33,8 +33,9 @@ class ContinuousControlSCOCP:
         trust_region_radius: float = 0.1,
         solver = cp.CLARABEL,
         verbose_solver: bool = False,
+        impulsive_B = None,
     ):
-        assert integrator.impulsive is False, "Continuous control problem must be initialized with an integrator for continuous dynamics"
+        #assert integrator.impulsive is False, "Continuous control problem must be initialized with an integrator for continuous dynamics"
         assert weight >= 0.0, f"weight must be non-negative, but given {weight}"
         self.integrator = integrator
         self.times = times
@@ -48,6 +49,11 @@ class ContinuousControlSCOCP:
         self.solver = solver
         self.verbose_solver = verbose_solver
         self.augment_Gamma = augment_Gamma
+
+        if impulsive_B is None:
+            self.impulsive_B = np.zeros((self.integrator.nx, self.integrator.nu))
+        else:
+            self.impulsive_B = impulsive_B
         
         # reset the problem
         self.reset()
@@ -107,19 +113,22 @@ class ContinuousControlSCOCP:
             f"Given incorrect xbar shape {xbar.shape}; should be {(self.N, self.integrator.nx)}"
         assert ubar.shape == (self.N-1, self.integrator.nu),\
             f"Given incorrect ubar shape {ubar.shape}; should be {(self.N-1, self.integrator.nu)}"
-        if self.integrator.nv == 0:
-            assert vbar.shape == (self.N-1,1), f"Given incorrect vbar shape {vbar.shape}; should be {(self.N-1,1)}"
-        else:
-            assert vbar.shape == (self.N-1, self.integrator.nv),\
-                f"Given incorrect vbar shape {vbar.shape}; should be {(self.N-1, self.integrator.nv)}"
+        if vbar is not None:
+            if self.integrator.nv == 0 and self.integrator.nu > 0:
+                assert vbar.shape == (self.N-1,1), f"Given incorrect vbar shape {vbar.shape}; should be {(self.N-1,1)}"
+            else:
+                assert vbar.shape == (self.N-1, self.integrator.nv),\
+                    f"Given incorrect vbar shape {vbar.shape}; should be {(self.N-1, self.integrator.nv)}"
         i_PhiA_end = self.integrator.nx + self.integrator.nx * self.integrator.nx
         for i,ti in enumerate(self.times[:-1]):
             _tspan = (ti, self.times[i+1])
+            _x0 = xbar[i,:] + self.impulsive_B @ ubar[i,:]
+
             if self.augment_Gamma:
                 _ubar = np.concatenate((ubar[i,:], vbar[i,:]))
             else:
                 _ubar = ubar[i,:]
-            _, _ys = self.integrator.solve(_tspan, xbar[i,:], u=_ubar, stm=True)
+            _, _ys = self.integrator.solve(_tspan, _x0, u=_ubar, stm=True)
 
             xf  = _ys[-1,0:self.integrator.nx]
             self.Phi_A[i,:,:] = _ys[-1,self.integrator.nx:i_PhiA_end].reshape(self.integrator.nx,self.integrator.nx)
@@ -127,7 +136,7 @@ class ContinuousControlSCOCP:
                 self.Phi_B[i,:,:] = _ys[-1,i_PhiA_end:].reshape(self.integrator.nx,self.integrator.nu+1)
             else:
                 self.Phi_B[i,:,:] = _ys[-1,i_PhiA_end:].reshape(self.integrator.nx,self.integrator.nu)
-            self.Phi_c[i,:]   = xf - self.Phi_A[i,:,:] @ xbar[i,:] - self.Phi_B[i,:,:] @ _ubar
+            self.Phi_c[i,:]   = xf - self.Phi_A[i,:,:] @ (xbar[i,:] + self.impulsive_B @ ubar[i,:]) - self.Phi_B[i,:,:] @ _ubar
         return
         
     def evaluate_nonlinear_dynamics(self, xs, us, vs, stm = False, steps = None):
@@ -147,14 +156,15 @@ class ContinuousControlSCOCP:
         geq_nl = np.zeros((self.N-1,self.integrator.nx))
         for i,ti in enumerate(self.times[:-1]):
             _tspan = (ti, self.times[i+1])
+            _x0 = xs[i,:] + self.impulsive_B @ us[i,:]
             if steps is None:
                 t_eval = None
             else:
                 t_eval = np.linspace(ti, self.times[i+1], steps)
             if self.augment_Gamma:
-                _ts, _ys = self.integrator.solve(_tspan, xs[i,:], u=np.concatenate((us[i,:], vs[i,:])), stm=stm, t_eval=t_eval)
+                _ts, _ys = self.integrator.solve(_tspan, _x0, u=np.concatenate((us[i,:], vs[i,:])), stm=stm, t_eval=t_eval)
             else:
-                _ts, _ys = self.integrator.solve(_tspan, xs[i,:], u=us[i,:], stm=stm, t_eval=t_eval)
+                _ts, _ys = self.integrator.solve(_tspan, _x0, u=us[i,:], stm=stm, t_eval=t_eval)
             sols.append([_ts,_ys])
             geq_nl[i,:] = xs[i+1,:] - _ys[-1,0:self.integrator.nx]
         return geq_nl, sols
