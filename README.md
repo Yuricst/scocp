@@ -134,7 +134,7 @@ coverage report -m
 
 See example notebooks in `./examples`.
 
-- Cartpole: [Cartpole example notebook](examples/cartpole.ipynb)
+- [Cartpole](./examples/example_cartpole.ipynb)
 
 
 ## Astrodynamics examples
