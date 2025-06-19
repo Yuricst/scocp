@@ -1,7 +1,7 @@
 """scocp: Sequential Convex Optimization Control Problem"""
 
 __copyright__    = 'Copyright (C) 2025 Yuri Shimane'
-__version__      = '0.1.3'
+__version__      = '0.1.7'
 __license__      = 'GPL-3.0 License'
 __author__       = 'Yuri Shimane'
 __author_email__ = 'yuri.shimane@gatech.edu'

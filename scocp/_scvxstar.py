@@ -25,13 +25,14 @@ class SCPSolution:
         sols (list): list of solutions
         summary_dict (dict): summary dictionary
     """
-    def __init__(self, xopt, uopt, vopt, yopt, sols, summary_dict):
+    def __init__(self, xopt, uopt, vopt, yopt, sols, summary_dict, variables_each_iterations=None):
         self.x = xopt
         self.u = uopt
         self.v = vopt
         self.y = yopt
         self.sols = sols
         self.summary_dict = summary_dict
+        self.variables_each_iterations = variables_each_iterations
         return
 
 
@@ -115,7 +116,8 @@ class SCvxStar:
             penalty += self.problem.lmb_eq @ g + self.problem.weight/2 * (g @ g)
         if self.problem.nh > 0:
             assert h.shape == (self.problem.nh,)
-            penalty += self.problem.lmb_ineq @ h + self.problem.weight/2 * (h @ h)
+            h_pos = np.clip(h, 0, None)      # penalize only when inequality constraint is violated
+            penalty += self.problem.lmb_ineq @ h_pos + self.problem.weight/2 * (h_pos @ h_pos)
         return penalty
     
     
@@ -129,6 +131,8 @@ class SCvxStar:
         verbose: bool = True,
         feasability_norm = np.inf,
         debug = False,
+        exit_condition_rho = False,
+        save_all_iterations = False,
     ):
         """Solve optimal control problem via SCvx* algorithm
         
@@ -139,6 +143,12 @@ class SCvxStar:
             maxiter (int): maximum number of iterations
             verbose (bool): whether to print verbose output
             feasability_norm (str): norm to use for feasibility evaluation
+            debug (bool): whether to print debug output
+            exit_condition_rho (bool): whether to exit if rho < rho0
+            save_all_iterations (bool): whether to save all iterations
+
+        Returns:
+            SCPSolution: solution object
         """
         tstart = time.time()
         header = f"|  Iter  |     J0      |   Delta J   |   Delta L   |    chi     |     rho     |     r      |   weight   | step acpt. |"
@@ -180,6 +190,7 @@ class SCvxStar:
             "t_cvx": [],
             "t_scp": [],
         }
+        variables_each_iterations = []
 
         for k in range(maxiter):
             tstart_scp = time.time()
@@ -200,34 +211,38 @@ class SCvxStar:
 
             # evaluate nonlinear constraints
             g_nl_opt, h_nl_opt = self.problem.evaluate_nonlinear_constraints(xopt, uopt, vopt, yopt)
-            chi = np.linalg.norm(np.concatenate((gdyn_nl_opt.flatten(), g_nl_opt, h_nl_opt)), feasability_norm)
+            chi = np.linalg.norm(np.concatenate((gdyn_nl_opt.flatten(order='C'), g_nl_opt, h_nl_opt)), feasability_norm)
 
             # evaluate penalized objective
-            J0 = self.problem.evaluate_objective(xopt, uopt, vopt)
-            J_bar = self.problem.evaluate_objective(xbar, ubar, vbar) + self.evaluate_penalty(gdyn_nl_bar, g_nl_bar, h_nl_bar)
-            J_opt = J0                                                + self.evaluate_penalty(gdyn_nl_opt, g_nl_opt, h_nl_opt)
-            L_opt = J0                                                + self.evaluate_penalty(xi_dyn_opt, xi_opt, zeta_opt)
+            J0     = self.problem.evaluate_objective(xopt, uopt, vopt, yopt)
+            J0_bar = self.problem.evaluate_objective(xbar, ubar, vbar, ybar)
+            J_bar  = J0_bar + self.evaluate_penalty(gdyn_nl_bar, g_nl_bar, h_nl_bar)
+            J_opt  = J0     + self.evaluate_penalty(gdyn_nl_opt, g_nl_opt, h_nl_opt)
+            L_opt  = J0     + self.evaluate_penalty(xi_dyn_opt, xi_opt, zeta_opt)
+
+            # evaluate step acceptance criterion parameter
+            DeltaJ = J_bar - J_opt
+            DeltaL = J_bar - L_opt
+            rho = DeltaJ / DeltaL
 
             if debug:
                 print(f"\n  SCvxStar debug mode output at iteration {k+1}:")
                 print(f"    J0            = {J0:1.4e}")
                 print(f"    P(g(z), h(z)) = {self.evaluate_penalty(gdyn_nl_opt, g_nl_opt, h_nl_opt):1.4e}")
                 print(f"    P(xi, zeta)   = {self.evaluate_penalty(xi_dyn_opt, xi_opt, zeta_opt):1.4e}")
-                print(f"    ||gdyn_nl_opt|| = {np.linalg.norm(gdyn_nl_opt, np.inf):1.4e}")
-                print(f"    ||xi_dyn_opt||  = {np.linalg.norm(xi_dyn_opt, np.inf):1.4e}")
+                print(f"        ||gdyn_nl_opt|| = {np.linalg.norm(gdyn_nl_opt, np.inf):1.4e}, ||xi_dyn_opt||  = {np.linalg.norm(xi_dyn_opt, np.inf):1.4e}")
                 if self.problem.ng > 0:
-                    print(f"    ||g_nl_opt||    = {np.linalg.norm(g_nl_opt, np.inf):1.4e}")
-                    print(f"    ||xi_opt||      = {np.linalg.norm(xi_opt, np.inf):1.4e}")
+                    print(f"        ||g_nl_opt||    = {np.linalg.norm(g_nl_opt, np.inf):1.4e}, ||xi_opt||      = {np.linalg.norm(xi_opt, np.inf):1.4e}")
                 if self.problem.nh > 0:
-                    print(f"    ||h_nl_opt||    = {np.linalg.norm(h_nl_opt, np.inf):1.4e}")
-                    print(f"    ||zeta_opt||    = {np.linalg.norm(zeta_opt, np.inf):1.4e}")
+                    print(f"        ||h_nl_opt||    = {np.linalg.norm(h_nl_opt, np.inf):1.4e}, ||zeta_opt||      = {np.linalg.norm(zeta_opt, np.inf):1.4e}")
+                print(f"    J0 = {J0:1.4e}, J0_bar = {J0_bar:1.4e}")
+                print(f"    J_opt = J0 + P(g(z), h(z)) = {J0:1.4e} + {self.evaluate_penalty(gdyn_nl_opt, g_nl_opt, h_nl_opt):1.4e} = {J_opt:1.4e}")
+                print(f"    L_opt = J0 + P(xi, zeta)   = {J0:1.4e} + {self.evaluate_penalty(xi_dyn_opt, xi_opt, zeta_opt):1.4e} = {L_opt:1.4e}")
+                print(f"    Delta J = {DeltaJ:1.4e}, Delta L = {DeltaL:1.4e}, rho = {rho:1.4e}")
+                # print(f"        xi_opt              = {xi_opt}")
+                # print(f"        self.problem.lmb_eq = {self.problem.lmb_eq}")
                 print(f"    chi = {chi:1.4e}")
                 print("\n")
-
-            # evaluate step acceptance criterion parameter
-            DeltaJ = J_bar - J_opt
-            DeltaL = J_bar - L_opt
-            rho = DeltaJ / DeltaL
 
             if rho >= self.rho0:
                 step_acpt_msg = "yes"
@@ -244,8 +259,15 @@ class SCvxStar:
             scp_summary_dict["DeltaJ"].append(DeltaJ)
             scp_summary_dict["DeltaL"].append(DeltaL)
             scp_summary_dict["accept"].append(int(rho >= self.rho0))
+            if save_all_iterations:
+                variables_each_iterations.append({
+                    "x": copy.deepcopy(xopt),
+                    "u": copy.deepcopy(uopt),
+                    "v": copy.deepcopy(vopt),
+                    "y": copy.deepcopy(yopt),
+                })
 
-            if (chi <= self.tol_feas) and (abs(DeltaJ) <= self.tol_opt) and (rho >= self.rho0):
+            if (chi <= self.tol_feas) and (abs(DeltaJ) <= self.tol_opt) and (exit_condition_rho is False or rho >= self.rho0):
                 status_AL = "Optimal"
                 break
                 
@@ -262,13 +284,13 @@ class SCvxStar:
                 if self.problem.nh > 0:
                     h_nl_bar[:] = h_nl_opt[:]
 
-                if abs(DeltaJ) < delta:
+                if abs(DeltaJ) < np.abs(delta):
                     # update multipliers
                     self.problem.lmb_dynamics = self.problem.lmb_dynamics + self.problem.weight * gdyn_nl_opt
                     if self.problem.ng > 0:
                         self.problem.lmb_eq   = self.problem.lmb_eq + self.problem.weight * g_nl_opt
                     if self.problem.nh > 0:
-                        self.problem.lmb_ineq = self.problem.lmb_ineq + self.problem.weight * h_nl_opt
+                        self.problem.lmb_ineq = np.clip(self.problem.lmb_ineq + self.problem.weight * h_nl_opt, 0, None)
 
                     # update weight
                     self.problem.weight = min(self.beta * self.problem.weight, self.weight_max)
@@ -324,7 +346,7 @@ class SCvxStar:
         scp_summary_dict["trust_region_radius"] = self.problem.trust_region_radius
         scp_summary_dict["rho"] = rho
         scp_summary_dict["t_algorithm"] = t_algorithm
-        return SCPSolution(xopt, uopt, vopt, yopt, sols, scp_summary_dict)
+        return SCPSolution(xopt, uopt, vopt, yopt, sols, scp_summary_dict, variables_each_iterations)
     
     def plot_DeltaJ(self, axis, summary_dict: dict, s = 5):
         """Plot iterations of DeltaJ"""

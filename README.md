@@ -215,6 +215,13 @@ See example notebooks in `./examples`.
 
 ### Modeling tips
 
+### Scaling
+
+Be super mindful of scaling; for example:
+- make sure the dynamics is scaled appropriately so that all components take values of order ~$10^0$.
+- make sure all non-convex equality/inequality constraints take similar orders of magnitude; if not, you might observe that the `chi` value (max constraint) violation stalls/does not decrease at all.
+
+
 #### Trust-region constraint
 
 - We want to relax the trust-region as much as possible (for faster convergence) without exising the region approximated by linearization/convexification

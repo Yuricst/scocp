@@ -36,7 +36,7 @@ class ScipyIntegrator:
                 f"last argument must be a place-holder for control with length {self.nu + self.nv}, but got {len(self.args[-1])}; if only control is needed, pass as `args = ([0.0,],)`"
         return
 
-    def solve(self, tspan, x0, u=None, stm=False, t_eval=None, args=None, get_ODESolution=False):
+    def solve(self, tspan, x0, u=None, stm=False, t_eval=None, args=None, get_ODESolution=False, dense_output=False):
         """Solve initial value problem
 
         Args:
@@ -46,6 +46,7 @@ class ScipyIntegrator:
             t_eval (np.array): evaluation times
             args (tuple): additional arguments for the right-hand side function
             get_ODESolution (bool): whether to return an `ODESolution` object
+            dense_output (bool): whether to return a dense output
         
         Returns:
             (tuple or ODESolution):
@@ -60,7 +61,8 @@ class ScipyIntegrator:
             args[-1][:] = u[:]
 
         if stm is False:
-            sol = solve_ivp(self.rhs, tspan, x0, t_eval=t_eval, method=self.method, rtol=self.reltol, atol=self.abstol, args=args)
+            sol = solve_ivp(self.rhs, tspan, x0,
+                            t_eval=t_eval, method=self.method, rtol=self.reltol, atol=self.abstol, args=args, dense_output=dense_output)
         else:
             if self.impulsive is True:
                 x0_stm = np.concatenate((x0, np.eye(self.nx).flatten()))

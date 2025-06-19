@@ -11,7 +11,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import scocp
 
 
-def test_scp_scipy_logmass(get_plot=False):
+def test_scp_scipy_mass(get_plot=False):
     """Test SCP continuous transfer with log-mass dynamics"""
     # define canonical parameters
     GM_SUN = 132712000000.44     # Sun GM, km^3/s^-2
@@ -234,5 +234,5 @@ def test_scp_scipy_logmass(get_plot=False):
 
 
 if __name__ == "__main__":
-    test_scp_scipy_logmass(get_plot=True)
+    test_scp_scipy_mass(get_plot=True)
     plt.show()

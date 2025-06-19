@@ -35,7 +35,6 @@ class ImpulsiveControlSCOCP:
         trust_region_radius: float = 0.1,
         solver = cp.CLARABEL,
         verbose_solver: bool = False,
-        freetime: bool = False,
     ):
         #assert integrator.impulsive is True, "Impulsive control problem must be initialized with an integrator for impulsive dynamics"
         self.integrator = integrator
@@ -50,7 +49,6 @@ class ImpulsiveControlSCOCP:
         self.solver = solver
         self.verbose_solver = verbose_solver
         self.augment_Gamma = augment_Gamma
-        self.freetime = freetime
 
         if B is None:
             if augment_Gamma:
@@ -64,8 +62,6 @@ class ImpulsiveControlSCOCP:
                 ])
             else:
                 self.B = np.concatenate((np.zeros((3,3)), np.eye(3)))
-            if self.freetime:
-                self.B = block_diag(self.B, [0])
         else:
             self.B = B
 
@@ -108,32 +104,20 @@ class ImpulsiveControlSCOCP:
             _tspan = (ti, self.times[i+1])
             _x0 = xbar[i,:] + self.B @ ubar[i,:]
 
-            if self.freetime is False:
-                _, _ys = self.integrator.solve(_tspan, _x0, stm=True)
+            _, _ys = self.integrator.solve(_tspan, _x0, stm=True)
 
-                xf  = _ys[-1,0:self.integrator.nx]
-                STM = _ys[-1,self.integrator.nx:self.integrator.nx+self.integrator.nx*self.integrator.nx].reshape(self.integrator.nx,self.integrator.nx)
-                self.Phi_A[i,:,:] = STM
-                self.Phi_B[i,:,:] = STM @ self.B
-                self.Phi_c[i,:]   = xf - self.Phi_A[i,:,:] @ xbar[i,:] - self.Phi_B[i,:,:] @ ubar[i,:]
-
-            else:
-                _, _ys = self.integrator.solve(_tspan, _x0, u=ubar[i,:], stm=True)
-
-                xf  = _ys[-1,0:self.integrator.nx]
-                STM = _ys[-1,self.integrator.nx:self.integrator.nx+self.integrator.nx*self.integrator.nx].reshape(self.integrator.nx,self.integrator.nx)
-                self.Phi_A[i,:,:] = STM
-                if self.augment_Gamma:
-                    self.Phi_B[i,:,:] = _ys[-1,i_PhiA_end:].reshape(self.integrator.nx,self.integrator.nu+1)
-                else:
-                    self.Phi_B[i,:,:] = _ys[-1,i_PhiA_end:].reshape(self.integrator.nx,self.integrator.nu)
-                self.Phi_c[i,:]   = xf - self.Phi_A[i,:,:] @ xbar[i,:] - self.Phi_B[i,:,:] @ ubar[i,:]
+            xf  = _ys[-1,0:self.integrator.nx]
+            STM = _ys[-1,self.integrator.nx:self.integrator.nx+self.integrator.nx*self.integrator.nx].reshape(self.integrator.nx,self.integrator.nx)
+            self.Phi_A[i,:,:] = STM
+            self.Phi_B[i,:,:] = STM @ self.B
+            self.Phi_c[i,:]   = xf - self.Phi_A[i,:,:] @ xbar[i,:] - self.Phi_B[i,:,:] @ ubar[i,:]
         return
         
     def evaluate_nonlinear_dynamics(
         self,
         xbar,
         ubar,
+        #vbar,
         stm = False,
         steps = None,
     ):
@@ -158,12 +142,10 @@ class ImpulsiveControlSCOCP:
             else:
                 t_eval = np.linspace(ti, self.times[i+1], steps)
             _x0 = xbar[i,:] + self.B @ ubar[i,:]
-            if self.freetime:
-                _u0 = ubar[i,:]
-            else:
-                _u0 = np.zeros(self.integrator.nu)
+            _u0 = np.zeros(self.integrator.nu)
             _ts, _ys = self.integrator.solve(_tspan, _x0, u=_u0, stm=stm, t_eval=t_eval)
             sols.append([_ts,_ys])
+            #print(f"tspan = {_tspan}, _x0 = {_x0}, _u0 = {_u0}, _ys = {_ys}")
             geq_nl[i,:] = xbar[i+1,:] - _ys[-1,0:self.integrator.nx]
         return geq_nl, sols
     

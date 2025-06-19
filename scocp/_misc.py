@@ -45,12 +45,10 @@ def get_augmented_lagrangian_penalty(weight, xi_dyn, lmb_dyn, xi=None, lmb_eq=No
         penalty += lmb_dyn[i,:] @ xi_dyn[i,:]
     if xi is not None:
         penalty += weight/2 * cp.sum_squares(xi)
-        #for i in range(len(lmb_eq)):
         for i,_ in enumerate(lmb_eq):
             penalty += lmb_eq[i] * xi[i]
-    if zeta is not None:
+    if zeta is not None:                # Note: we do not need to clip zeta as we assume the variable is defined to be >=0 
         penalty += weight/2 * cp.sum_squares(zeta)
-        #for i in range(len(lmb_ineq)):
         for i,_ in enumerate(lmb_ineq):
             penalty += lmb_ineq[i] * zeta[i]
     return penalty

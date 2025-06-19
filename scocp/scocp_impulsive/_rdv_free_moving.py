@@ -4,11 +4,11 @@ from collections.abc import Callable
 import cvxpy as cp
 import numpy as np
 
-from ._scocp_continuous import ContinuousControlSCOCP
+from ._scocp_continuous import ImpulsiveControlSCOCP
 from .._misc import get_augmented_lagrangian_penalty, MovingTarget
 
 
-class FreeTimeContinuousMovingTargetRdvLogMass(ContinuousControlSCOCP):
+class FreeTimeContinuousMovingTargetRdvLogMass(ImpulsiveControlSCOCP):
     """Free-time continuous moving target rendezvous problem class with log-mass dynamics
     
     Note the ordering expected for the state and the control vectors: 
@@ -97,13 +97,11 @@ class FreeTimeContinuousMovingTargetRdvLogMass(ContinuousControlSCOCP):
             for i in range(Nseg)
         ]
 
-        constraints_zeta_positive = [zetas[i] >= 0.0 for i in range(Nseg)]
-
         convex_problem = cp.Problem(
             cp.Minimize(objective_func),
             constraints_objsoc + constraints_dyn + constraints_trustregion +\
             constraints_initial + constraints_final + constraints_control +\
-            constraint_t0 + constraints_tf + constraints_s + constraints_zeta_positive)
+            constraint_t0 + constraints_tf + constraints_s)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
         return xs.value, us.value, vs.value, None, xis_dyn.value, xis.value, zetas.value
