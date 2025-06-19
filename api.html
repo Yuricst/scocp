@@ -1,0 +1,1312 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>API &#8212; scocp 0.1.7 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=3476fdda"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Pykep Compatible Problems" href="examples/ex_pl2pl.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="scocp 0.1.7 documentation - Home"/>
+    <script>document.write(`<img src="_static/logo.png" class="logo__image only-dark" alt="scocp 0.1.7 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples_astrodynamics.html">Astrodynamics Problems</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/ex_pl2pl.html">Pykep Compatible Problems</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">API</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/api.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>API</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scp-algorithms-and-utility-functions">SCP algorithms and utility functions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.SCvxStar"><code class="docutils literal notranslate"><span class="pre">SCvxStar</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.SCvxStar.evaluate_penalty"><code class="docutils literal notranslate"><span class="pre">SCvxStar.evaluate_penalty()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.SCvxStar.plot_DeltaJ"><code class="docutils literal notranslate"><span class="pre">SCvxStar.plot_DeltaJ()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.SCvxStar.plot_J0"><code class="docutils literal notranslate"><span class="pre">SCvxStar.plot_J0()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.SCvxStar.plot_chi"><code class="docutils literal notranslate"><span class="pre">SCvxStar.plot_chi()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.SCvxStar.solve"><code class="docutils literal notranslate"><span class="pre">SCvxStar.solve()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.get_augmented_lagrangian_penalty"><code class="docutils literal notranslate"><span class="pre">get_augmented_lagrangian_penalty()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.MovingTarget"><code class="docutils literal notranslate"><span class="pre">MovingTarget</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.MovingTarget.target_state"><code class="docutils literal notranslate"><span class="pre">MovingTarget.target_state()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.MovingTarget.target_state_derivative"><code class="docutils literal notranslate"><span class="pre">MovingTarget.target_state_derivative()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#continuous-control-problems">Continuous control problems</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#base-class-for-continuous-control-problems">Base class for continuous control problems</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ContinuousControlSCOCP"><code class="docutils literal notranslate"><span class="pre">ContinuousControlSCOCP</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ContinuousControlSCOCP.build_linear_model"><code class="docutils literal notranslate"><span class="pre">ContinuousControlSCOCP.build_linear_model()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ContinuousControlSCOCP.evaluate_nonlinear_constraints"><code class="docutils literal notranslate"><span class="pre">ContinuousControlSCOCP.evaluate_nonlinear_constraints()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ContinuousControlSCOCP.evaluate_nonlinear_dynamics"><code class="docutils literal notranslate"><span class="pre">ContinuousControlSCOCP.evaluate_nonlinear_dynamics()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ContinuousControlSCOCP.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">ContinuousControlSCOCP.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ContinuousControlSCOCP.reset"><code class="docutils literal notranslate"><span class="pre">ContinuousControlSCOCP.reset()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ContinuousControlSCOCP.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">ContinuousControlSCOCP.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-continuous-control-problems">Example continuous control problems</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeContinuousRdv"><code class="docutils literal notranslate"><span class="pre">FixedTimeContinuousRdv</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeContinuousRdv.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">FixedTimeContinuousRdv.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeContinuousRdv.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">FixedTimeContinuousRdv.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeContinuousRdvLogMass"><code class="docutils literal notranslate"><span class="pre">FixedTimeContinuousRdvLogMass</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeContinuousRdvLogMass.evaluate_nonlinear_constraints"><code class="docutils literal notranslate"><span class="pre">FixedTimeContinuousRdvLogMass.evaluate_nonlinear_constraints()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeContinuousRdvLogMass.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">FixedTimeContinuousRdvLogMass.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeContinuousRdvLogMass.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">FixedTimeContinuousRdvLogMass.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousRdv"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousRdv</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousRdv.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousRdv.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousRdv.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousRdv.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousRdvLogMass"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousRdvLogMass</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousRdvLogMass.evaluate_nonlinear_constraints"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousRdvLogMass.evaluate_nonlinear_constraints()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousRdvLogMass.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousRdvLogMass.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousRdvLogMass.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousRdvLogMass.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousMovingTargetRdvLogMass"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousMovingTargetRdvLogMass</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousMovingTargetRdvLogMass.evaluate_nonlinear_constraints"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousMovingTargetRdvLogMass.evaluate_nonlinear_constraints()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousMovingTargetRdvLogMass.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousMovingTargetRdvLogMass.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousMovingTargetRdvLogMass.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousMovingTargetRdvLogMass.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousMovingTargetRdvMass"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousMovingTargetRdvMass</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousMovingTargetRdvMass.evaluate_nonlinear_constraints"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousMovingTargetRdvMass.evaluate_nonlinear_constraints()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousMovingTargetRdvMass.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousMovingTargetRdvMass.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousMovingTargetRdvMass.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousMovingTargetRdvMass.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#impulsive-control-problems">Impulsive control problems</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#base-class-for-impulsive-control-problems">Base class for impulsive control problems</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ImpulsiveControlSCOCP"><code class="docutils literal notranslate"><span class="pre">ImpulsiveControlSCOCP</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ImpulsiveControlSCOCP.evaluate_nonlinear_constraints"><code class="docutils literal notranslate"><span class="pre">ImpulsiveControlSCOCP.evaluate_nonlinear_constraints()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ImpulsiveControlSCOCP.evaluate_nonlinear_dynamics"><code class="docutils literal notranslate"><span class="pre">ImpulsiveControlSCOCP.evaluate_nonlinear_dynamics()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ImpulsiveControlSCOCP.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">ImpulsiveControlSCOCP.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ImpulsiveControlSCOCP.reset"><code class="docutils literal notranslate"><span class="pre">ImpulsiveControlSCOCP.reset()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ImpulsiveControlSCOCP.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">ImpulsiveControlSCOCP.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-impulsive-control-problems">Example impulsive control problems</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeImpulsiveRdv"><code class="docutils literal notranslate"><span class="pre">FixedTimeImpulsiveRdv</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeImpulsiveRdv.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">FixedTimeImpulsiveRdv.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeImpulsiveRdv.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">FixedTimeImpulsiveRdv.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#integrators">Integrators</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ScipyIntegrator"><code class="docutils literal notranslate"><span class="pre">ScipyIntegrator</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ScipyIntegrator.solve"><code class="docutils literal notranslate"><span class="pre">ScipyIntegrator.solve()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="api">
+<h1>API<a class="headerlink" href="#api" title="Link to this heading">#</a></h1>
+<section id="scp-algorithms-and-utility-functions">
+<h2>SCP algorithms and utility functions<a class="headerlink" href="#scp-algorithms-and-utility-functions" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="scocp.SCvxStar">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scocp.</span></span><span class="sig-name descname"><span class="pre">SCvxStar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_opt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_feas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1e-08,</span> <span class="pre">10.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_minimum_trust_region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e+16</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.SCvxStar" title="Link to this definition">#</a></dt>
+<dd><p>SCvx* algorithm for optimal control problems</p>
+<p>Hyperparameters are defined according to <cite>Oguri, 2023</cite> (doi: 10.1109/CDC49753.2023.10383462).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>problem</strong> (<a class="reference internal" href="#scocp.ContinuousControlSCOCP" title="scocp.ContinuousControlSCOCP"><em>ContinuousControlSCOCP</em></a><em> or </em><a class="reference internal" href="#scocp.ImpulsiveControlSCOCP" title="scocp.ImpulsiveControlSCOCP"><em>ImpulsiveControlSCOCP</em></a>) – <cite>SCOCP</cite> instance</p></li>
+<li><p><strong>tol_opt</strong> (<em>float</em>) – optimality tolerance</p></li>
+<li><p><strong>tol_feas</strong> (<em>float</em>) – feasibility tolerance</p></li>
+<li><p><strong>rho0</strong> (<em>float</em>) – step acceptance criterion parameter</p></li>
+<li><p><strong>rho1</strong> (<em>float</em>) – trust-region radius contraction threshold</p></li>
+<li><p><strong>rho2</strong> (<em>float</em>) – trust-region radius expansion threshold</p></li>
+<li><p><strong>alpha1</strong> (<em>float</em>) – trust-region radius contraction factor s.t. r_k+1 = max(r_k/alpha1, r_bounds[0])</p></li>
+<li><p><strong>alpha2</strong> (<em>float</em>) – trust-region radius expansion factor s.t. r_k+1 = min(r_k*alpha2, r_bounds[1])</p></li>
+<li><p><strong>beta</strong> (<em>float</em>) – weight update factor</p></li>
+<li><p><strong>gamma</strong> (<em>float</em>) – update factor forLagrange multiplier update criterion delta</p></li>
+<li><p><strong>r_bounds</strong> (<em>list</em>) – trust region bounds</p></li>
+<li><p><strong>weight_max</strong> (<em>float</em>) – maximum weight</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.SCvxStar.evaluate_penalty">
+<span class="sig-name descname"><span class="pre">evaluate_penalty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gdyn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.SCvxStar.evaluate_penalty" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate penalty function according to Augmented Lagrangian formulation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gdyn</strong> (<em>np.array</em>) – (N-1)-by-nx array of nonlinear dynamics constraints violations</p></li>
+<li><p><strong>g</strong> (<em>np.array</em>) – ng-by-1 array of nonlinear equality constraints violations</p></li>
+<li><p><strong>h</strong> (<em>np.array</em>) – nh-by-1 array of nonlinear inequality constraints violations</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.SCvxStar.plot_DeltaJ">
+<span class="sig-name descname"><span class="pre">plot_DeltaJ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.SCvxStar.plot_DeltaJ" title="Link to this definition">#</a></dt>
+<dd><p>Plot iterations of DeltaJ</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.SCvxStar.plot_J0">
+<span class="sig-name descname"><span class="pre">plot_J0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.SCvxStar.plot_J0" title="Link to this definition">#</a></dt>
+<dd><p>Plot iterations of J0</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.SCvxStar.plot_chi">
+<span class="sig-name descname"><span class="pre">plot_chi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.SCvxStar.plot_chi" title="Link to this definition">#</a></dt>
+<dd><p>Plot iterations of chi</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.SCvxStar.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ubar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vbar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ybar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feasability_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exit_condition_rho</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_all_iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.SCvxStar.solve" title="Link to this definition">#</a></dt>
+<dd><p>Solve optimal control problem via SCvx* algorithm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xbar</strong> (<em>np.array</em>) – N-by-nx array of reference states</p></li>
+<li><p><strong>ubar</strong> (<em>np.array</em>) – N-by-nu array of reference controls</p></li>
+<li><p><strong>vbar</strong> (<em>np.array</em>) – N-by-1 array of reference constraints</p></li>
+<li><p><strong>maxiter</strong> (<em>int</em>) – maximum number of iterations</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – whether to print verbose output</p></li>
+<li><p><strong>feasability_norm</strong> (<em>str</em>) – norm to use for feasibility evaluation</p></li>
+<li><p><strong>debug</strong> (<em>bool</em>) – whether to print debug output</p></li>
+<li><p><strong>exit_condition_rho</strong> (<em>bool</em>) – whether to exit if rho &lt; rho0</p></li>
+<li><p><strong>save_all_iterations</strong> (<em>bool</em>) – whether to save all iterations</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>solution object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>SCPSolution</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="scocp.get_augmented_lagrangian_penalty">
+<span class="sig-prename descclassname"><span class="pre">scocp.</span></span><span class="sig-name descname"><span class="pre">get_augmented_lagrangian_penalty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi_dyn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmb_dyn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmb_eq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zeta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmb_ineq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.get_augmented_lagrangian_penalty" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate augmented Lagrangian penalty function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>weight</strong> (<em>float</em>) – weight of the penalty function</p></li>
+<li><p><strong>xi_dyn</strong> (<em>cp.Variable</em>) – slack variable for dynamics</p></li>
+<li><p><strong>lmb_dyn</strong> (<em>cp.Parameter</em>) – multiplier for dynamics</p></li>
+<li><p><strong>xi</strong> (<em>cp.Variable</em><em>, </em><em>optional</em>) – slack variable for equality constraints</p></li>
+<li><p><strong>lmb_eq</strong> (<em>cp.Parameter</em><em>, </em><em>optional</em>) – multiplier for equality constraints</p></li>
+<li><p><strong>zeta</strong> (<em>cp.Variable</em><em>, </em><em>optional</em>) – slack variable for inequality constraints</p></li>
+<li><p><strong>lmb_ineq</strong> (<em>cp.Parameter</em><em>, </em><em>optional</em>) – multiplier for inequality constraints</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>augmented Lagrangian penalty function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(cp.Expression)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scocp.MovingTarget">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scocp.</span></span><span class="sig-name descname"><span class="pre">MovingTarget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eval_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_state_derivative</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.MovingTarget" title="Link to this definition">#</a></dt>
+<dd><p>Define moving target for rendezvous problem</p>
+<p>We assume the target state equality constraint is of the form</p>
+<dl class="simple">
+<dt>g(r_N,v_N,t_N) = [ r_N - r_ref(t_N)</dt><dd><p>v_N - v_ref(t_N) ]</p>
+</dd>
+</dl>
+<p>where r_ref(t_N) and v_ref(t_N) are the position and velocity of the target at time t_N.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eval_state</strong> (<em>function</em>) – function to evaluate target state</p></li>
+<li><p><strong>eval_state_derivative</strong> (<em>function</em>) – function to evaluate derivative of target state</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.MovingTarget.target_state">
+<span class="sig-name descname"><span class="pre">target_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#scocp.MovingTarget.target_state" title="Link to this definition">#</a></dt>
+<dd><p>Get target state at time t</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.MovingTarget.target_state_derivative">
+<span class="sig-name descname"><span class="pre">target_state_derivative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#scocp.MovingTarget.target_state_derivative" title="Link to this definition">#</a></dt>
+<dd><p>Get target state derivative w.r.t. time</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="continuous-control-problems">
+<h2>Continuous control problems<a class="headerlink" href="#continuous-control-problems" title="Link to this heading">#</a></h2>
+<section id="base-class-for-continuous-control-problems">
+<h3>Base class for continuous control problems<a class="headerlink" href="#base-class-for-continuous-control-problems" title="Link to this heading">#</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="scocp.ContinuousControlSCOCP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scocp.</span></span><span class="sig-name descname"><span class="pre">ContinuousControlSCOCP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">integrator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ng</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ny</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">augment_Gamma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trust_region_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CLARABEL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose_solver</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impulsive_B</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.ContinuousControlSCOCP" title="Link to this definition">#</a></dt>
+<dd><p>Sequentially convexified optimal control problem (SCOCP) for continuous dynamics</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>integrator</strong> (<em>obj</em>) – integrator object</p></li>
+<li><p><strong>times</strong> (<em>np.array</em>) – time grid</p></li>
+<li><p><strong>ng</strong> (<em>int</em>) – number of nonlinear equality constraints, excluding dynamics constraints</p></li>
+<li><p><strong>nh</strong> (<em>int</em>) – number of nonlinear inequality constraints</p></li>
+<li><p><strong>ny</strong> (<em>int</em>) – number of other variables</p></li>
+<li><p><strong>augment_Gamma</strong> (<em>bool</em>) – whether to augment the control with the constraint vector when integrating the dynamics</p></li>
+<li><p><strong>weight</strong> (<em>float</em>) – weight of the objective function</p></li>
+<li><p><strong>trust_region_radius</strong> (<em>float</em>) – trust region radius</p></li>
+<li><p><strong>solver</strong> (<em>str</em>) – solver to use</p></li>
+<li><p><strong>verbose_solver</strong> (<em>bool</em>) – whether to print verbose output</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.ContinuousControlSCOCP.build_linear_model">
+<span class="sig-name descname"><span class="pre">build_linear_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ubar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vbar</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.ContinuousControlSCOCP.build_linear_model" title="Link to this definition">#</a></dt>
+<dd><p>Construct linear model for dynamics multiple-shooting constraints within SCP algorithm
+This function computes the Phi_A, Phi_B, and Phi_c matrices and stores them in the class attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xbar</strong> (<em>np.array</em>) – <cite>(N, self.integrator.nx)</cite> array of state history</p></li>
+<li><p><strong>ubar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nu)</cite> array of control history</p></li>
+<li><p><strong>vbar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nv)</cite> array of constraint history</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.ContinuousControlSCOCP.evaluate_nonlinear_constraints">
+<span class="sig-name descname"><span class="pre">evaluate_nonlinear_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">us</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.ContinuousControlSCOCP.evaluate_nonlinear_constraints" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate nonlinear constraints</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple of 1D arrays of nonlinear equality and inequality constraints</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(tuple)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.ContinuousControlSCOCP.evaluate_nonlinear_dynamics">
+<span class="sig-name descname"><span class="pre">evaluate_nonlinear_dynamics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">us</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.ContinuousControlSCOCP.evaluate_nonlinear_dynamics" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate nonlinear dynamics along given state and control history</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>integrator</strong> (<em>obj</em>) – integrator object</p></li>
+<li><p><strong>times</strong> (<em>np.array</em>) – time grid</p></li>
+<li><p><strong>vs</strong> (<em>np.array</em>) – state history</p></li>
+<li><p><strong>ubar</strong> (<em>np.array</em>) – control history</p></li>
+<li><p><strong>stm</strong> (<em>bool</em>) – whether to propagate STMs, defaults to False</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.ContinuousControlSCOCP.evaluate_objective">
+<span class="sig-name descname"><span class="pre">evaluate_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">us</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.ContinuousControlSCOCP.evaluate_objective" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate the objective function</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.ContinuousControlSCOCP.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scocp.ContinuousControlSCOCP.reset" title="Link to this definition">#</a></dt>
+<dd><p>Reset problem parameters and storages</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.ContinuousControlSCOCP.solve_convex_problem">
+<span class="sig-name descname"><span class="pre">solve_convex_problem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ubar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ybar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.ContinuousControlSCOCP.solve_convex_problem" title="Link to this definition">#</a></dt>
+<dd><p>Solve the convex subproblem</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xbar</strong> (<em>np.array</em>) – <cite>(N, self.integrator.nx)</cite> array of reference state history</p></li>
+<li><p><strong>ubar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nu)</cite> array of reference control history</p></li>
+<li><p><strong>vbar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nv)</cite> array of reference constraint history</p></li>
+<li><p><strong>ybar</strong> (<em>np.array</em>) – <cite>(self.ny,)</cite> other reference variables</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="example-continuous-control-problems">
+<h3>Example continuous control problems<a class="headerlink" href="#example-continuous-control-problems" title="Link to this heading">#</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="scocp.FixedTimeContinuousRdv">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scocp.</span></span><span class="sig-name descname"><span class="pre">FixedTimeContinuousRdv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">umax</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FixedTimeContinuousRdv" title="Link to this definition">#</a></dt>
+<dd><p>Fixed-time continuous rendezvous problem class</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FixedTimeContinuousRdv.evaluate_objective">
+<span class="sig-name descname"><span class="pre">evaluate_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">us</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FixedTimeContinuousRdv.evaluate_objective" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate the objective function</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FixedTimeContinuousRdv.solve_convex_problem">
+<span class="sig-name descname"><span class="pre">solve_convex_problem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ubar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ybar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FixedTimeContinuousRdv.solve_convex_problem" title="Link to this definition">#</a></dt>
+<dd><p>Solve the convex subproblem</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xbar</strong> (<em>np.array</em>) – <cite>(N, self.integrator.nx)</cite> array of reference state history</p></li>
+<li><p><strong>ubar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nu)</cite> array of reference control history</p></li>
+<li><p><strong>vbar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nv)</cite> array of reference constraint history</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array values of xs, us, vs, xi_dyn, xi_eq, zeta_ineq</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scocp.FixedTimeContinuousRdvLogMass">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scocp.</span></span><span class="sig-name descname"><span class="pre">FixedTimeContinuousRdvLogMass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FixedTimeContinuousRdvLogMass" title="Link to this definition">#</a></dt>
+<dd><p>Fixed-time continuous rendezvous problem class with log-mass dynamics</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FixedTimeContinuousRdvLogMass.evaluate_nonlinear_constraints">
+<span class="sig-name descname"><span class="pre">evaluate_nonlinear_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">us</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FixedTimeContinuousRdvLogMass.evaluate_nonlinear_constraints" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate nonlinear constraints</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple of 1D arrays of nonlinear equality and inequality constraints</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(tuple)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FixedTimeContinuousRdvLogMass.evaluate_objective">
+<span class="sig-name descname"><span class="pre">evaluate_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">us</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FixedTimeContinuousRdvLogMass.evaluate_objective" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate the objective function</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FixedTimeContinuousRdvLogMass.solve_convex_problem">
+<span class="sig-name descname"><span class="pre">solve_convex_problem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ubar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ybar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FixedTimeContinuousRdvLogMass.solve_convex_problem" title="Link to this definition">#</a></dt>
+<dd><p>Solve the convex subproblem</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xbar</strong> (<em>np.array</em>) – <cite>(N, self.integrator.nx)</cite> array of reference state history</p></li>
+<li><p><strong>ubar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nu)</cite> array of reference control history</p></li>
+<li><p><strong>vbar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nv)</cite> array of reference constraint history</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scocp.FreeTimeContinuousRdv">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scocp.</span></span><span class="sig-name descname"><span class="pre">FreeTimeContinuousRdv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">umax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf_bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_bounds</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FreeTimeContinuousRdv" title="Link to this definition">#</a></dt>
+<dd><p>Free-time continuous rendezvous problem class
+A good initial guess for the dilation factor <cite>s</cite> is the guessed TOF, since <cite>dt/dtau = s</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x0</strong> (<em>np.array</em>) – initial state</p></li>
+<li><p><strong>xf</strong> (<em>np.array</em>) – final state</p></li>
+<li><p><strong>umax</strong> (<em>float</em>) – maximum control magnitude</p></li>
+<li><p><strong>tf_bounds</strong> (<em>list</em>) – bounds on the final time, given as [tf_min, tf_max]</p></li>
+<li><p><strong>s_bounds</strong> (<em>list</em>) – bounds on time dilation factor, given as [s_min, s_max]</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FreeTimeContinuousRdv.evaluate_objective">
+<span class="sig-name descname"><span class="pre">evaluate_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">us</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FreeTimeContinuousRdv.evaluate_objective" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate the objective function</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FreeTimeContinuousRdv.solve_convex_problem">
+<span class="sig-name descname"><span class="pre">solve_convex_problem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ubar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ybar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FreeTimeContinuousRdv.solve_convex_problem" title="Link to this definition">#</a></dt>
+<dd><p>Solve the convex subproblem</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xbar</strong> (<em>np.array</em>) – <cite>(N, self.integrator.nx)</cite> array of reference state history</p></li>
+<li><p><strong>ubar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nu)</cite> array of reference control history</p></li>
+<li><p><strong>vbar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nv)</cite> array of reference constraint history</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scocp.FreeTimeContinuousRdvLogMass">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scocp.</span></span><span class="sig-name descname"><span class="pre">FreeTimeContinuousRdvLogMass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf_bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FreeTimeContinuousRdvLogMass" title="Link to this definition">#</a></dt>
+<dd><p>Free-time continuous rendezvous problem class with log-mass dynamics</p>
+<p>Note the ordering expected for the state and the control vectors:</p>
+<p>state = [x,y,z,vx,vy,vz,log(mass),t]
+u = [ax, ay, az, s, Gamma] where s is the dilation factor, Gamma is the control magnitude (at convergence)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FreeTimeContinuousRdvLogMass.evaluate_nonlinear_constraints">
+<span class="sig-name descname"><span class="pre">evaluate_nonlinear_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">us</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FreeTimeContinuousRdvLogMass.evaluate_nonlinear_constraints" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate nonlinear constraints</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple of 1D arrays of nonlinear equality and inequality constraints</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(tuple)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FreeTimeContinuousRdvLogMass.evaluate_objective">
+<span class="sig-name descname"><span class="pre">evaluate_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">us</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FreeTimeContinuousRdvLogMass.evaluate_objective" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate the objective function</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FreeTimeContinuousRdvLogMass.solve_convex_problem">
+<span class="sig-name descname"><span class="pre">solve_convex_problem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ubar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ybar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FreeTimeContinuousRdvLogMass.solve_convex_problem" title="Link to this definition">#</a></dt>
+<dd><p>Solve the convex subproblem</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xbar</strong> (<em>np.array</em>) – <cite>(N, self.integrator.nx)</cite> array of reference state history</p></li>
+<li><p><strong>ubar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nu)</cite> array of reference control history</p></li>
+<li><p><strong>vbar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nv)</cite> array of reference constraint history</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scocp.FreeTimeContinuousMovingTargetRdvLogMass">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scocp.</span></span><span class="sig-name descname"><span class="pre">FreeTimeContinuousMovingTargetRdvLogMass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#scocp.MovingTarget" title="scocp._misc.MovingTarget"><span class="pre">MovingTarget</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf_bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FreeTimeContinuousMovingTargetRdvLogMass" title="Link to this definition">#</a></dt>
+<dd><p>Free-time continuous moving target rendezvous problem class with log-mass dynamics</p>
+<p>Note the ordering expected for the state and the control vectors:</p>
+<p>state = [x,y,z,vx,vy,vz,log(mass),t]
+u = [ax, ay, az, s, Gamma] where s is the dilation factor, Gamma is the control magnitude (at convergence)</p>
+<p>The target state is given by a <cite>MovingTarget</cite> object, which result in 6 non-convex equality constraints.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FreeTimeContinuousMovingTargetRdvLogMass.evaluate_nonlinear_constraints">
+<span class="sig-name descname"><span class="pre">evaluate_nonlinear_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">us</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FreeTimeContinuousMovingTargetRdvLogMass.evaluate_nonlinear_constraints" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate nonlinear constraints</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple of 1D arrays of nonlinear equality and inequality constraints</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(tuple)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FreeTimeContinuousMovingTargetRdvLogMass.evaluate_objective">
+<span class="sig-name descname"><span class="pre">evaluate_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">us</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FreeTimeContinuousMovingTargetRdvLogMass.evaluate_objective" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate the objective function</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FreeTimeContinuousMovingTargetRdvLogMass.solve_convex_problem">
+<span class="sig-name descname"><span class="pre">solve_convex_problem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ubar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ybar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FreeTimeContinuousMovingTargetRdvLogMass.solve_convex_problem" title="Link to this definition">#</a></dt>
+<dd><p>Solve the convex subproblem</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xbar</strong> (<em>np.array</em>) – <cite>(N, self.integrator.nx)</cite> array of reference state history</p></li>
+<li><p><strong>ubar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nu)</cite> array of reference control history</p></li>
+<li><p><strong>vbar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nv)</cite> array of reference constraint history</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scocp.FreeTimeContinuousMovingTargetRdvMass">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scocp.</span></span><span class="sig-name descname"><span class="pre">FreeTimeContinuousMovingTargetRdvMass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#scocp.MovingTarget" title="scocp._misc.MovingTarget"><span class="pre">MovingTarget</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf_bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FreeTimeContinuousMovingTargetRdvMass" title="Link to this definition">#</a></dt>
+<dd><p>Free-time continuous moving target rendezvous problem class with mass dynamics</p>
+<p>Note the ordering expected for the state and the control vectors:</p>
+<p>state = [x,y,z,vx,vy,vz,mass,t]
+u = [ux, uy, uz, s, Gamma] where s is the dilation factor, Gamma is the control magnitude (at convergence)</p>
+<p>The target state is given by a <cite>MovingTarget</cite> object, which result in 6 non-convex equality constraints.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FreeTimeContinuousMovingTargetRdvMass.evaluate_nonlinear_constraints">
+<span class="sig-name descname"><span class="pre">evaluate_nonlinear_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">us</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FreeTimeContinuousMovingTargetRdvMass.evaluate_nonlinear_constraints" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate nonlinear constraints</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple of 1D arrays of nonlinear equality and inequality constraints</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(tuple)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FreeTimeContinuousMovingTargetRdvMass.evaluate_objective">
+<span class="sig-name descname"><span class="pre">evaluate_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">us</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FreeTimeContinuousMovingTargetRdvMass.evaluate_objective" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate the objective function</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FreeTimeContinuousMovingTargetRdvMass.solve_convex_problem">
+<span class="sig-name descname"><span class="pre">solve_convex_problem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ubar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ybar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FreeTimeContinuousMovingTargetRdvMass.solve_convex_problem" title="Link to this definition">#</a></dt>
+<dd><p>Solve the convex subproblem</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xbar</strong> (<em>np.array</em>) – <cite>(N, self.integrator.nx)</cite> array of reference state history</p></li>
+<li><p><strong>ubar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nu)</cite> array of reference control history</p></li>
+<li><p><strong>vbar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nv)</cite> array of reference constraint history</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="impulsive-control-problems">
+<h2>Impulsive control problems<a class="headerlink" href="#impulsive-control-problems" title="Link to this heading">#</a></h2>
+<section id="base-class-for-impulsive-control-problems">
+<h3>Base class for impulsive control problems<a class="headerlink" href="#base-class-for-impulsive-control-problems" title="Link to this heading">#</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="scocp.ImpulsiveControlSCOCP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scocp.</span></span><span class="sig-name descname"><span class="pre">ImpulsiveControlSCOCP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">integrator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ng</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ny</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">augment_Gamma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trust_region_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CLARABEL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose_solver</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.ImpulsiveControlSCOCP" title="Link to this definition">#</a></dt>
+<dd><p>Sequentially convexified optimal control problem (SCOCP) for impulsive dynamics</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>integrator</strong> (<em>obj</em>) – integrator object</p></li>
+<li><p><strong>times</strong> (<em>np.array</em>) – time grid</p></li>
+<li><p><strong>ng</strong> (<em>int</em>) – number of nonlinear equality constraints, excluding dynamics constraints</p></li>
+<li><p><strong>nh</strong> (<em>int</em>) – number of nonlinear inequality constraints</p></li>
+<li><p><strong>ny</strong> (<em>int</em>) – number of other variables</p></li>
+<li><p><strong>augment_Gamma</strong> (<em>bool</em>) – whether to augment the control with the constraint vector when integrating the dynamics</p></li>
+<li><p><strong>B</strong> (<em>np.array</em>) – control matrix</p></li>
+<li><p><strong>weight</strong> (<em>float</em>) – weight of the objective function</p></li>
+<li><p><strong>trust_region_radius</strong> (<em>float</em>) – trust region radius</p></li>
+<li><p><strong>solver</strong> (<em>str</em>) – solver to use</p></li>
+<li><p><strong>verbose_solver</strong> (<em>bool</em>) – whether to print verbose output</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.ImpulsiveControlSCOCP.evaluate_nonlinear_constraints">
+<span class="sig-name descname"><span class="pre">evaluate_nonlinear_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">us</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.ImpulsiveControlSCOCP.evaluate_nonlinear_constraints" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate nonlinear constraints</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple of 1D arrays of nonlinear equality and inequality constraints</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(tuple)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.ImpulsiveControlSCOCP.evaluate_nonlinear_dynamics">
+<span class="sig-name descname"><span class="pre">evaluate_nonlinear_dynamics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ubar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.ImpulsiveControlSCOCP.evaluate_nonlinear_dynamics" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate nonlinear dynamics along given state and control history</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>integrator</strong> (<em>obj</em>) – integrator object</p></li>
+<li><p><strong>times</strong> (<em>np.array</em>) – time grid</p></li>
+<li><p><strong>xbar</strong> (<em>np.array</em>) – state history</p></li>
+<li><p><strong>ubar</strong> (<em>np.array</em>) – control history</p></li>
+<li><p><strong>stm</strong> (<em>bool</em>) – whether to propagate STMs, defaults to False</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.ImpulsiveControlSCOCP.evaluate_objective">
+<span class="sig-name descname"><span class="pre">evaluate_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">us</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.ImpulsiveControlSCOCP.evaluate_objective" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate the objective function</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.ImpulsiveControlSCOCP.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scocp.ImpulsiveControlSCOCP.reset" title="Link to this definition">#</a></dt>
+<dd><p>Reset problem parameters and storages</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.ImpulsiveControlSCOCP.solve_convex_problem">
+<span class="sig-name descname"><span class="pre">solve_convex_problem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ubar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ybar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.ImpulsiveControlSCOCP.solve_convex_problem" title="Link to this definition">#</a></dt>
+<dd><p>Solve the convex subproblem</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="example-impulsive-control-problems">
+<h3>Example impulsive control problems<a class="headerlink" href="#example-impulsive-control-problems" title="Link to this heading">#</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="scocp.FixedTimeImpulsiveRdv">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scocp.</span></span><span class="sig-name descname"><span class="pre">FixedTimeImpulsiveRdv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xf</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FixedTimeImpulsiveRdv" title="Link to this definition">#</a></dt>
+<dd><p>Fixed-time impulsive rendezvous problem class</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FixedTimeImpulsiveRdv.evaluate_objective">
+<span class="sig-name descname"><span class="pre">evaluate_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">us</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FixedTimeImpulsiveRdv.evaluate_objective" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate the objective function</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.FixedTimeImpulsiveRdv.solve_convex_problem">
+<span class="sig-name descname"><span class="pre">solve_convex_problem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ubar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vbar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ybar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.FixedTimeImpulsiveRdv.solve_convex_problem" title="Link to this definition">#</a></dt>
+<dd><p>Solve the convex subproblem</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xbar</strong> (<em>np.array</em>) – <cite>(N, self.integrator.nx)</cite> array of reference state history</p></li>
+<li><p><strong>ubar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nu)</cite> array of reference control history</p></li>
+<li><p><strong>vbar</strong> (<em>np.array</em>) – <cite>(N-1, self.integrator.nv)</cite> array of reference constraint history</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array values of xs, us, vs, ys, xi_dyn, xi_eq, zeta_ineq</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="integrators">
+<h2>Integrators<a class="headerlink" href="#integrators" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="scocp.ScipyIntegrator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scocp.</span></span><span class="sig-name descname"><span class="pre">ScipyIntegrator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rhs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rhs_stm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impulsive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RK45'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reltol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abstol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.ScipyIntegrator" title="Link to this definition">#</a></dt>
+<dd><p>Integrator class using <cite>scipy.integrate.solve_ivp</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nx</strong> (<em>int</em>) – dimension of states</p></li>
+<li><p><strong>nu</strong> (<em>int</em>) – dimension of controls</p></li>
+<li><p><strong>rhs</strong> (<em>function</em>) – right-hand side function</p></li>
+<li><p><strong>rhs_stm</strong> (<em>function</em>) – right-hand side function for state transition matrix</p></li>
+<li><p><strong>impulsive</strong> (<em>bool</em>) – whether the dynamics are impulsive</p></li>
+<li><p><strong>nv</strong> (<em>int</em>) – dimensions corresponding to control norms to be augmented</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – integration method</p></li>
+<li><p><strong>reltol</strong> (<em>float</em>) – relative tolerance</p></li>
+<li><p><strong>abstol</strong> (<em>float</em>) – absolute tolerance</p></li>
+<li><p><strong>args</strong> (<em>tuple</em>) – additional arguments for the right-hand side function</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="scocp.ScipyIntegrator.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tspan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_eval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_ODESolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dense_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scocp.ScipyIntegrator.solve" title="Link to this definition">#</a></dt>
+<dd><p>Solve initial value problem</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tspan</strong> (<em>tuple</em>) – time span</p></li>
+<li><p><strong>x0</strong> (<em>np.array</em>) – initial state</p></li>
+<li><p><strong>stm</strong> (<em>bool</em>) – whether to solve for state transition matrix</p></li>
+<li><p><strong>t_eval</strong> (<em>np.array</em>) – evaluation times</p></li>
+<li><p><strong>args</strong> (<em>tuple</em>) – additional arguments for the right-hand side function</p></li>
+<li><p><strong>get_ODESolution</strong> (<em>bool</em>) – whether to return an <cite>ODESolution</cite> object</p></li>
+<li><p><strong>dense_output</strong> (<em>bool</em>) – whether to return a dense output</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if <cite>get_ODESolution</cite> is False, return a tuple of times and state with shape <cite>N-by-nx</cite>
+if <cite>get_ODESolution</cite> is True, return an <cite>ODESolution</cite> object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple or ODESolution)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="examples/ex_pl2pl.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Pykep Compatible Problems</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scp-algorithms-and-utility-functions">SCP algorithms and utility functions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.SCvxStar"><code class="docutils literal notranslate"><span class="pre">SCvxStar</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.SCvxStar.evaluate_penalty"><code class="docutils literal notranslate"><span class="pre">SCvxStar.evaluate_penalty()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.SCvxStar.plot_DeltaJ"><code class="docutils literal notranslate"><span class="pre">SCvxStar.plot_DeltaJ()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.SCvxStar.plot_J0"><code class="docutils literal notranslate"><span class="pre">SCvxStar.plot_J0()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.SCvxStar.plot_chi"><code class="docutils literal notranslate"><span class="pre">SCvxStar.plot_chi()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.SCvxStar.solve"><code class="docutils literal notranslate"><span class="pre">SCvxStar.solve()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.get_augmented_lagrangian_penalty"><code class="docutils literal notranslate"><span class="pre">get_augmented_lagrangian_penalty()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.MovingTarget"><code class="docutils literal notranslate"><span class="pre">MovingTarget</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.MovingTarget.target_state"><code class="docutils literal notranslate"><span class="pre">MovingTarget.target_state()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.MovingTarget.target_state_derivative"><code class="docutils literal notranslate"><span class="pre">MovingTarget.target_state_derivative()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#continuous-control-problems">Continuous control problems</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#base-class-for-continuous-control-problems">Base class for continuous control problems</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ContinuousControlSCOCP"><code class="docutils literal notranslate"><span class="pre">ContinuousControlSCOCP</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ContinuousControlSCOCP.build_linear_model"><code class="docutils literal notranslate"><span class="pre">ContinuousControlSCOCP.build_linear_model()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ContinuousControlSCOCP.evaluate_nonlinear_constraints"><code class="docutils literal notranslate"><span class="pre">ContinuousControlSCOCP.evaluate_nonlinear_constraints()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ContinuousControlSCOCP.evaluate_nonlinear_dynamics"><code class="docutils literal notranslate"><span class="pre">ContinuousControlSCOCP.evaluate_nonlinear_dynamics()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ContinuousControlSCOCP.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">ContinuousControlSCOCP.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ContinuousControlSCOCP.reset"><code class="docutils literal notranslate"><span class="pre">ContinuousControlSCOCP.reset()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ContinuousControlSCOCP.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">ContinuousControlSCOCP.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-continuous-control-problems">Example continuous control problems</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeContinuousRdv"><code class="docutils literal notranslate"><span class="pre">FixedTimeContinuousRdv</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeContinuousRdv.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">FixedTimeContinuousRdv.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeContinuousRdv.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">FixedTimeContinuousRdv.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeContinuousRdvLogMass"><code class="docutils literal notranslate"><span class="pre">FixedTimeContinuousRdvLogMass</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeContinuousRdvLogMass.evaluate_nonlinear_constraints"><code class="docutils literal notranslate"><span class="pre">FixedTimeContinuousRdvLogMass.evaluate_nonlinear_constraints()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeContinuousRdvLogMass.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">FixedTimeContinuousRdvLogMass.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeContinuousRdvLogMass.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">FixedTimeContinuousRdvLogMass.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousRdv"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousRdv</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousRdv.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousRdv.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousRdv.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousRdv.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousRdvLogMass"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousRdvLogMass</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousRdvLogMass.evaluate_nonlinear_constraints"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousRdvLogMass.evaluate_nonlinear_constraints()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousRdvLogMass.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousRdvLogMass.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousRdvLogMass.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousRdvLogMass.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousMovingTargetRdvLogMass"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousMovingTargetRdvLogMass</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousMovingTargetRdvLogMass.evaluate_nonlinear_constraints"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousMovingTargetRdvLogMass.evaluate_nonlinear_constraints()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousMovingTargetRdvLogMass.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousMovingTargetRdvLogMass.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousMovingTargetRdvLogMass.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousMovingTargetRdvLogMass.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousMovingTargetRdvMass"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousMovingTargetRdvMass</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousMovingTargetRdvMass.evaluate_nonlinear_constraints"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousMovingTargetRdvMass.evaluate_nonlinear_constraints()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousMovingTargetRdvMass.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousMovingTargetRdvMass.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FreeTimeContinuousMovingTargetRdvMass.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">FreeTimeContinuousMovingTargetRdvMass.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#impulsive-control-problems">Impulsive control problems</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#base-class-for-impulsive-control-problems">Base class for impulsive control problems</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ImpulsiveControlSCOCP"><code class="docutils literal notranslate"><span class="pre">ImpulsiveControlSCOCP</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ImpulsiveControlSCOCP.evaluate_nonlinear_constraints"><code class="docutils literal notranslate"><span class="pre">ImpulsiveControlSCOCP.evaluate_nonlinear_constraints()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ImpulsiveControlSCOCP.evaluate_nonlinear_dynamics"><code class="docutils literal notranslate"><span class="pre">ImpulsiveControlSCOCP.evaluate_nonlinear_dynamics()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ImpulsiveControlSCOCP.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">ImpulsiveControlSCOCP.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ImpulsiveControlSCOCP.reset"><code class="docutils literal notranslate"><span class="pre">ImpulsiveControlSCOCP.reset()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ImpulsiveControlSCOCP.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">ImpulsiveControlSCOCP.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-impulsive-control-problems">Example impulsive control problems</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeImpulsiveRdv"><code class="docutils literal notranslate"><span class="pre">FixedTimeImpulsiveRdv</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeImpulsiveRdv.evaluate_objective"><code class="docutils literal notranslate"><span class="pre">FixedTimeImpulsiveRdv.evaluate_objective()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.FixedTimeImpulsiveRdv.solve_convex_problem"><code class="docutils literal notranslate"><span class="pre">FixedTimeImpulsiveRdv.solve_convex_problem()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#integrators">Integrators</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ScipyIntegrator"><code class="docutils literal notranslate"><span class="pre">ScipyIntegrator</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#scocp.ScipyIntegrator.solve"><code class="docutils literal notranslate"><span class="pre">ScipyIntegrator.solve()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Yuri Shimane
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Yuri Shimane.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
