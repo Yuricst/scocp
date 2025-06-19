@@ -82,12 +82,12 @@ class MyOptimalControlProblem(scocp.ContinuousControlSCOCP):
         xs = cp.Variable((N, nx), name='state')
         us = cp.Variable((N, nu), name='control')
         gs = cp.Variable((N, 1),  name='Gamma')
-        ts = cp.Variable((N, 1),  name='ys')
+        ys = cp.Variable((N, 1),  name='ys')
         xis_dyn = cp.Variable((N-1,nx), name='xi_dyn')   # slacks for dynamics constraints
         xis     = cp.Variable(self.ng, name='xi')        # slacks for non-dynamics equality constraints
         zetas   = cp.Variable(self.nh, name='xi')        # slacks for inequality constraints
         # (formulate & solve OCP)
-        return xs.value, us.value, gs.value, ys.value, xis.value, xis.value, zetas.value
+        return xs.value, us.value, gs.value, ys.value, xis_dyn.value, xis.value, zetas.value
 
     def evaluate_nonlinear_constraints(self, xs, us, gs, ys=None):
         g_eval = ...        # array of nonlinear equality constraints evaluated along `xs`, `us`, `gs`
