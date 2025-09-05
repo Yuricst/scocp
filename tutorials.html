@@ -1,0 +1,738 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Tutorials &#8212; scocp 0.1.7 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=3476fdda"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Astrodynamics Problems" href="examples_astrodynamics.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="scocp 0.1.7 documentation - Home"/>
+    <script>document.write(`<img src="_static/logo.png" class="logo__image only-dark" alt="scocp 0.1.7 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples_astrodynamics.html">Astrodynamics Problems</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/ex_pl2pl.html">Pykep Compatible Problems</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/tutorials.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Tutorials</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-the-dynamics">Setting up the dynamics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-my-scocp">Building my SCOCP</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#solving-my-scocp">Solving my SCOCP</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="tutorials">
+<h1>Tutorials<a class="headerlink" href="#tutorials" title="Link to this heading">#</a></h1>
+<section id="setting-up-the-dynamics">
+<h2>Setting up the dynamics<a class="headerlink" href="#setting-up-the-dynamics" title="Link to this heading">#</a></h2>
+<p>We first need to define the dynamics.
+As an example, we will assume we want to solve a fixed-time, continuous control rendez-vous problem in the CR3BP.
+We will define a <code class="docutils literal notranslate"><span class="pre">scocp.ScipyIntegrator</span></code> class. Note that instead, we could have constructed a <code class="docutils literal notranslate"><span class="pre">scocp.HeyokaIntegrator</span></code> class.</p>
+<p>First, we need to construct two equations of motion: one to propagate the state, and another to propagate the state and state-transition matrices.
+As a convention, the <em>last</em> parameter is expected to be the control vector <code class="docutils literal notranslate"><span class="pre">u</span></code>. If building a <code class="docutils literal notranslate"><span class="pre">heyoka</span></code> integrator, make sure the parameters <code class="docutils literal notranslate"><span class="pre">hy.par[:]</span></code> is the control vector <code class="docutils literal notranslate"><span class="pre">u</span></code>.</p>
+<p>To define the first equations of motion for the state with control, <code class="docutils literal notranslate"><span class="pre">control_rhs_cr3bp</span></code>, let’s first define the natural dynamics <code class="docutils literal notranslate"><span class="pre">rhs_cr3bp</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">rhs_cr3bp</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">mu</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Equation of motion in CR3BP, formulated for scipy.integrate.solve=ivp(), compatible with njit</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        t (float): time</span>
+<span class="sd">        state (np.array): 1D array of Cartesian state, length 6</span>
+<span class="sd">        mu (float): CR3BP parameter</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (np.array): 1D array of derivative of Cartesian state</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># unpack positions</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="c1"># unpack velocities</span>
+    <span class="n">vx</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">vy</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">vz</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+    <span class="c1"># compute radii to each primary</span>
+    <span class="n">r1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">x</span> <span class="o">+</span> <span class="n">mu</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">y</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">r2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">mu</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">y</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="c1"># setup vector for dX/dt</span>
+    <span class="n">deriv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">6</span><span class="p">,))</span>
+    <span class="c1"># position derivatives</span>
+    <span class="n">deriv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">vx</span>
+    <span class="n">deriv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">vy</span>
+    <span class="n">deriv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">vz</span>
+    <span class="c1"># velocity derivatives</span>
+    <span class="n">deriv</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="mi">2</span> <span class="o">*</span> <span class="n">vy</span> <span class="o">+</span> <span class="n">x</span> <span class="o">-</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">r1</span> <span class="o">**</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">mu</span> <span class="o">+</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">mu</span> <span class="o">/</span> <span class="n">r2</span> <span class="o">**</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">mu</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">deriv</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">vx</span> <span class="o">+</span> <span class="n">y</span> <span class="o">-</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">r1</span> <span class="o">**</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">y</span> <span class="o">-</span> <span class="p">(</span><span class="n">mu</span> <span class="o">/</span> <span class="n">r2</span> <span class="o">**</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">y</span>
+    <span class="n">deriv</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">r1</span> <span class="o">**</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">z</span> <span class="o">-</span> <span class="p">(</span><span class="n">mu</span> <span class="o">/</span> <span class="n">r2</span> <span class="o">**</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">z</span>
+    <span class="k">return</span> <span class="n">deriv</span>
+</pre></div>
+</div>
+<p>and now the controlled eom</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">control_rhs_cr3bp</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Equation of motion in CR3BP with continuous control in the rotating frame&quot;&quot;&quot;</span>
+    <span class="c1"># derivative of state</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)))</span>
+    <span class="n">deriv</span> <span class="o">=</span> <span class="n">rhs_cr3bp</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">state</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">],</span> <span class="n">mu</span><span class="p">)</span> <span class="o">+</span> <span class="n">B</span> <span class="o">@</span> <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">deriv</span>
+</pre></div>
+</div>
+<p>Now, let’s define the second equations of motion <code class="docutils literal notranslate"><span class="pre">control_rhs_cr3bp_stm</span></code>, which propagates both the state and the state-transition matrices</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">control_rhs_cr3bp_stm</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Equation of motion in CR3BP with continuous control in the rotating frame with STM&quot;&quot;&quot;</span>
+    <span class="c1"># derivative of state</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)))</span>
+    <span class="n">deriv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>    <span class="c1"># 6 + 6*6 + 6*3</span>
+    <span class="n">deriv</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="n">rhs_cr3bp</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">state</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">],</span> <span class="n">mu</span><span class="p">)</span> <span class="o">+</span> <span class="n">B</span> <span class="o">@</span> <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+    
+    <span class="c1"># derivative of STM</span>
+    <span class="n">Phi_A</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="mi">6</span><span class="p">:</span><span class="mi">42</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+    <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">A</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">A</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span>
+    <span class="n">A</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">gravity_gradient_cr3bp</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">mu</span><span class="p">)</span>
+    <span class="n">deriv</span><span class="p">[</span><span class="mi">6</span><span class="p">:</span><span class="mi">42</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">Phi_A</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">36</span><span class="p">,)</span>
+
+    <span class="c1"># derivative of control sensitivity</span>
+    <span class="n">Phi_B</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="mi">42</span><span class="p">:</span><span class="mi">60</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">deriv</span><span class="p">[</span><span class="mi">42</span><span class="p">:</span><span class="mi">60</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">Phi_B</span><span class="p">)</span> <span class="o">+</span> <span class="n">B</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">18</span><span class="p">,)</span>
+    <span class="k">return</span> <span class="n">deriv</span>
+</pre></div>
+</div>
+<p>Finally, we can construct an integrator</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mu</span> <span class="o">=</span> <span class="mf">1.215058560962404e-02</span>
+<span class="n">integrator</span> <span class="o">=</span> <span class="n">scocp</span><span class="o">.</span><span class="n">ScipyIntegrator</span><span class="p">(</span>
+    <span class="n">nx</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+    <span class="n">nu</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">rhs</span><span class="o">=</span><span class="n">control_rhs_cr3bp</span><span class="p">,</span>          <span class="c1"># equivalent to scocp.control_rhs_cr3bp,</span>
+    <span class="n">rhs_stm</span><span class="o">=</span><span class="n">control_rhs_cr3bp_stm</span><span class="p">,</span>  <span class="c1"># equivalent to scocp.control_rhs_cr3bp_stm,</span>
+    <span class="n">impulsive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">mu</span><span class="p">,[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]),</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;DOP853&#39;</span><span class="p">,</span>
+    <span class="n">reltol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">,</span>
+    <span class="n">abstol</span><span class="o">=</span><span class="mf">1e-12</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="building-my-scocp">
+<h2>Building my SCOCP<a class="headerlink" href="#building-my-scocp" title="Link to this heading">#</a></h2>
+<p>Let’s define some constants for our problem</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># propagate uncontrolled and controlled dynamics</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="mf">1.0809931218390707E+00</span><span class="p">,</span>
+    <span class="mf">0.0</span><span class="p">,</span>
+    <span class="o">-</span><span class="mf">2.0235953267405354E-01</span><span class="p">,</span>
+    <span class="mf">0.0</span><span class="p">,</span>
+    <span class="o">-</span><span class="mf">1.9895001215078018E-01</span><span class="p">,</span>
+    <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">period_0</span> <span class="o">=</span> <span class="mf">2.3538670417546639E+00</span>
+<span class="n">sol_lpo0</span> <span class="o">=</span> <span class="n">integrator</span><span class="o">.</span><span class="n">solve</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">period_0</span><span class="p">],</span> <span class="n">x0</span><span class="p">,</span> <span class="n">get_ODESolution</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">xf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="mf">1.1648780946517576</span><span class="p">,</span>
+    <span class="mf">0.0</span><span class="p">,</span>
+    <span class="o">-</span><span class="mf">1.1145303634437023E-1</span><span class="p">,</span>
+    <span class="mf">0.0</span><span class="p">,</span>
+    <span class="o">-</span><span class="mf">2.0191923237095796E-1</span><span class="p">,</span>
+    <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">period_f</span> <span class="o">=</span> <span class="mf">3.3031221822879884</span>
+<span class="n">sol_lpo1</span> <span class="o">=</span> <span class="n">integrator</span><span class="o">.</span><span class="n">solve</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">period_f</span><span class="p">],</span> <span class="n">xf</span><span class="p">,</span> <span class="n">get_ODESolution</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># transfer problem discretization</span>
+<span class="n">N</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">tf</span> <span class="o">=</span> <span class="p">(</span><span class="n">period_0</span> <span class="o">+</span> <span class="n">period_f</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+<span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">tf</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+<span class="n">umax</span> <span class="o">=</span> <span class="mf">0.3</span>  <span class="c1"># max acceleration</span>
+</pre></div>
+</div>
+<p>We now define a SCOCP instance, by inheriting <code class="docutils literal notranslate"><span class="pre">scocp.ContinuousControlSCOCP</span></code>.
+Note the <code class="docutils literal notranslate"><span class="pre">MySCOCP</span></code> defined below is actually what’s implemented as <code class="docutils literal notranslate"><span class="pre">scocp.FixedTimeContinuousRdv</span></code>, but we will explicitly define it here and see what it takes to define our own SCOCP.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MySCOCP</span><span class="p">(</span><span class="n">scocp</span><span class="o">.</span><span class="n">ContinuousControlSCOCP</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fixed-time continuous rendezvous problem class&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">xf</span><span class="p">,</span> <span class="n">umax</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">xf</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x0</span> <span class="o">=</span> <span class="n">x0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xf</span> <span class="o">=</span> <span class="n">xf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">umax</span> <span class="o">=</span> <span class="n">umax</span>
+        <span class="k">return</span>
+        
+    <span class="k">def</span> <span class="nf">evaluate_objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">us</span><span class="p">,</span> <span class="n">gs</span><span class="p">,</span> <span class="n">ys</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate the objective function&quot;&quot;&quot;</span>
+        <span class="n">dts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">times</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">gs</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">dts</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">solve_convex_problem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xbar</span><span class="p">,</span> <span class="n">ubar</span><span class="p">,</span> <span class="n">vbar</span><span class="p">,</span> <span class="n">ybar</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Solve the convex subproblem</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            xbar (np.array): `(N, self.integrator.nx)` array of reference state history</span>
+<span class="sd">            ubar (np.array): `(N-1, self.integrator.nu)` array of reference control history</span>
+<span class="sd">            vbar (np.array): `(N-1, self.integrator.nv)` array of reference constraint history</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (tuple): np.array values of xs, us, gs, xi_dyn, xi_eq, zeta_ineq</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">N</span><span class="p">,</span><span class="n">nx</span> <span class="o">=</span> <span class="n">xbar</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">_</span><span class="p">,</span><span class="n">nu</span> <span class="o">=</span> <span class="n">ubar</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">Nseg</span> <span class="o">=</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span>
+        
+        <span class="n">xs</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">Variable</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">nx</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;state&#39;</span><span class="p">)</span>
+        <span class="n">us</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">Variable</span><span class="p">((</span><span class="n">Nseg</span><span class="p">,</span> <span class="n">nu</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;control&#39;</span><span class="p">)</span>
+        <span class="n">vs</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">Variable</span><span class="p">((</span><span class="n">Nseg</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Gamma&#39;</span><span class="p">)</span>
+        <span class="n">xis_dyn</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">Variable</span><span class="p">((</span><span class="n">Nseg</span><span class="p">,</span><span class="n">nx</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;xi_dyn&#39;</span><span class="p">)</span>         <span class="c1"># slack for dynamics</span>
+        
+        <span class="n">penalty</span> <span class="o">=</span> <span class="n">get_augmented_lagrangian_penalty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">xis_dyn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmb_dynamics</span><span class="p">)</span>
+        <span class="n">dts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">times</span><span class="p">)</span>
+        <span class="n">objective_func</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">vs</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">dts</span><span class="p">)</span> <span class="o">+</span> <span class="n">penalty</span>
+        <span class="n">constraints_objsoc</span> <span class="o">=</span> <span class="p">[</span><span class="n">cp</span><span class="o">.</span><span class="n">SOC</span><span class="p">(</span><span class="n">vs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">us</span><span class="p">[</span><span class="n">i</span><span class="p">,:])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">augment_Gamma</span><span class="p">:</span>
+            <span class="n">constraints_dyn</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">xs</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">Phi_A</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:]</span> <span class="o">@</span> <span class="n">xs</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">Phi_B</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:]</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">us</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span> <span class="n">vs</span><span class="p">[</span><span class="n">i</span><span class="p">,:]])</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">Phi_c</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">+</span> <span class="n">xis_dyn</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Nseg</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">constraints_dyn</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">xs</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">Phi_A</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:]</span> <span class="o">@</span> <span class="n">xs</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">Phi_B</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:]</span> <span class="o">@</span> <span class="n">us</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">Phi_c</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">+</span> <span class="n">xis_dyn</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Nseg</span><span class="p">)</span>
+            <span class="p">]</span>
+
+        <span class="n">constraints_trustregion</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">xs</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">xbar</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_region_radius</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+        <span class="p">]</span> <span class="o">+</span> <span class="p">[</span>
+            <span class="n">xs</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">xbar</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_region_radius</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="n">constraints_initial</span> <span class="o">=</span> <span class="p">[</span><span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">x0</span><span class="p">]</span>
+        <span class="n">constraints_final</span>   <span class="o">=</span> <span class="p">[</span><span class="n">xs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">xf</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">],</span> 
+                               <span class="n">xs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">xf</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]]</span>
+        
+        <span class="n">constraints_control</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">vs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">umax</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Nseg</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="n">convex_problem</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">Problem</span><span class="p">(</span>
+            <span class="n">cp</span><span class="o">.</span><span class="n">Minimize</span><span class="p">(</span><span class="n">objective_func</span><span class="p">),</span>
+            <span class="n">constraints_objsoc</span> <span class="o">+</span> <span class="n">constraints_dyn</span> <span class="o">+</span> <span class="n">constraints_trustregion</span> <span class="o">+</span> <span class="n">constraints_initial</span> <span class="o">+</span> <span class="n">constraints_final</span> <span class="o">+</span> <span class="n">constraints_control</span><span class="p">)</span>
+        <span class="n">convex_problem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose_solver</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cp_status</span> <span class="o">=</span> <span class="n">convex_problem</span><span class="o">.</span><span class="n">status</span>
+        <span class="k">return</span> <span class="n">xs</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">us</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">vs</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">xis_dyn</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<p>There are two methods that are defined (on top of the inherited methods from <code class="docutils literal notranslate"><span class="pre">scocp.ContinuousControlSCOCP</span></code>):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">evaluate_objective</span></code>: evaluate the objective function (without any penalty)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solve_convex_problem</span></code>: constructs and solves the convex subproblem and returns the optimized variable values. It is expected to return 7 np.array’s, corresponding to:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">xs.value</span></code>: <code class="docutils literal notranslate"><span class="pre">(N,nx)</span></code> state history</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">us.value</span></code>: <code class="docutils literal notranslate"><span class="pre">(N-1,nu)</span></code> control history</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vs.value</span></code>: <code class="docutils literal notranslate"><span class="pre">(N,self.integrator.nv)</span></code> control magnitude history (used to upper-bound control magnitudes)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ys.value</span></code>: <code class="docutils literal notranslate"><span class="pre">(ny,)</span></code> additional variables (we don’t have any here, so we return <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">xis_dyn.value</span></code>: <code class="docutils literal notranslate"><span class="pre">(N-1,nx)</span></code> slack variables for dynamics non-convex equality constraints</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">xis.value</span></code>: <code class="docutils literal notranslate"><span class="pre">(ng,)</span></code> slack variables for other non-convex equality constraints (we don’t have any here, so we return <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">zetas.value</span></code>: <code class="docutils literal notranslate"><span class="pre">(nh,)</span></code> slack variables for other non-convex equality constraints (we don’t have any here, so we return <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p></li>
+</ol>
+</li>
+</ul>
+<p>Note that by inheriting <code class="docutils literal notranslate"><span class="pre">scocp.ContinuousControlSCOCP</span></code>, we already have built-in a <code class="docutils literal notranslate"><span class="pre">build_linear_model</span></code> method which will populate the linearized matrices <code class="docutils literal notranslate"><span class="pre">self.Phi_A</span></code>, <code class="docutils literal notranslate"><span class="pre">self.Phi_B</span></code>, and <code class="docutils literal notranslate"><span class="pre">self.Phi_c</span></code> to define our linearized dynamics constraints!</p>
+<p>Here, we assume we have no non-convex constraints besides the dynamics equality constraints, so we do not need to define an <code class="docutils literal notranslate"><span class="pre">evaluate_nonlinear_constraints</span></code> method.</p>
+</section>
+<section id="solving-my-scocp">
+<h2>Solving my SCOCP<a class="headerlink" href="#solving-my-scocp" title="Link to this heading">#</a></h2>
+<p>Let’s now go over solving the above problem. We first need to construct some initial guess</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># create initial guess</span>
+<span class="n">sol_initial</span> <span class="o">=</span> <span class="n">integrator</span><span class="o">.</span><span class="n">solve</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span> <span class="n">x0</span><span class="p">,</span> <span class="n">t_eval</span><span class="o">=</span><span class="n">times</span><span class="p">,</span> <span class="n">get_ODESolution</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">sol_final</span>  <span class="o">=</span> <span class="n">integrator</span><span class="o">.</span><span class="n">solve</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span> <span class="n">xf</span><span class="p">,</span> <span class="n">t_eval</span><span class="o">=</span><span class="n">times</span><span class="p">,</span> <span class="n">get_ODESolution</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">alphas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">N</span><span class="p">)</span>
+<span class="n">xbar</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">sol_initial</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">alphas</span><span class="p">,</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">sol_final</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">alphas</span><span class="p">,</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">1</span><span class="p">))))</span><span class="o">.</span><span class="n">T</span>
+<span class="n">xbar</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">x0</span>  <span class="c1"># overwrite initial state</span>
+<span class="n">xbar</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">xf</span> <span class="c1"># overwrite final state</span>
+<span class="n">ubar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Let’s see if we can solve our convex subproblem (this is not a necessary step, but just for sanity check!)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># solve subproblem</span>
+<span class="n">vbar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ubar</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">problem</span><span class="o">.</span><span class="n">solve_convex_problem</span><span class="p">(</span><span class="n">xbar</span><span class="p">,</span> <span class="n">ubar</span><span class="p">,</span> <span class="n">vbar</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">problem</span><span class="o">.</span><span class="n">cp_status</span> <span class="o">==</span> <span class="s2">&quot;optimal&quot;</span>
+</pre></div>
+</div>
+<p>Let’s now setup the SCvx* algorithm and solve the non-convex OCP</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># setup algorithm &amp; solve</span>
+<span class="n">tol_feas</span> <span class="o">=</span> <span class="mf">1e-10</span>
+<span class="n">tol_opt</span> <span class="o">=</span> <span class="mf">1e-4</span>
+<span class="n">algo</span> <span class="o">=</span> <span class="n">scocp</span><span class="o">.</span><span class="n">SCvxStar</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">tol_opt</span><span class="o">=</span><span class="n">tol_opt</span><span class="p">,</span> <span class="n">tol_feas</span><span class="o">=</span><span class="n">tol_feas</span><span class="p">,</span> <span class="n">alpha2</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">algo</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span>
+    <span class="n">xbar</span><span class="p">,</span>
+    <span class="n">ubar</span><span class="p">,</span>
+    <span class="n">vbar</span><span class="p">,</span>
+    <span class="n">maxiter</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">xopt</span><span class="p">,</span> <span class="n">uopt</span><span class="p">,</span> <span class="n">vopt</span><span class="p">,</span> <span class="n">yopt</span><span class="p">,</span> <span class="n">sols</span><span class="p">,</span> <span class="n">summary_dict</span> <span class="o">=</span> <span class="n">solution</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">solution</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="n">solution</span><span class="o">.</span><span class="n">v</span><span class="p">,</span> <span class="n">solution</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">solution</span><span class="o">.</span><span class="n">sols</span><span class="p">,</span> <span class="n">solution</span><span class="o">.</span><span class="n">summary_dict</span>
+<span class="k">assert</span> <span class="n">summary_dict</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Optimal&quot;</span>
+<span class="k">assert</span> <span class="n">summary_dict</span><span class="p">[</span><span class="s2">&quot;chi&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">tol_feas</span>
+
+<span class="c1"># evaluate nonlinear violations</span>
+<span class="n">geq_nl_opt</span><span class="p">,</span> <span class="n">sols</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">evaluate_nonlinear_dynamics</span><span class="p">(</span><span class="n">xopt</span><span class="p">,</span> <span class="n">uopt</span><span class="p">,</span> <span class="n">vopt</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">geq_nl_opt</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="n">tol_feas</span>
+</pre></div>
+</div>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">|  Iter  |     J0      |   Delta J   |   Delta L   |    chi     |     rho     |     r      |   weight   | step acpt. |</span>
+<span class="go">     1   |  2.2739e-10 |  1.7489e+01 |  1.9742e+01 | 1.1932e-01 |  8.8587e-01 | 1.0000e-01 | 1.0000e+02 |    yes     |</span>
+<span class="go">     2   |  2.4175e-11 |  8.3132e+00 |  1.0340e+01 | 7.2199e-02 |  8.0398e-01 | 1.5000e-01 | 2.0000e+02 |    yes     |</span>
+<span class="go">     3   |  2.2398e-02 | -3.0761e+00 |  9.7306e+00 | 1.0033e-01 | -3.1612e-01 | 2.2500e-01 | 4.0000e+02 |    no      |</span>
+<span class="go">     4   |  2.5404e-02 |  3.8731e+00 |  9.7072e+00 | 7.4989e-02 |  3.9899e-01 | 1.1250e-01 | 4.0000e+02 |    yes     |</span>
+<span class="go">     5   |  1.9278e-01 |  1.4197e+01 |  2.6724e+01 | 7.1406e-02 |  5.3123e-01 | 1.1250e-01 | 8.0000e+02 |    yes     |</span>
+<span class="go">     6   |  1.5384e-01 |  6.8193e+00 |  1.2567e+01 | 3.7230e-02 |  5.4262e-01 | 1.1250e-01 | 8.0000e+02 |    yes     |</span>
+<span class="go">     7   |  2.2936e-01 |  1.3185e+01 |  1.3279e+01 | 2.7903e-02 |  9.9291e-01 | 1.1250e-01 | 1.6000e+03 |    yes     |</span>
+<span class="go">     8   |  2.0723e-01 | -2.4345e+00 |  1.1287e-01 | 4.0832e-02 | -2.1569e+01 | 1.6875e-01 | 1.6000e+03 |    no      |</span>
+<span class="go">     9   |  2.1206e-01 | -1.4361e-01 |  1.1082e-01 | 3.2106e-02 | -1.2959e+00 | 8.4375e-02 | 1.6000e+03 |    no      |</span>
+<span class="go">    10   |  2.1950e-01 |  8.9891e-02 |  1.0612e-01 | 2.9201e-02 |  8.4708e-01 | 4.2188e-02 | 1.6000e+03 |    yes     |</span>
+
+<span class="go">|  Iter  |     J0      |   Delta J   |   Delta L   |    chi     |     rho     |     r      |   weight   | step acpt. |</span>
+<span class="go">    11   |  1.9400e-01 |  6.3894e+00 |  6.4175e+00 | 8.1784e-04 |  9.9562e-01 | 6.3281e-02 | 3.2000e+03 |    yes     |</span>
+<span class="go">    12   |  1.9906e-01 |  2.7403e-02 |  5.8542e-02 | 5.5369e-04 |  4.6809e-01 | 9.4922e-02 | 6.4000e+03 |    yes     |</span>
+<span class="go">    13   |  1.9658e-01 |  5.4702e-02 |  5.4863e-02 | 6.7060e-04 |  9.9708e-01 | 9.4922e-02 | 1.2800e+04 |    yes     |</span>
+<span class="go">    14   |  1.9674e-01 |  2.5814e-02 |  2.9075e-02 | 2.3998e-04 |  8.8784e-01 | 1.4238e-01 | 2.5600e+04 |    yes     |</span>
+<span class="go">    15   |  1.9677e-01 |  1.2429e-02 |  1.3145e-02 | 5.2697e-05 |  9.4554e-01 | 2.1357e-01 | 5.1200e+04 |    yes     |</span>
+<span class="go">    16   |  1.9675e-01 | -1.8190e-04 |  3.5873e-04 | 1.2053e-05 | -5.0706e-01 | 3.2036e-01 | 1.0240e+05 |    no      |</span>
+<span class="go">    17   |  1.9675e-01 | -1.8194e-04 |  3.5873e-04 | 1.2051e-05 | -5.0716e-01 | 1.6018e-01 | 1.0240e+05 |    no      |</span>
+<span class="go">    18   |  1.9675e-01 | -1.8200e-04 |  3.5874e-04 | 1.2050e-05 | -5.0734e-01 | 8.0090e-02 | 1.0240e+05 |    no      |</span>
+<span class="go">    19   |  1.9675e-01 | -1.8189e-04 |  3.5873e-04 | 1.2050e-05 | -5.0704e-01 | 4.0045e-02 | 1.0240e+05 |    no      |</span>
+<span class="go">    20   |  1.9675e-01 | -1.8186e-04 |  3.5873e-04 | 1.2051e-05 | -5.0694e-01 | 2.0023e-02 | 1.0240e+05 |    no      |</span>
+
+<span class="go">|  Iter  |     J0      |   Delta J   |   Delta L   |    chi     |     rho     |     r      |   weight   | step acpt. |</span>
+<span class="go">    21   |  1.9676e-01 |  5.4032e-05 |  3.5172e-04 | 4.9687e-06 |  1.5362e-01 | 1.0011e-02 | 1.0240e+05 |    yes     |</span>
+<span class="go">    22   |  1.9676e-01 |  9.2034e-05 |  9.7191e-05 | 1.3518e-05 |  9.4694e-01 | 5.0056e-03 | 2.0480e+05 |    yes     |</span>
+<span class="go">    23   |  1.9675e-01 |  1.6716e-04 |  1.7028e-04 | 3.3025e-07 |  9.8173e-01 | 7.5085e-03 | 4.0960e+05 |    yes     |</span>
+<span class="go">    24   |  1.9675e-01 |  2.3888e-06 |  2.7693e-06 | 3.4822e-07 |  8.6259e-01 | 1.1263e-02 | 8.1920e+05 |    yes     |</span>
+<span class="go">    25   |  1.9675e-01 |  3.8691e-07 |  3.8721e-07 | 1.0924e-07 |  9.9922e-01 | 1.6894e-02 | 1.6384e+06 |    yes     |</span>
+<span class="go">    26   |  1.9675e-01 |  9.9912e-08 |  9.9900e-08 | 1.9313e-09 |  1.0001e+00 | 2.5341e-02 | 3.2768e+06 |    yes     |</span>
+<span class="go">    27   |  1.9675e-01 | -5.9994e-10 | -6.0173e-10 | 4.3375e-11 |  9.9703e-01 | 3.8012e-02 | 6.5536e+06 |    yes     |</span>
+
+
+<span class="go">    SCvx* algorithm summary:</span>
+<span class="go">        Status                          : Optimal</span>
+<span class="go">        Objective value                 : 1.96745700e-01</span>
+<span class="go">        Penalized objective improvement : -5.99943928e-10 (tol: 1.0000e-04)</span>
+<span class="go">        Constraint violation            : 4.33754005e-11 (tol: 1.0000e-10)</span>
+<span class="go">        Total iterations                : 27</span>
+<span class="go">        SCvx* algorithm time            : 3.3973 seconds</span>
+</pre></div>
+</div>
+<p><img alt="CR3BP continuous control rendezvous" src="_images/example_continuous_rdv.png" /></p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="installation.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Installation</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="examples_astrodynamics.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Astrodynamics Problems</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-the-dynamics">Setting up the dynamics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-my-scocp">Building my SCOCP</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#solving-my-scocp">Solving my SCOCP</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Yuri Shimane
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Yuri Shimane.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
