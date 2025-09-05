@@ -86,10 +86,16 @@ class scocp_pl2pl_warmstart(scocp_pl2pl):
 
         # trust region constraints 
         constraints_trustregion = [
-            self.xs[i,:] - self.xbar[i,:] <= self.trust_region_radius for i in range(N)
+            self.xs[i,:] - self.xbar[i,:] <= self.trust_region_radius_x for i in range(N)
         ] + [
-            self.xs[i,:] - self.xbar[i,:] >= -self.trust_region_radius for i in range(N)
+            self.xs[i,:] - self.xbar[i,:] >= -self.trust_region_radius_x for i in range(N)
         ]
+        if self.trust_region_radius_u is not None:
+            constraints_trustregion += [
+                self.us[i,:] - self.ubar[i,:] <= self.trust_region_radius_u for i in range(Nseg)
+            ] + [
+                self.us[i,:] - self.ubar[i,:] >= -self.trust_region_radius_u for i in range(Nseg)
+            ]
 
         # boundary conditions
         constraints_boundary = [
