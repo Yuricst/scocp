@@ -61,10 +61,16 @@ class FixedTimeContinuousRdv(ContinuousControlSCOCP):
             ]
 
         constraints_trustregion = [
-            xs[i,:] - xbar[i,:] <= self.trust_region_radius for i in range(N)
+            xs[i,:] - xbar[i,:] <=  self.trust_region_radius_x for i in range(N)
         ] + [
-            xs[i,:] - xbar[i,:] >= -self.trust_region_radius for i in range(N)
+            xs[i,:] - xbar[i,:] >= -self.trust_region_radius_x for i in range(N)
         ]
+        if self.trust_region_radius_u is not None:
+            constraints_trustregion += [
+                us[i,:] - ubar[i,:] <=  self.trust_region_radius_u for i in range(Nseg)
+            ] + [
+                us[i,:] - ubar[i,:] >= -self.trust_region_radius_u for i in range(Nseg)
+            ]
 
         constraints_initial = [xs[0,:] == self.x0]
         constraints_final   = [xs[-1,0:3] == self.xf[0:3], 

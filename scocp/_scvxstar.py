@@ -185,7 +185,8 @@ class SCvxStar:
             "DeltaL": [],
             "accept": [],
             "weight": self.problem.weight,
-            "trust_region_radius": self.problem.trust_region_radius,
+            "trust_region_radius_x": self.problem.trust_region_radius_x,
+            "trust_region_radius_u": self.problem.trust_region_radius_u,
             "rho": self.rho0,
             "t_cvx": [],
             "t_scp": [],
@@ -251,7 +252,7 @@ class SCvxStar:
             if verbose:
                 if np.mod(k, print_frequency) == 0:
                     print(f"\n{header}")
-                print(f"   {k+1:3d}   | {J0: 1.4e} | {DeltaJ: 1.4e} | {DeltaL: 1.4e} | {chi:1.4e} | {rho: 1.4e} | {self.problem.trust_region_radius:1.4e} | {self.problem.weight:1.4e} |    {step_acpt_msg}     |")
+                print(f"   {k+1:3d}   | {J0: 1.4e} | {DeltaJ: 1.4e} | {DeltaL: 1.4e} | {chi:1.4e} | {rho: 1.4e} | {self.problem.trust_region_radius_x:1.4e} | {self.problem.weight:1.4e} |    {step_acpt_msg}     |")
 
             # update storage
             scp_summary_dict["J0"].append(J0)
@@ -303,12 +304,16 @@ class SCvxStar:
 
             # update trust-region
             if rho < self.rho1:
-                self.problem.trust_region_radius = max(self.problem.trust_region_radius/self.alpha1, self.r_bounds[0])
+                self.problem.trust_region_radius_x = max(self.problem.trust_region_radius_x/self.alpha1, self.r_bounds[0])
+                if self.problem.trust_region_radius_u is not None:
+                    self.problem.trust_region_radius_u = max(self.problem.trust_region_radius_u/self.alpha1, self.r_bounds[0])
             elif rho >= self.rho2:
-                self.problem.trust_region_radius = min(self.problem.trust_region_radius*self.alpha2, self.r_bounds[1])
+                self.problem.trust_region_radius_x = min(self.problem.trust_region_radius_x*self.alpha2, self.r_bounds[1])
+                if self.problem.trust_region_radius_u is not None:
+                    self.problem.trust_region_radius_u = min(self.problem.trust_region_radius_u*self.alpha2, self.r_bounds[1])
 
             # update steps at minimum trust region
-            if self.problem.trust_region_radius == self.r_bounds[0]:
+            if self.problem.trust_region_radius_x == self.r_bounds[0] or self.problem.trust_region_radius_u == self.r_bounds[0]:
                 n_min_trust_region += 1
             else:
                 n_min_trust_region = 0
@@ -343,7 +348,8 @@ class SCvxStar:
         scp_summary_dict["status"] = status_AL
         scp_summary_dict["status_CP"] = self.problem.cp_status
         scp_summary_dict["weight"] = self.problem.weight
-        scp_summary_dict["trust_region_radius"] = self.problem.trust_region_radius
+        scp_summary_dict["trust_region_radius_x"] = self.problem.trust_region_radius_x
+        scp_summary_dict["trust_region_radius_u"] = self.problem.trust_region_radius_u
         scp_summary_dict["rho"] = rho
         scp_summary_dict["t_algorithm"] = t_algorithm
         return SCPSolution(xopt, uopt, vopt, yopt, sols, scp_summary_dict, variables_each_iterations)

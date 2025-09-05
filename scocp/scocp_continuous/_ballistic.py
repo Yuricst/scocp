@@ -64,9 +64,9 @@ class FixedTimeBallisticTrajectory(ContinuousControlSCOCP):
             ]
 
         constraints_trustregion = [
-            xs[i,:] - xbar[i,:] <= self.trust_region_radius for i in range(N)
+            xs[i,:] - xbar[i,:] <= self.trust_region_radius_x for i in range(N)
         ] + [
-            xs[i,:] - xbar[i,:] >= -self.trust_region_radius for i in range(N)
+            xs[i,:] - xbar[i,:] >= -self.trust_region_radius_x for i in range(N)
         ]
 
         constraints_initial = [xs[0,:] == self.x0]

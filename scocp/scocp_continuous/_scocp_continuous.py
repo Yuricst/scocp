@@ -17,7 +17,8 @@ class ContinuousControlSCOCP:
         ny (int): number of other variables
         augment_Gamma (bool): whether to augment the control with the constraint vector when integrating the dynamics
         weight (float): weight of the objective function
-        trust_region_radius (float): trust region radius
+        trust_region_radius_x (float): trust region radius for state
+        trust_region_radius_u (float): trust region radius for control
         solver (str): solver to use
         verbose_solver (bool): whether to print verbose output
     """
@@ -30,7 +31,8 @@ class ContinuousControlSCOCP:
         ny: int = 0,
         augment_Gamma: bool = False,
         weight: float = 1e2,
-        trust_region_radius: float = 0.1,
+        trust_region_radius_x: float = 0.1,
+        trust_region_radius_u: float = None,
         solver = cp.CLARABEL,
         verbose_solver: bool = False,
         impulsive_B = None,
@@ -45,7 +47,8 @@ class ContinuousControlSCOCP:
         self.nh = nh
         self.ny = ny
         self.weight_initial = weight
-        self.trust_region_radius_initial = trust_region_radius
+        self.trust_region_radius_x = trust_region_radius_x
+        self.trust_region_radius_u = trust_region_radius_u
         self.solver = solver
         self.verbose_solver = verbose_solver
         self.augment_Gamma = augment_Gamma
@@ -62,7 +65,8 @@ class ContinuousControlSCOCP:
     def reset(self):
         """Reset problem parameters and storages"""
         self.weight = self.weight_initial
-        self.trust_region_radius = self.trust_region_radius_initial
+        self.trust_region_radius_x = self.trust_region_radius_x
+        self.trust_region_radius_u = self.trust_region_radius_u
         self.cp_status = "not_solved"
         Nseg = self.N - 1
         if self.augment_Gamma:
