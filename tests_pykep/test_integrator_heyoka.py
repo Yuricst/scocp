@@ -55,6 +55,51 @@ def test_heyoka_integrator_cr3bp_continuous():
     return
 
 
+def test_heyoka_integrator_cr3bp_freetf(verbose = False):
+    """Test `HeyokaIntegrator` class"""
+    mu = 1.215058560962404e-02
+    if verbose:
+        print("Building heyoka integrator...")
+    ta_dyn, ta_dyn_aug = scocp_pykep.get_heyoka_integrator_cr3bp_freetf(mu=mu, tol=1e-12, impulsive=False)
+    itg_heyoka = scocp_pykep.HeyokaIntegrator(nx=7, nu=4, ta=ta_dyn, ta_stm=ta_dyn_aug, impulsive=False)
+
+    # test against scipy integrator
+    if verbose:
+        print("Building scipy integrator...")
+    itg_scipy = scocp.ScipyIntegrator(
+        nx=7,        # state is [x,y,z,vx,vy,vz,t]
+        nu=4,        # controls are [ax,ay,az,s]    
+        rhs=scocp.control_rhs_cr3bp_freetf, rhs_stm=scocp.control_rhs_cr3bp_freetf_stm,
+        impulsive=False,
+        args=(mu,[0.0,0.0,0.0,1.0]),   # last argument is dummy placeholder
+        method='DOP853', reltol=1e-12, abstol=1e-12
+    )
+
+    # solve
+    x0 = np.array([
+        1.0809931218390707E+00,
+        0.0,
+        -2.0235953267405354E-01,
+        0.0,
+        -1.9895001215078018E-01,
+        0.0,
+        0.0,                        # initial time
+    ])
+    s = 0.8                         # time dilation factor
+    u = np.array([0.03, -0.04, 0.04, s])
+    ts, ys = itg_heyoka.solve([0.0, 1.0], x0, u=u)
+    ts_scipy, ys_scipy = itg_scipy.solve([0.0, 1.0], x0, u=u)
+
+    # checks
+    print(f"max diff: {np.max(np.abs(ys[-1,:] - ys_scipy[-1,:])):1.4e}")
+    assert np.abs(ts[-1] - ts_scipy[-1]) < 1e-15
+    assert np.max(np.abs(ys[-1,:] - ys_scipy[-1,:])) < 1e-11
+    if verbose:
+        print(f"Heyoka final state : {ys[-1,:]}")
+        print(f"Scipy final state  : {ys_scipy[-1,:]}")
+    return
+
+
 def test_heyoka_integrator_twobody():
     """Test `HeyokaIntegrator` class"""
     # define canonical parameters
@@ -109,5 +154,6 @@ def test_heyoka_integrator_twobody():
     assert np.max(np.abs(ys[-1,:] - ys_scipy[-1,:])) < 1e-11
     return
 
+
 if __name__ == "__main__":
-    test_heyoka_integrator_twobody()
+    test_heyoka_integrator_cr3bp_freetf(verbose = True)
