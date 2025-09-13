@@ -103,7 +103,6 @@ class ImpulsiveControlSCOCP:
         raise NotImplementedError("Subproblem must be implemented by inherited class!")
     
     def build_linear_model(self, xbar, ubar, vbar):
-        i_PhiA_end = self.integrator.nx + self.integrator.nx * self.integrator.nx
         for i,ti in enumerate(self.times[:-1]):
             _tspan = (ti, self.times[i+1])
             _x0 = xbar[i,:] + self.B @ ubar[i,:]
@@ -121,7 +120,6 @@ class ImpulsiveControlSCOCP:
         self,
         xbar,
         ubar,
-        #vbar,
         stm = False,
         steps = None,
     ):
@@ -134,8 +132,10 @@ class ImpulsiveControlSCOCP:
             ubar (np.array): control history
             stm (bool): whether to propagate STMs, defaults to False
         """
-        assert xbar.shape == (self.N,self.integrator.nx)
-        assert ubar.shape == (self.N,self.integrator.nu)
+        assert xbar.shape == (self.N,self.integrator.nx),\
+            f"xbar.shape = {xbar.shape} != (self.N,self.integrator.nx) = ({self.N},{self.integrator.nx})"
+        assert ubar.shape == (self.N,self.integrator.nu),\
+            f"ubar.shape = {ubar.shape} != (self.N,self.integrator.nu) = ({self.N},{self.integrator.nu})"
 
         sols = []
         geq_nl = np.zeros((self.N-1,self.integrator.nx))
@@ -149,7 +149,6 @@ class ImpulsiveControlSCOCP:
             _u0 = np.zeros(self.integrator.nu)
             _ts, _ys = self.integrator.solve(_tspan, _x0, u=_u0, stm=stm, t_eval=t_eval)
             sols.append([_ts,_ys])
-            #print(f"tspan = {_tspan}, _x0 = {_x0}, _u0 = {_u0}, _ys = {_ys}")
             geq_nl[i,:] = xbar[i+1,:] - _ys[-1,0:self.integrator.nx]
         return geq_nl, sols
     
