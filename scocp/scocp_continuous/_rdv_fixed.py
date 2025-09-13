@@ -208,9 +208,8 @@ class FixedTimeContinuousRdvMass(ContinuousControlSCOCP):
         us = cp.Variable((Nseg, nu), name='control')
         vs = cp.Variable((Nseg, 1), name='Gamma')
         xis_dyn = cp.Variable((Nseg,nx), name='xi_dyn')         # slack for dynamics
-        zetas = cp.Variable((Nseg,), name='zeta')     # slack for non-convex inequality
         
-        penalty = get_augmented_lagrangian_penalty(self.weight, xis_dyn, self.lmb_dynamics, zeta=zetas, lmb_ineq=self.lmb_ineq)
+        penalty = get_augmented_lagrangian_penalty(self.weight, xis_dyn, self.lmb_dynamics)
         objective_func = -xs[-1,6] + penalty
 
         constraints_control = [cp.SOC(vs[i,0], us[i,:]) for i in range(Nseg)] + [
@@ -244,6 +243,6 @@ class FixedTimeContinuousRdvMass(ContinuousControlSCOCP):
             constraints_dyn + constraints_trustregion + constraints_initial + constraints_final + constraints_control)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
-        return xs.value, us.value, vs.value, None, xis_dyn.value, None, zetas.value
+        return xs.value, us.value, vs.value, None, xis_dyn.value, None, None
 
 
