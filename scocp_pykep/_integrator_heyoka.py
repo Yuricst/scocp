@@ -52,7 +52,9 @@ class HeyokaIntegrator:
             self.ta.time = tspan[0]
             self.ta.state[:] = copy.copy(x0)
             if (u is not None) and (self.impulsive is False):
-                self.ta.pars[-len(u):] = u[:]
+                self.ta.pars[-self.nu:] = u[:]
+            elif u is None:
+                self.ta.pars[-self.nu:] = np.zeros(self.nu)
             out = self.ta.propagate_grid(grid=t_eval)
         else:
             self.ta_stm.time = tspan[0]
