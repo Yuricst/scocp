@@ -6,6 +6,7 @@ from ._scocp_continuous import (
 from ._rdv_fixed import (
     FixedTimeContinuousRdv,
     FixedTimeContinuousRdvLogMass,
+    FixedTimeContinuousRdvMass,
 )
 from ._rdv_free import (
     FreeTimeContinuousRdv,

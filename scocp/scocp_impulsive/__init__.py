@@ -6,3 +6,6 @@ from ._scocp_impulsive import (
 from ._rdv_fixed import (
     FixedTimeImpulsiveRdv,
 )
+from ._indirect import (
+    IndirectOptimalControl,
+)

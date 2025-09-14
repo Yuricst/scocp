@@ -5,7 +5,12 @@ import numpy as np
 
 class HeyokaIntegrator:
     """Wrapper around heyoka's Taylor adaptive integrator for SCOCP
+
+    If the taylor adaptive object for STM is generated using `hy.var_ode_sys`, make sure to set `symmetric_storage` to True.
     
+    Ref:
+    - https://bluescarni.github.io/heyoka.py/notebooks/var_ode_sys.html
+
     Args:
         nx (int): state dimension
         nu (int): control dimension
@@ -13,14 +18,16 @@ class HeyokaIntegrator:
         ta_stm (obj): heyoka taylor adaptive object for state transition matrix
         impulsive (bool): whether the dynamics are impulsive
         nv (int): dimensions corresponding to control norms to be augmented 
+        symmetric_storage (bool): whether STM is stored in terms of mindex 
     """
-    def __init__(self, nx, nu, ta, ta_stm, impulsive=True, nv=0):
+    def __init__(self, nx, nu, ta, ta_stm, impulsive=True, nv=0, symmetric_storage=False):
         self.nx = nx
         self.nu = nu
         self.ta = ta
         self.ta_stm = ta_stm
         self.nv = nv
         self.impulsive = impulsive
+        self.symmetric_storage = symmetric_storage
         return
     
     def solve(self, tspan, x0, u=None, stm=False, t_eval=None):
@@ -55,9 +62,10 @@ class HeyokaIntegrator:
                 self.ta_stm.state[:] = np.concatenate((x0, np.eye(self.nx).flatten()))
             else:
                 if u is not None:
-                    self.ta_stm.pars[-self.nu:] = u[:]
-                elif u is None:
-                    self.ta.pars[-self.nu:] = np.zeros(self.nu)
-                self.ta_stm.state[:] = np.concatenate((x0, np.eye(self.nx).flatten(), np.zeros(self.nx*(self.nu+self.nv))))
+                    self.ta_stm.pars[-len(u):] = u[:]
+                if self.symmetric_storage:
+                    raise NotImplementedError("Symmetric storage of STM is not implemented yet")
+                else:
+                    self.ta_stm.state[:] = np.concatenate((x0, np.eye(self.nx).flatten(), np.zeros(self.nx*(self.nu+self.nv))))
             out = self.ta_stm.propagate_grid(grid=t_eval)
         return t_eval, out[5]

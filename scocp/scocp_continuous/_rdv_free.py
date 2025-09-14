@@ -24,13 +24,11 @@ class FreeTimeContinuousRdv(ContinuousControlSCOCP):
         super().__init__(*args, **kwargs)
         assert abs(self.times[0]  - 0.0) < 1e-14, f"self.times[0] must be 0.0, but given {self.times[0]}"
         assert abs(self.times[-1] - 1.0) < 1e-14, f"self.times[-1] must be 1.0, but given {self.times[-1]}"
-        assert s_bounds[0] > 0.0, f"s_bounds[0] must be greater than 0.0, but given {s_bounds[0]}"
-        assert s_bounds[0] < s_bounds[1], f"s_bounds[0] must be less than s_bounds[1], but given {s_bounds[0]} and {s_bounds[1]}"
         self.x0 = x0
         self.xf = xf
         self.umax = umax
         self.tf_bounds = tf_bounds
-        self.s_bounds = s_bounds
+        self.s_bounds = np.array(s_bounds)
         return
         
     def evaluate_objective(self, xs, us, vs, ys=None):
@@ -77,10 +75,16 @@ class FreeTimeContinuousRdv(ContinuousControlSCOCP):
             ]
 
         constraints_trustregion = [
-            xs[i,0:6] - xbar[i,0:6] <= self.trust_region_radius for i in range(N)
+            xs[i,0:6] - xbar[i,0:6] <= self.trust_region_radius_x for i in range(N)
         ] + [
-            xs[i,0:6] - xbar[i,0:6] >= -self.trust_region_radius for i in range(N)
+            xs[i,0:6] - xbar[i,0:6] >= -self.trust_region_radius_x for i in range(N)
         ]
+        if self.trust_region_radius_u is not None:
+            constraints_trustregion += [
+                us[i,:] - ubar[i,:] <=  self.trust_region_radius_u for i in range(Nseg)
+            ] + [
+                us[i,:] - ubar[i,:] >= -self.trust_region_radius_u for i in range(Nseg)
+            ]
 
         constraints_initial = [xs[0,0:6]  == self.x0[0:6]]
         constraints_final   = [xs[-1,0:3] == self.xf[0:3], 
@@ -89,7 +93,11 @@ class FreeTimeContinuousRdv(ContinuousControlSCOCP):
         constraint_t0 = [xs[0,6] == 0.0]
         constraints_tf      = [self.tf_bounds[0] <= xs[-1,6],
                                xs[-1,6] <= self.tf_bounds[1]]
-        constraints_s       = [self.s_bounds[0] <= us[i,3] for i in range(Nseg)] + [us[i,3] <= self.s_bounds[1] for i in range(Nseg)]
+        if len(self.s_bounds.shape) == 1:
+            constraints_s       = [self.s_bounds[0] <= us[i,3] for i in range(Nseg)] + [us[i,3] <= self.s_bounds[1] for i in range(Nseg)]
+        else:
+            assert self.s_bounds.shape[0] == Nseg, f"s_bounds.shape[0] = {self.s_bounds.shape[0]} must match Nseg = {Nseg}"
+            constraints_s       = [self.s_bounds[i][0] <= us[i,3] for i in range(Nseg)] + [us[i,3] <= self.s_bounds[i][1] for i in range(Nseg)]
 
         constraints_control = [
             vs[i,0] <= self.umax for i in range(Nseg)
@@ -165,10 +173,16 @@ class FreeTimeContinuousRdvLogMass(ContinuousControlSCOCP):
         ]
 
         constraints_trustregion = [
-            xs[i,:] - xbar[i,:] <= self.trust_region_radius for i in range(N)
+            xs[i,:] - xbar[i,:] <= self.trust_region_radius_x for i in range(N)
         ] + [
-            xs[i,:] - xbar[i,:] >= -self.trust_region_radius for i in range(N)
+            xs[i,:] - xbar[i,:] >= -self.trust_region_radius_x for i in range(N)
         ]
+        if self.trust_region_radius_u is not None:
+            constraints_trustregion += [
+                us[i,:] - ubar[i,:] <=  self.trust_region_radius_u for i in range(Nseg)
+            ] + [
+                us[i,:] - ubar[i,:] >= -self.trust_region_radius_u for i in range(Nseg)
+            ]
 
         constraints_initial = [xs[0,0:7] == self.x0[0:7]]
         constraints_final   = [xs[-1,0:3] == self.xf[0:3], 

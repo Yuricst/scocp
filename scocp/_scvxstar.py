@@ -51,7 +51,7 @@ class SCvxStar:
         alpha1 (float): trust-region radius contraction factor s.t. r_k+1 = max(r_k/alpha1, r_bounds[0])
         alpha2 (float): trust-region radius expansion factor s.t. r_k+1 = min(r_k*alpha2, r_bounds[1])
         beta (float): weight update factor
-        gamma (float): update factor forLagrange multiplier update criterion delta
+        gamma (float): update factor for Lagrange multiplier update criterion delta
         r_bounds (list): trust region bounds
         weight_max (float): maximum weight
     """
@@ -183,9 +183,11 @@ class SCvxStar:
             "chi": [],
             "DeltaJ": [],
             "DeltaL": [],
+            "w": [],
+            "trust_region_radius_x": [],
+            "trust_region_radius_u": [],
             "accept": [],
             "weight": self.problem.weight,
-            "trust_region_radius": self.problem.trust_region_radius,
             "rho": self.rho0,
             "t_cvx": [],
             "t_scp": [],
@@ -251,13 +253,16 @@ class SCvxStar:
             if verbose:
                 if np.mod(k, print_frequency) == 0:
                     print(f"\n{header}")
-                print(f"   {k+1:3d}   | {J0: 1.4e} | {DeltaJ: 1.4e} | {DeltaL: 1.4e} | {chi:1.4e} | {rho: 1.4e} | {self.problem.trust_region_radius:1.4e} | {self.problem.weight:1.4e} |    {step_acpt_msg}     |")
+                print(f"   {k+1:3d}   | {J0: 1.4e} | {DeltaJ: 1.4e} | {DeltaL: 1.4e} | {chi:1.4e} | {rho: 1.4e} | {self.problem.trust_region_radius_x:1.4e} | {self.problem.weight:1.4e} |    {step_acpt_msg}     |")
 
             # update storage
             scp_summary_dict["J0"].append(J0)
             scp_summary_dict["chi"].append(chi)
             scp_summary_dict["DeltaJ"].append(DeltaJ)
             scp_summary_dict["DeltaL"].append(DeltaL)
+            scp_summary_dict["w"].append(self.problem.weight)
+            scp_summary_dict["trust_region_radius_x"].append(self.problem.trust_region_radius_x)
+            scp_summary_dict["trust_region_radius_u"].append(self.problem.trust_region_radius_u)
             scp_summary_dict["accept"].append(int(rho >= self.rho0))
             if save_all_iterations:
                 variables_each_iterations.append({
@@ -303,12 +308,16 @@ class SCvxStar:
 
             # update trust-region
             if rho < self.rho1:
-                self.problem.trust_region_radius = max(self.problem.trust_region_radius/self.alpha1, self.r_bounds[0])
+                self.problem.trust_region_radius_x = max(self.problem.trust_region_radius_x/self.alpha1, self.r_bounds[0])
+                if self.problem.trust_region_radius_u is not None:
+                    self.problem.trust_region_radius_u = max(self.problem.trust_region_radius_u/self.alpha1, self.r_bounds[0])
             elif rho >= self.rho2:
-                self.problem.trust_region_radius = min(self.problem.trust_region_radius*self.alpha2, self.r_bounds[1])
+                self.problem.trust_region_radius_x = min(self.problem.trust_region_radius_x*self.alpha2, self.r_bounds[1])
+                if self.problem.trust_region_radius_u is not None:
+                    self.problem.trust_region_radius_u = min(self.problem.trust_region_radius_u*self.alpha2, self.r_bounds[1])
 
             # update steps at minimum trust region
-            if self.problem.trust_region_radius == self.r_bounds[0]:
+            if self.problem.trust_region_radius_x == self.r_bounds[0] or self.problem.trust_region_radius_u == self.r_bounds[0]:
                 n_min_trust_region += 1
             else:
                 n_min_trust_region = 0
@@ -343,7 +352,6 @@ class SCvxStar:
         scp_summary_dict["status"] = status_AL
         scp_summary_dict["status_CP"] = self.problem.cp_status
         scp_summary_dict["weight"] = self.problem.weight
-        scp_summary_dict["trust_region_radius"] = self.problem.trust_region_radius
         scp_summary_dict["rho"] = rho
         scp_summary_dict["t_algorithm"] = t_algorithm
         return SCPSolution(xopt, uopt, vopt, yopt, sols, scp_summary_dict, variables_each_iterations)
@@ -370,4 +378,28 @@ class SCvxStar:
         axis.plot(iters, summary_dict["J0"], c='k', lw=0.5)
         axis.scatter(iters, summary_dict["J0"], marker="o", s=s, color=['g' if a == 1 else 'r' for a in summary_dict["accept"]], zorder=2)
         axis.set(xlabel='Iter.', ylabel='J0')
+        return
+
+    def plot_w(self, axis, summary_dict: dict, s = 5):
+        """Plot iterations of weight"""
+        iters = np.arange(len(summary_dict["w"]))
+        axis.plot(iters, summary_dict["w"], c='k', lw=0.5)
+        axis.scatter(iters, summary_dict["w"], marker="o", s=s, color=['g' if a == 1 else 'r' for a in summary_dict["accept"]], zorder=2)
+        axis.set(yscale='log', xlabel='Iter.', ylabel='weight')
+        return
+    
+    def plot_trust_region_radius_x(self, axis, summary_dict: dict, s = 5):
+        """Plot iterations of trust region radius x"""
+        iters = np.arange(len(summary_dict["trust_region_radius_x"]))
+        axis.plot(iters, summary_dict["trust_region_radius_x"], c='k', lw=0.5)
+        axis.scatter(iters, summary_dict["trust_region_radius_x"], marker="o", s=s, color=['g' if a == 1 else 'r' for a in summary_dict["accept"]], zorder=2)
+        axis.set(xlabel='Iter.', ylabel='trust region radius x')
+        return
+    
+    def plot_trust_region_radius_u(self, axis, summary_dict: dict, s = 5):
+        """Plot iterations of trust region radius u"""
+        iters = np.arange(len(summary_dict["trust_region_radius_u"]))
+        axis.plot(iters, summary_dict["trust_region_radius_u"], c='k', lw=0.5)
+        axis.scatter(iters, summary_dict["trust_region_radius_u"], marker="o", s=s, color=['g' if a == 1 else 'r' for a in summary_dict["accept"]], zorder=2)
+        axis.set(xlabel='Iter.', ylabel='trust region radius u')
         return

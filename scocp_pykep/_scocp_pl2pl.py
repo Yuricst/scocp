@@ -321,10 +321,16 @@ class scocp_pl2pl_logmass(ContinuousControlSCOCP):
 
         # trust region constraints 
         constraints_trustregion = [
-            xs[i,0:7] - xbar[i,0:7] <= self.trust_region_radius for i in range(N)
+            xs[i,0:7] - xbar[i,0:7] <= self.trust_region_radius_x for i in range(N)
         ] + [
-            xs[i,0:7] - xbar[i,0:7] >= -self.trust_region_radius for i in range(N)
+            xs[i,0:7] - xbar[i,0:7] >= -self.trust_region_radius_x for i in range(N)
         ]
+        if self.trust_region_radius_u is not None:
+            constraints_trustregion += [
+                us[i,:] - ubar[i,:] <=  self.trust_region_radius_u for i in range(Nseg)
+            ] + [
+                us[i,:] - ubar[i,:] >= -self.trust_region_radius_u for i in range(Nseg)
+            ]
 
         # boundary conditions
         constraints_boundary = [
@@ -723,10 +729,16 @@ class scocp_pl2pl(ContinuousControlSCOCP):
 
         # trust region constraints 
         constraints_trustregion = [
-            xs[i,:] - xbar[i,:] <= self.trust_region_radius for i in range(N)
+            xs[i,:] - xbar[i,:] <= self.trust_region_radius_x for i in range(N)
         ] + [
-            xs[i,:] - xbar[i,:] >= -self.trust_region_radius for i in range(N)
+            xs[i,:] - xbar[i,:] >= -self.trust_region_radius_x for i in range(N)
         ]
+        if self.trust_region_radius_u is not None:
+            constraints_trustregion += [
+                us[i,:] - ubar[i,:] <=  self.trust_region_radius_u for i in range(Nseg)
+            ] + [
+                us[i,:] - ubar[i,:] >= -self.trust_region_radius_u for i in range(Nseg)
+            ]
 
         # boundary conditions
         constraints_boundary = [

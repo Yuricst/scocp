@@ -39,7 +39,7 @@ def test_scp_scipy_continuous(get_plot=False):
         0.0])
     period_f = 3.3031221822879884
     sol_lpo1 = integrator.solve([0, period_f], xf, get_ODESolution=True)
-
+    
     # transfer problem discretization
     N = 40
     tf = (period_0 + period_f) / 2
@@ -47,7 +47,11 @@ def test_scp_scipy_continuous(get_plot=False):
     umax = 0.1  # max acceleration
 
     # create subproblem
-    problem = scocp.FixedTimeContinuousRdv(x0, xf, umax, integrator, times)
+    trust_region_radius_x = 0.1
+    trust_region_radius_u = 0.2
+    problem = scocp.FixedTimeContinuousRdv(x0, xf, umax, integrator, times,
+                                           trust_region_radius_x=trust_region_radius_x,
+                                           trust_region_radius_u=trust_region_radius_u)
 
     # create initial guess
     print(f"Preparing initial guess...")
