@@ -209,7 +209,16 @@ class FixedTimeContinuousRdvMass(ContinuousControlSCOCP):
         vs = cp.Variable((Nseg, 1), name='Gamma')
         xis_dyn = cp.Variable((Nseg,nx), name='xi_dyn')         # slack for dynamics
         
-        penalty = get_augmented_lagrangian_penalty(self.weight, xis_dyn, self.lmb_dynamics)
+        constraints_l1_penalty = []
+        if self.l1_penalty:
+            slack_l1_xi_dyn = cp.Variable((Nseg,nx), name='slack_l1_xi_dyn')    # slack for L1 penalization of non-convex dynamics
+            constraints_l1_penalty.append(slack_l1_xi_dyn >= 0.0)               # slack must be non-negative
+            constraints_l1_penalty.append(xis_dyn <=  slack_l1_xi_dyn)
+            constraints_l1_penalty.append(xis_dyn >= -slack_l1_xi_dyn)
+        else:
+            slack_l1_xi_dyn = None
+
+        penalty = get_augmented_lagrangian_penalty(self.weight, xis_dyn, self.lmb_dynamics, slack_l1_xi_dyn=slack_l1_xi_dyn)
         objective_func = -xs[-1,6] + penalty
 
         constraints_control = [cp.SOC(vs[i,0], us[i,:]) for i in range(Nseg)] + [
@@ -240,7 +249,8 @@ class FixedTimeContinuousRdvMass(ContinuousControlSCOCP):
 
         convex_problem = cp.Problem(
             cp.Minimize(objective_func),
-            constraints_dyn + constraints_trustregion + constraints_initial + constraints_final + constraints_control)
+            constraints_dyn + constraints_trustregion + constraints_initial +\
+                  constraints_final + constraints_control + constraints_l1_penalty)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
         return xs.value, us.value, vs.value, None, xis_dyn.value, None, None

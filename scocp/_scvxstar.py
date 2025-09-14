@@ -118,6 +118,14 @@ class SCvxStar:
             assert h.shape == (self.problem.nh,)
             h_pos = np.clip(h, 0, None)      # penalize only when inequality constraint is violated
             penalty += self.problem.lmb_ineq @ h_pos + self.problem.weight/2 * (h_pos @ h_pos)
+        
+        # append L1 penalty
+        if self.problem.l1_penalty:
+            penalty += np.sqrt(self.problem.weight) * np.sum(np.abs(gdyn))
+            if self.problem.ng > 0:
+                penalty += np.sqrt(self.problem.weight) * np.sum(np.abs(g))
+            if self.problem.nh > 0:
+                penalty += np.sqrt(self.problem.weight) * np.sum(np.abs(h))
         return penalty
     
     
