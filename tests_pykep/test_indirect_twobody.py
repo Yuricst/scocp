@@ -61,7 +61,7 @@ def test_indirect_twobody(verbose = False, get_plot = False):
         list(x0) + [1.0], xf_dict, integrator, times,
         l1_penalty = False
     )
-
+    
     # construct initial guess
     _ig_rv_orbit0 = np.zeros((len(times),6))
     _ig_rv_orbitf = np.zeros((len(times),6))

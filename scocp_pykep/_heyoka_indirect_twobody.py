@@ -1,4 +1,4 @@
-"""Two-body integrator with heyoka"""
+"""Indirect optimal control two-body problem integrator with heyoka"""
 
 import heyoka as hy
 import numpy as np
@@ -24,7 +24,7 @@ def get_heyoka_integrator_twobody_indirect(tol = 1e-12, tol_var = 1e-12):
     # Useful expressions
     r3 = (x**2 + y**2 + z**2) ** (1.5)
     lv_norm = hy.sqrt(lvx**2 + lvy**2 + lvz**2) 
-
+    
     # Vectors for convenience of math manipulation
     lr = np.array([lx, ly, lz])
     lv = np.array([lvx, lvy, lvz])
