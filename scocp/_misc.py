@@ -79,6 +79,23 @@ def get_augmented_lagrangian_penalty(
     return penalty
 
 
+def update_trust_region(tr, r_bounds, rho, rho1, rho2, alpha1, alpha2):
+    if rho < rho1:
+        tr /= alpha1
+        if isinstance(tr, float):
+            tr = max(tr, r_bounds[0])
+        else:
+            # element-wise check max
+            tr = np.maximum(tr, r_bounds[0])
+    elif rho >= rho2:
+        tr *= alpha2
+        if isinstance(tr, float):
+            tr = min(tr, r_bounds[1])
+        else:
+            tr = np.minimum(tr, r_bounds[1])
+    return tr
+
+
 class MovingTarget:
     """Define moving target for rendezvous problem
     
