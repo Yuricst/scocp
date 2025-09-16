@@ -4,6 +4,8 @@ import copy
 import numpy as np
 import time
 
+from ._misc import update_trust_region
+
 
 class SCPSolution:
     """Solution structure for SCvx* algorithm
@@ -159,7 +161,7 @@ class SCvxStar:
             SCPSolution: solution object
         """
         tstart = time.time()
-        header = f"|  Iter  |     J0      |   Delta J   |   Delta L   |    chi     |     rho     |     r      |   weight   | step acpt. |"
+        header = f"|  Iter  |     J0      |   Delta J   |   Delta L   |    chi     |     rho     |   min(r)   |   weight   | step acpt. |"
         print_frequency = 10
         delta = 1e16
         status_AL = "NotConverged"
@@ -261,7 +263,7 @@ class SCvxStar:
             if verbose:
                 if np.mod(k, print_frequency) == 0:
                     print(f"\n{header}")
-                print(f"   {k+1:3d}   | {J0: 1.4e} | {DeltaJ: 1.4e} | {DeltaL: 1.4e} | {chi:1.4e} | {rho: 1.4e} | {self.problem.trust_region_radius_x:1.4e} | {self.problem.weight:1.4e} |    {step_acpt_msg}     |")
+                print(f"   {k+1:3d}   | {J0: 1.4e} | {DeltaJ: 1.4e} | {DeltaL: 1.4e} | {chi:1.4e} | {rho: 1.4e} | {np.min(self.problem.trust_region_radius_x):1.4e} | {self.problem.weight:1.4e} |    {step_acpt_msg}     |")
 
             # update storage
             scp_summary_dict["J0"].append(J0)
@@ -315,17 +317,36 @@ class SCvxStar:
                         delta *= self.gamma
 
             # update trust-region
-            if rho < self.rho1:
-                self.problem.trust_region_radius_x = max(self.problem.trust_region_radius_x/self.alpha1, self.r_bounds[0])
-                if self.problem.trust_region_radius_u is not None:
-                    self.problem.trust_region_radius_u = max(self.problem.trust_region_radius_u/self.alpha1, self.r_bounds[0])
-            elif rho >= self.rho2:
-                self.problem.trust_region_radius_x = min(self.problem.trust_region_radius_x*self.alpha2, self.r_bounds[1])
-                if self.problem.trust_region_radius_u is not None:
-                    self.problem.trust_region_radius_u = min(self.problem.trust_region_radius_u*self.alpha2, self.r_bounds[1])
+            self.problem.trust_region_radius_x = update_trust_region(
+                self.problem.trust_region_radius_x,
+                self.r_bounds,
+                rho,
+                self.rho1,
+                self.rho2,
+                self.alpha1,
+                self.alpha2,
+            )
+            if self.problem.trust_region_radius_u is not None:
+                self.problem.trust_region_radius_u = update_trust_region(
+                    self.problem.trust_region_radius_u,
+                    self.r_bounds,
+                    rho,
+                    self.rho1,
+                    self.rho2,
+                    self.alpha1,
+                    self.alpha2,
+                )
+            # if rho < self.rho1:
+            #     self.problem.trust_region_radius_x = max(self.problem.trust_region_radius_x/self.alpha1, self.r_bounds[0])
+            #     if self.problem.trust_region_radius_u is not None:
+            #         self.problem.trust_region_radius_u = max(self.problem.trust_region_radius_u/self.alpha1, self.r_bounds[0])
+            # elif rho >= self.rho2:
+            #     self.problem.trust_region_radius_x = min(self.problem.trust_region_radius_x*self.alpha2, self.r_bounds[1])
+            #     if self.problem.trust_region_radius_u is not None:
+            #         self.problem.trust_region_radius_u = min(self.problem.trust_region_radius_u*self.alpha2, self.r_bounds[1])
 
             # update steps at minimum trust region
-            if self.problem.trust_region_radius_x == self.r_bounds[0] or self.problem.trust_region_radius_u == self.r_bounds[0]:
+            if np.min(self.problem.trust_region_radius_x) == self.r_bounds[0] or np.min(self.problem.trust_region_radius_u) == self.r_bounds[0]:
                 n_min_trust_region += 1
             else:
                 n_min_trust_region = 0
