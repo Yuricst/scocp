@@ -52,9 +52,18 @@ class IndirectOptimalControl(ImpulsiveControlSCOCP):
         Nseg = N - 1
         
         xs = cp.Variable((N, nx), name='state')
-        xis_dyn = cp.Variable((Nseg,nx), name='xi_dyn')         # slack for dynamics
+        xis_dyn = cp.Variable((Nseg,nx), name='xi_dyn')                         # slack for non-convex dynamics
+
+        constraints_l1_penalty = []
+        if self.l1_penalty:
+            slack_l1_xi_dyn = cp.Variable((Nseg,nx), name='slack_l1_xi_dyn')    # slack for L1 penalization of non-convex dynamics
+            constraints_l1_penalty.append(slack_l1_xi_dyn >= 0.0)               # slack must be non-negative
+            constraints_l1_penalty.append(xis_dyn <=  slack_l1_xi_dyn)
+            constraints_l1_penalty.append(xis_dyn >= -slack_l1_xi_dyn)
+        else:
+            slack_l1_xi_dyn = None
         
-        penalty = get_augmented_lagrangian_penalty(self.weight, xis_dyn, self.lmb_dynamics)
+        penalty = get_augmented_lagrangian_penalty(self.weight, xis_dyn, self.lmb_dynamics, slack_l1_xi_dyn=slack_l1_xi_dyn)
         objective_func = 1.0 + penalty
 
         if self.augment_Gamma:
@@ -85,7 +94,7 @@ class IndirectOptimalControl(ImpulsiveControlSCOCP):
 
         convex_problem = cp.Problem(
             cp.Minimize(objective_func),
-            constraints_dyn + constraints_trustregion + constraints_initial + constraints_final)
+            constraints_dyn + constraints_trustregion + constraints_initial + constraints_final + constraints_l1_penalty)
         convex_problem.solve(solver = self.solver, verbose = self.verbose_solver)
         self.cp_status = convex_problem.status
         return (

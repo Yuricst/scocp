@@ -156,4 +156,5 @@ def test_heyoka_integrator_twobody():
 
 
 if __name__ == "__main__":
-    test_heyoka_integrator_cr3bp_freetf(verbose = True)
+    # test_heyoka_integrator_cr3bp_freetf(verbose = True)
+    test_heyoka_integrator_twobody()

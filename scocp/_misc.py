@@ -24,7 +24,18 @@ def zoh_controls(times, us, t_eval):
     return us_zoh
 
 
-def get_augmented_lagrangian_penalty(weight, xi_dyn, lmb_dyn, xi=None, lmb_eq=None, zeta=None, lmb_ineq=None):
+def get_augmented_lagrangian_penalty(
+    weight,
+    xi_dyn,
+    lmb_dyn,
+    xi=None,
+    lmb_eq=None,
+    zeta=None,
+    lmb_ineq=None,
+    slack_l1_xi_dyn = None,
+    slack_l1_xi = None,
+    slack_l1_zeta = None,
+):
     """Evaluate augmented Lagrangian penalty function
     
     Args:
@@ -35,6 +46,9 @@ def get_augmented_lagrangian_penalty(weight, xi_dyn, lmb_dyn, xi=None, lmb_eq=No
         lmb_eq (cp.Parameter, optional): multiplier for equality constraints
         zeta (cp.Variable, optional): slack variable for inequality constraints
         lmb_ineq (cp.Parameter, optional): multiplier for inequality constraints
+        slack_l1_xi_dyn (cp.Variable, optional): slack variable for l1 penalty for dynamics
+        slack_l1_xi (cp.Variable, optional): slack variable for l1 penalty for equality constraints
+        slack_l1_zeta (cp.Variable, optional): slack variable for l1 penalty for inequality constraints
     
     Returns:
         (cp.Expression): augmented Lagrangian penalty function
@@ -51,7 +65,35 @@ def get_augmented_lagrangian_penalty(weight, xi_dyn, lmb_dyn, xi=None, lmb_eq=No
         penalty += weight/2 * cp.sum_squares(zeta)
         for i,_ in enumerate(lmb_ineq):
             penalty += lmb_ineq[i] * zeta[i]
+
+    # append l1 penalty
+    if slack_l1_xi_dyn is not None:
+        assert xi_dyn.shape == slack_l1_xi_dyn.shape, f"xi_dyn.shape = {xi_dyn.shape} must match slack_l1_xi_dyn.shape = {slack_l1_xi_dyn.shape}"
+        penalty += np.sqrt(weight) * cp.sum(slack_l1_xi_dyn)
+    if slack_l1_xi is not None:
+        assert xi.shape == slack_l1_xi.shape, f"xi.shape = {xi.shape} must match slack_l1_xi.shape = {slack_l1_xi.shape}"
+        penalty += np.sqrt(weight) * cp.sum(slack_l1_xi) 
+    if slack_l1_zeta is not None:
+        assert zeta.shape == slack_l1_zeta.shape, f"zeta.shape = {zeta.shape} must match slack_l1_zeta.shape = {slack_l1_zeta.shape}"
+        penalty += np.sqrt(weight) * cp.sum(slack_l1_zeta) 
     return penalty
+
+
+def update_trust_region(tr, r_bounds, rho, rho1, rho2, alpha1, alpha2):
+    if rho < rho1:
+        tr /= alpha1
+        if isinstance(tr, float):
+            tr = max(tr, r_bounds[0])
+        else:
+            # element-wise check max
+            tr = np.maximum(tr, r_bounds[0])
+    elif rho >= rho2:
+        tr *= alpha2
+        if isinstance(tr, float):
+            tr = min(tr, r_bounds[1])
+        else:
+            tr = np.minimum(tr, r_bounds[1])
+    return tr
 
 
 class MovingTarget:

@@ -20,6 +20,7 @@ class ImpulsiveControlSCOCP:
         weight (float): weight of the objective function
         trust_region_radius_x (float): trust region radius for state
         trust_region_radius_u (float): trust region radius for control
+        l1_penalty (bool): whether to also use l1 penalty for non-convex constraints
         solver (str): solver to use
         verbose_solver (bool): whether to print verbose output
     """
@@ -35,6 +36,7 @@ class ImpulsiveControlSCOCP:
         weight: float = 1e2,
         trust_region_radius_x: float = 0.1,
         trust_region_radius_u: float = None,
+        l1_penalty: bool = False,
         solver = cp.CLARABEL,
         verbose_solver: bool = False,
     ):
@@ -49,6 +51,7 @@ class ImpulsiveControlSCOCP:
         self.weight_initial = weight
         self.trust_region_radius_x = trust_region_radius_x
         self.trust_region_radius_u = trust_region_radius_u
+        self.l1_penalty = l1_penalty
         self.solver = solver
         self.verbose_solver = verbose_solver
         self.augment_Gamma = augment_Gamma
