@@ -219,7 +219,7 @@ class FixedTimeContinuousRdvMass(ContinuousControlSCOCP):
             slack_l1_xi_dyn = None
 
         penalty = get_augmented_lagrangian_penalty(self.weight, xis_dyn, self.lmb_dynamics, slack_l1_xi_dyn=slack_l1_xi_dyn)
-        objective_func = -xs[-1,6] + penalty
+        objective_func = self.evaluate_objective(xs, us, vs) + penalty
 
         constraints_control = [cp.SOC(vs[i,0], us[i,:]) for i in range(Nseg)] + [
             vs[i,0] <= 1.0 for i in range(Nseg)
