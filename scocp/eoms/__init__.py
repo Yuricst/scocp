@@ -18,6 +18,8 @@ from ._cr3bp_scipy import (
     control_rhs_cr3bp_stm,
     control_rhs_cr3bp_logmass,
     control_rhs_cr3bp_logmass_stm,
+    control_rhs_cr3bp_mass,
+    control_rhs_cr3bp_mass_stm,
     control_rhs_cr3bp_freetf,
     control_rhs_cr3bp_freetf_stm,
     control_rhs_cr3bp_logmass_freetf,

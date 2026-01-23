@@ -175,6 +175,49 @@ def control_rhs_cr3bp_logmass_stm(t, state, parameters, u):
     return deriv
 
 
+def control_rhs_cr3bp_mass(t, state, parameters, u):
+    """Equation of motion in CR3BP with continuous control in the rotating frame"""
+    # unpack parameters
+    mu, c1, c2 = parameters
+    # derivative of state
+    deriv = np.zeros(7)
+    deriv[0:6] = rhs_cr3bp(t, state[0:6], mu)
+    # append control
+    deriv[3:6] += c1/state[6] * np.array(u[0:3])
+    deriv[6]   = u[3] * (-c2)     # control on mass
+    return deriv
+
+
+def control_rhs_cr3bp_mass_stm(t, state, parameters, u):
+    """Equation of motion in CR3BP with continuous control in the rotating frame with STM"""
+    # unpack parameters
+    mu, c1, c2 = parameters
+    # derivative of state
+    deriv = np.zeros(7 + 7*7 + 7*4)
+    deriv[0:6] = rhs_cr3bp(t, state[0:6], mu)
+    # append control
+    deriv[3:6] += c1/state[6] * np.array(u[0:3])
+    deriv[6]   = u[3] * (-c2)     # control on mass
+    
+    # derivative of Phi_A
+    Phi_A = state[7:56].reshape(7,7)
+    A = np.zeros((7,7))
+    A[0:3,3:6] = np.eye(3)
+    A[3,4] = 2
+    A[4,3] = -2
+    A[3:6,0:3] = gravity_gradient_cr3bp(state[0:3], mu)
+    A[3:6,6] += -c1/state[6]**2 * np.array(u[0:3])
+    deriv[7:56] = np.dot(A, Phi_A).reshape(49,)
+
+    # derivative of Phi_B
+    Phi_B = state[56:84].reshape(7,4)
+    B = np.zeros((7,4))
+    B[3:6,0:3] = c1/state[6] * np.eye(3)
+    B[6,3] = -c2
+    deriv[56:84] = (np.dot(A, Phi_B) + B).reshape(28,)
+    return deriv
+
+
 def control_rhs_cr3bp_freetf(tau, state, mu, u):
     """Equation of motion in CR3BP with free final time
     state = [x,y,z,vx,vy,vz,t]
