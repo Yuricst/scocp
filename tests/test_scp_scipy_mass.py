@@ -141,10 +141,12 @@ def test_scp_scipy_mass(get_plot=False):
     # create subproblem
     trust_region_radius_x = 0.1
     trust_region_radius_u = None    # we will use no trust-region for control
-    problem = scocp.FixedTimeContinuousRdvMass(x0, xf[0:6], c1, c2, integrator, times,
-                                           augment_Gamma=True,
-                                           trust_region_radius_x=trust_region_radius_x,
-                                           trust_region_radius_u=trust_region_radius_u)
+    problem = scocp.FixedTimeContinuousRdvMass(
+        x0, xf[0:6], c1, c2, integrator, times,
+        augment_Gamma=True,
+        trust_region_radius_x=trust_region_radius_x,
+        trust_region_radius_u=trust_region_radius_u
+    )
 
     # create initial guess
     print(f"Preparing initial guess...")
