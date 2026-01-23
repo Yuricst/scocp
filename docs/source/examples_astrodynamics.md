@@ -77,7 +77,7 @@ with the additional second-order cone constraint
 
 Here are some pros and cons to either model:
 
-| Property | Model with {math}```\log{m}``` | Model with {math}```z``` |
+| Property | Model with {math}```\log{m}``` | Model with {math}```m``` |
 | -------- | ------------------------------ | ------------------------ |
 | Control type | Acceleration               | Throttle                 |
 | Affinity | Control-affine                 | General nonconvex        |
