@@ -96,17 +96,21 @@ def test_eom_cr3bp_mass(verbose=False):
 
 
 def test_scp_scipy_mass(get_plot=False):
-    """Test SCP continuous transfer"""
+    """Test for continuous control problem in CR3BP with mass dynamics
+    
+    State is `[x,y,z,vx,vy,vz,mass]`
+    Control is `[ux,uy,uz,Gamma]`, where `0 <= Gamma <= 1` is the control throttle magnitude (at convergence).
+    """
     mu = 1.215058560962404e-02
-    c1 = 0.1
-    c2 = 0.1
+    c1 = 0.1    # max thrust in canonical scale
+    c2 = 0.1    # mass-flow rate in canonical scale
     integrator = scocp.ScipyIntegrator(nx=7, nu=3, nv=1,
                                        rhs=scocp.control_rhs_cr3bp_mass,
                                        rhs_stm=scocp.control_rhs_cr3bp_mass_stm,
                                        impulsive=False, args=((mu,c1,c2),[0.0,0.0,0.0,0.0]),
                                        method='DOP853', reltol=1e-12, abstol=1e-12)
     
-    # propagate uncontrolled and controlled dynamics
+    # propagate initial and final orbits
     x0 = np.array([
         1.0809931218390707E+00,
         0.0,
@@ -136,7 +140,7 @@ def test_scp_scipy_mass(get_plot=False):
 
     # create subproblem
     trust_region_radius_x = 0.1
-    trust_region_radius_u = None
+    trust_region_radius_u = None    # we will use no trust-region for control
     problem = scocp.FixedTimeContinuousRdvMass(x0, xf[0:6], c1, c2, integrator, times,
                                            augment_Gamma=True,
                                            trust_region_radius_x=trust_region_radius_x,
@@ -149,7 +153,7 @@ def test_scp_scipy_mass(get_plot=False):
 
     alphas = np.linspace(1,0,N)
     xbar = (np.multiply(sol_initial.y, np.tile(alphas, (7,1))) + np.multiply(sol_final.y, np.tile(1-alphas, (7,1)))).T
-    xbar[:,6] = np.linspace(1.0, 0.8, N)
+    xbar[:,6] = np.linspace(1.0, 0.8, N)    # initial guess for mass
     xbar[0,:] = x0              # overwrite initial state
     xbar[-1,:6] = xf[:6]        # overwrite final state
     ubar = np.zeros((N-1,3))
