@@ -135,6 +135,7 @@ coverage report -m
 See example notebooks in `./examples`.
 
 - [Cartpole](./examples/example_cartpole.ipynb)
+- [Mars rocket landing (fixed-time 3-DoF)](./examples/example_mars_rocket_landing_3d_fixedtf.py)
 
 #### Quadratic objective, unconstrained
 <img src="examples/plots/cartpole_quadratic_state_history.png" width="90%">
@@ -167,6 +168,16 @@ See example notebooks in `./examples`.
 - Fixed boundary conditions
 
 <img src="tests/plots/scp_scipy_logmass_transfer.png" width="100%">
+
+
+#### `FixedTimeMars3DoFRocketLanding`: Fixed TOF 3-DoF Mars rocket landing
+
+- State: position, velocity + log(mass)
+- Controls: acceleration + thrust slack magnitude
+- Fixed TOF
+- Mars gravity, glide-slope, pointing, thrust, and velocity constraints
+
+<img src="examples/plots/mars_rocket_landing_3d_fixedtf.png" width="100%">
 
 
 #### `FreeTimeContinuousRdvLogMass`: Free TOF Continuous control rendez-vous with mass dynamics
