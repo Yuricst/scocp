@@ -19,3 +19,7 @@ from ._rdv_free_moving import (
 from ._ballistic import (
     FixedTimeBallisticTrajectory,
 )
+from ._rocket_landing_mars_3d import (
+    FixedTimeMars3DoFRocketLanding,
+    Mars3DoFRocketLandingResult,
+)
